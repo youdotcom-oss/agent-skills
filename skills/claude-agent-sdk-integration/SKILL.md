@@ -6,6 +6,7 @@ compatibility: Python 3.10+ or TypeScript 5.2+ (for v2), Node.js 18+
 metadata:
   author: youdotcom-oss
   category: sdk-integration
+  version: "1.0.0"
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
 ---
 

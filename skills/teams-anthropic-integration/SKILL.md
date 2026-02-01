@@ -6,6 +6,7 @@ compatibility: Node.js 18+, @microsoft/teams.ai, @microsoft/teams.mcpclient
 metadata:
   author: youdotcom-oss
   category: enterprise-integration
+  version: "1.0.0"
   keywords: microsoft-teams,teams-ai,mcp,you.com,integration,anthropic,claude,web-search,content-extraction
 ---
 

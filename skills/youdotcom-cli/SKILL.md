@@ -6,6 +6,7 @@ compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
 metadata:
   author: youdotcom-oss
   category: cli-tools
+  version: "1.0.0"
   keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,openclaw,claude-code,codex,cursor
 ---
 

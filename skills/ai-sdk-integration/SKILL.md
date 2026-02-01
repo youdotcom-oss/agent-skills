@@ -6,6 +6,7 @@ compatibility: Requires Node.js 18+ and npm/bun/yarn/pnpm
 metadata:
   author: youdotcom-oss
   category: sdk-integration
+  version: "1.0.0"
   keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
 ---
 

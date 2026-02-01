@@ -6,6 +6,7 @@ compatibility: Python 3.10+ or Node.js 18+ with TypeScript
 metadata:
   author: youdotcom-oss
   category: sdk-integration
+  version: "1.0.0"
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 
