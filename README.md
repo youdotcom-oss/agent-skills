@@ -59,18 +59,18 @@ Add You.com MCP tools to OpenAI Agents SDK using Hosted MCP or Streamable HTTP m
 
 ### teams-anthropic-integration
 
-Build Microsoft Teams applications powered by Anthropic's Claude model with You.com MCP server integration.
+Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
 
 **Use when:**
-- Creating new Teams apps with AI capabilities
-- Adding You.com MCP to existing Teams.ai applications
-- Integrating Anthropic Claude models with Teams framework
+- Building Teams.ai apps with Claude models
+- Need streaming, function calling, or conversation memory
+- Optionally want web search capabilities via You.com MCP
 
 **Features:**
-- Template-based setup with inline markers
-- Teams.ai Memory API integration patterns
-- AnthropicChatModel configuration examples
-- Environment setup and API key validation
+- Two paths: Basic setup (Claude only) or with You.com MCP
+- Complete templates for new and existing apps
+- Streaming responses and function calling
+- Conversation memory with Teams.ai Memory API
 
 ---
 
@@ -133,21 +133,21 @@ OpenClaw's `clawhub` requires installing skills individually by name:
 ```bash
 # Install specific skills (using npm)
 npx clawhub install youdotcom-cli
-npx clawhub install ai-sdk-integration
-npx clawhub install claude-agent-sdk-integration
-npx clawhub install openai-agent-sdk-integration
+npx clawhub install ydc-ai-sdk-integration
+npx clawhub install ydc-claude-agent-sdk-integration
+npx clawhub install ydc-openai-agent-sdk-integration
 npx clawhub install teams-anthropic-integration
 
 # Or using Bun (recommended)
 bunx clawhub install youdotcom-cli
-bunx clawhub install ai-sdk-integration
+bunx clawhub install ydc-ai-sdk-integration
 ```
 
 **Available skill names:**
 - `youdotcom-cli` - CLI tools for bash agents
-- `ai-sdk-integration` - Vercel AI SDK integration
-- `claude-agent-sdk-integration` - Claude Agent SDK integration
-- `openai-agent-sdk-integration` - OpenAI Agents SDK integration
+- `ydc-ai-sdk-integration` - Vercel AI SDK integration
+- `ydc-claude-agent-sdk-integration` - Claude Agent SDK integration
+- `ydc-openai-agent-sdk-integration` - OpenAI Agents SDK integration
 - `teams-anthropic-integration` - Microsoft Teams integration
 
 **Note**: Unlike the `skills` command, `clawhub` does not support installing entire repositories - you must install each skill individually.
@@ -235,7 +235,7 @@ Contributions are welcome! To add a new skill:
 
 **Skill naming convention:**
 - Directory name must match `name` field in YAML frontmatter
-- Use kebab-case (e.g., `ai-sdk-integration`)
+- Use kebab-case (e.g., `ydc-ai-sdk-integration`)
 
 ---
 
