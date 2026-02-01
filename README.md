@@ -128,27 +128,29 @@ npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ai-sdk-i
 
 ### For OpenClaw Agents
 
-**Install All Skills**:
+OpenClaw's `clawhub` requires installing skills individually by name:
 
 ```bash
-# Using npm
-npx clawhub install youdotcom-oss/agent-skills
-
-# Using Bun (recommended)
-bunx clawhub install youdotcom-oss/agent-skills
-```
-
-**Install Individual Skills**:
-
-```bash
-# Install just one skill
+# Install specific skills (using npm)
 npx clawhub install youdotcom-cli
-bunx clawhub install ai-sdk-integration
+npx clawhub install ai-sdk-integration
+npx clawhub install claude-agent-sdk-integration
+npx clawhub install openai-agent-sdk-integration
+npx clawhub install teams-anthropic-integration
 
-# Note: Individual skill names use kebab-case
-# Available: youdotcom-cli, ai-sdk-integration, claude-agent-sdk-integration,
-#            openai-agent-sdk-integration, teams-anthropic-integration
+# Or using Bun (recommended)
+bunx clawhub install youdotcom-cli
+bunx clawhub install ai-sdk-integration
 ```
+
+**Available skill names:**
+- `youdotcom-cli` - CLI tools for bash agents
+- `ai-sdk-integration` - Vercel AI SDK integration
+- `claude-agent-sdk-integration` - Claude Agent SDK integration
+- `openai-agent-sdk-integration` - OpenAI Agents SDK integration
+- `teams-anthropic-integration` - Microsoft Teams integration
+
+**Note**: Unlike the `skills` command, `clawhub` does not support installing entire repositories - you must install each skill individually.
 
 ---
 
