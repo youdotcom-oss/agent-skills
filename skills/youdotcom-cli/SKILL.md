@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
 metadata:
   author: youdotcom-oss
-  category: workflow
+  category: cli-tools
   keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,openclaw,claude-code,codex,cursor
 ---
 
@@ -43,7 +43,6 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
    * Node.js 18+ or Bun 1.0+ required
    * Test: `node --version` or `bun --version`
    * If neither installed: Install Bun (recommended): `curl -fsSL https://bun.sh/install | bash`
-   * Optional: `bun i -g @youdotcom-oss/api` for `ydc` command
 
 2. **Ask agent: What's your name?**
    * Use your agent name for the --client flag (e.g., "OpenClaw", "ClaudeCode", "Codex", "Cursor")
@@ -66,9 +65,9 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 
 5. **Explain: Schema Discovery**
    * Use `--schema` to discover available parameters
-   * Returns JSON Schema for the command's input
+   * Returns JSON schema for what can be passed to --json
    * Build query objects programmatically
-   * Example: `ydc search --schema | jq '.properties | keys'`
+   * Example: `bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'`
 
 6. **Show Examples**
    * All examples use `--json` flag with JSON input
@@ -85,16 +84,16 @@ Agents can discover what parameters each command accepts:
 
 ```bash
 # Get schema for search command
-bunx @youdotcom-oss/api search --schema
+bunx @youdotcom-oss/api@latest search --schema
 
 # Get schema for express command
-bunx @youdotcom-oss/api express --schema
+bunx @youdotcom-oss/api@latest express --schema
 
 # Get schema for contents command
-bunx @youdotcom-oss/api contents --schema
+bunx @youdotcom-oss/api@latest contents --schema
 
-# List available search parameters (using ydc if installed globally)
-ydc search --schema | jq '.properties | keys'
+# List available search parameters
+bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'
 ```
 
 ### 🔥 Web Search with Livecrawl - KEY ADVANTAGE
@@ -103,13 +102,13 @@ ydc search --schema | jq '.properties | keys'
 
 ```bash
 # Basic search with client tracking
-bunx @youdotcom-oss/api search --json '{"query":"AI developments"}' --client Openclaw
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client Openclaw
 
 # Or with npx
-npx @youdotcom-oss/api search --json '{"query":"AI developments"}' --client Openclaw
+npx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client Openclaw
 
 # LIVECRAWL: Search + extract content in ONE API call
-bunx @youdotcom-oss/api search --json '{
+bunx @youdotcom-oss/api@latest search --json '{
   "query":"documentation",
   "livecrawl":"web",
   "livecrawl_formats":"markdown",
@@ -120,7 +119,7 @@ bunx @youdotcom-oss/api search --json '{
 # No separate fetch needed - instant content extraction
 
 # Advanced: All search options
-bunx @youdotcom-oss/api search --json '{
+bunx @youdotcom-oss/api@latest search --json '{
   "query":"machine learning",
   "count":10,
   "offset":0,
@@ -134,11 +133,11 @@ bunx @youdotcom-oss/api search --json '{
 }' --client Openclaw
 
 # Parse with jq - direct access, no .data wrapper
-bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw | \
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw | \
   jq -r '.results.web[] | "\(.title): \(.url)"'
 
 # Extract livecrawl content
-bunx @youdotcom-oss/api search --json '{
+bunx @youdotcom-oss/api@latest search --json '{
   "query":"docs",
   "livecrawl":"web",
   "livecrawl_formats":"markdown"
@@ -150,18 +149,18 @@ bunx @youdotcom-oss/api search --json '{
 
 ```bash
 # Fast AI answer with verifiable references
-bunx @youdotcom-oss/api express --json '{
+bunx @youdotcom-oss/api@latest express --json '{
   "input":"What happened in AI this week?"
 }' --client Openclaw
 
 # Answer with web search (cites sources automatically)
-bunx @youdotcom-oss/api express --json '{
+bunx @youdotcom-oss/api@latest express --json '{
   "input":"Latest AI news",
   "tools":[{"type":"web_search"}]
 }' --client Openclaw
 
 # Parse answer and sources - direct access
-bunx @youdotcom-oss/api express --json '{
+bunx @youdotcom-oss/api@latest express --json '{
   "input":"AI trends",
   "tools":[{"type":"web_search"}]
 }' --client Openclaw | \
@@ -172,27 +171,27 @@ bunx @youdotcom-oss/api express --json '{
 
 ```bash
 # Extract in multiple formats
-bunx @youdotcom-oss/api contents --json '{
+bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown","html","metadata"]
 }' --client Openclaw
 
 # Pipe markdown to file
-bunx @youdotcom-oss/api contents --json '{
+bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown"]
 }' --client Openclaw | \
   jq -r '.[0].markdown' > content.md
 
 # Multiple URLs with timeout
-bunx @youdotcom-oss/api contents --json '{
+bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://a.com","https://b.com"],
   "formats":["markdown","metadata"],
   "crawl_timeout":30
 }' --client Openclaw
 
 # Extract just metadata
-bunx @youdotcom-oss/api contents --json '{
+bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["metadata"]
 }' --client Openclaw | \
@@ -213,7 +212,7 @@ bunx @youdotcom-oss/api contents --json '{
 **Pattern:**
 ```bash
 # Capture and check exit code
-if ! result=$(bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw); then
+if ! result=$(bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw); then
   echo "Search failed: $?"
   exit 1
 fi
@@ -244,23 +243,16 @@ else
 fi
 ```
 
-**Install globally (optional):**
+**Using the CLI (recommended for agents):**
 ```bash
-# Global install creates 'ydc' command
-bun i -g @youdotcom-oss/api
+# bunx with @latest checks for updates every 24 hours
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw
 
-# Then use ydc directly:
-ydc search --json '{"query":"AI"}' --client Openclaw
+# npx with @latest (note: has known caching issues, may not always fetch latest)
+npx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw
 ```
 
-**Or use with bunx/npx:**
-```bash
-# Auto-installs to cache on first use, reuses cache after
-bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw
-npx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw
-
-# Note: If installed globally, bunx/npx will use the global installation
-```
+**Note:** bunx is recommended because it checks for package updates every 24 hours when using `@latest`, while npx has [documented caching issues](https://github.com/npm/cli/issues/7838) that may prevent it from fetching the latest version.
 
 ## Environment Variables
 
@@ -271,7 +263,7 @@ export YDC_CLIENT=Openclaw            # Default client name
 
 **Override per command:**
 ```bash
-bunx @youdotcom-oss/api search --json '{"query":"AI"}' \
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' \
   --api-key "different-key" \
   --client "DifferentAgent"
 ```
@@ -280,10 +272,9 @@ bunx @youdotcom-oss/api search --json '{"query":"AI"}' \
 
 - [ ] Runtime check: Node.js 18+ or Bun 1.0+
 - [ ] If missing: `curl -fsSL https://bun.sh/install | bash`
-- [ ] Optional: Global install `bun i -g @youdotcom-oss/api`
 - [ ] API key from https://you.com/platform/api-keys
 - [ ] Environment variables set: YDC_API_KEY, YDC_CLIENT
-- [ ] Schema discovery tested: `api search --schema`
+- [ ] Schema discovery tested: `bunx @youdotcom-oss/api@latest search --schema`
 - [ ] CLI tested with `--json` and `--client` flags
 - [ ] Livecrawl tested (search + content in one call)
 - [ ] Error handling added (exit codes + stderr)
@@ -328,7 +319,7 @@ query=$(jq -n '{
 }')
 
 # Execute search (using bunx)
-bunx @youdotcom-oss/api search --json "$query" --client Openclaw
+bunx @youdotcom-oss/api@latest search --json "$query" --client Openclaw
 ```
 
 ### Agent Workflow - Search → Answer → Extract
@@ -338,7 +329,7 @@ bunx @youdotcom-oss/api search --json "$query" --client Openclaw
 set -e
 
 echo "Searching..."
-search=$(bunx @youdotcom-oss/api search --json '{
+search=$(bunx @youdotcom-oss/api@latest search --json '{
   "query":"AI 2026",
   "count":5,
   "livecrawl":"web",
@@ -346,14 +337,14 @@ search=$(bunx @youdotcom-oss/api search --json '{
 }' --client Openclaw)
 
 echo "Getting answer..."
-answer=$(bunx @youdotcom-oss/api express --json '{
+answer=$(bunx @youdotcom-oss/api@latest express --json '{
   "input":"Summarize AI developments",
   "tools":[{"type":"web_search"}]
 }' --client Openclaw)
 
 echo "Extracting top result..."
 url=$(echo "$search" | jq -r '.results.web[0].url')
-bunx @youdotcom-oss/api contents --json "{\"urls\":[\"$url\"],\"formats\":[\"markdown\"]}" \
+bunx @youdotcom-oss/api@latest contents --json "{\"urls\":[\"$url\"],\"formats\":[\"markdown\"]}" \
   --client Openclaw | jq -r '.[0].markdown' > output.md
 
 echo "Done!"
@@ -363,9 +354,9 @@ echo "Done!"
 
 ```bash
 #!/usr/bin/env bash
-bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw &
-bunx @youdotcom-oss/api search --json '{"query":"ML"}' --client Openclaw &
-bunx @youdotcom-oss/api search --json '{"query":"LLM"}' --client Openclaw &
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw &
+bunx @youdotcom-oss/api@latest search --json '{"query":"ML"}' --client Openclaw &
+bunx @youdotcom-oss/api@latest search --json '{"query":"LLM"}' --client Openclaw &
 wait
 ```
 
@@ -374,7 +365,7 @@ wait
 ```bash
 #!/usr/bin/env bash
 for i in {1..3}; do
-  if bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client Openclaw; then
+  if bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw; then
     exit 0
   fi
   [ $i -lt 3 ] && sleep 5
@@ -387,4 +378,3 @@ exit 1
 
 * Package: https://github.com/youdotcom-oss/dx-toolkit/tree/main/packages/api
 * API Keys: https://you.com/platform/api-keys
-* Bash Guide: https://google.github.io/styleguide/shellguide.html

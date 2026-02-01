@@ -5,9 +5,8 @@ license: MIT
 compatibility: Requires Node.js 18+ and npm/bun/yarn/pnpm
 metadata:
   author: youdotcom-oss
-  version: "0.2.0"
-  category: workflow
-  keywords: vercel,ai-sdk,you.com,integration,anthropic,openai, web-search, search, crawling, scraping
+  category: sdk-integration
+  keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
 ---
 
 # Integrate AI SDK with You.com Tools
@@ -50,24 +49,249 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
    * Using `generateText()` or `streamText()` in this file?
    * Which AI provider model? (to determine if stopWhen needed)
 
-6. **Reference Templates**
+6. **Reference Integration Examples**
 
-   Templates are available in the skill assets directory:
-   * `assets/generate-text.ts` - Template for generateText() usage
-   * `assets/streaming-text.ts` - Template for streamText() usage
+   See "Integration Examples" section below for complete code patterns:
+   * generateText() - Basic text generation with tools
+   * streamText() - Streaming responses with web frameworks (Next.js, Express, React)
 
 7. **Update/Create Files**
 
    For each file:
-   * Reference template (generateText or streamText based on their answer)
+   * Reference integration examples (generateText or streamText based on their answer)
    * Add import for selected tools
    * If EXISTING file: Find their generateText/streamText call and add tools object
-   * If NEW file: Create file with template structure
+   * If NEW file: Create file with example structure
    * Tool invocation pattern based on env var name:
      - Standard `YDC_API_KEY`: `youSearch()`
      - Custom name: `youSearch({ apiKey: process.env.CUSTOM_NAME })`
    * Add selected tools to tools object
    * If streamText + Anthropic: Add stopWhen parameter
+
+## Integration Examples
+
+### generateText() - Basic Text Generation
+
+**Environment Variables Setup:**
+```typescript
+import { anthropic } from '@ai-sdk/anthropic';
+import { generateText } from 'ai';
+import { youContents, youExpress, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+// Reads YDC_API_KEY from environment automatically
+const result = await generateText({
+  model: anthropic('claude-sonnet-4-5-20250929'),
+  tools: {
+    search: youSearch(),
+  },
+  prompt: 'What are the latest developments in quantum computing?',
+});
+
+console.log(result.text);
+```
+
+**Multiple Tools:**
+```typescript
+const result = await generateText({
+  model: anthropic('claude-sonnet-4-5-20250929'),
+  tools: {
+    search: youSearch(),      // Web search with citations
+    agent: youExpress(),      // AI answers with web context
+    extract: youContents(),   // Content extraction from URLs
+  },
+  prompt: 'Research quantum computing and summarize the key papers',
+});
+```
+
+**Custom API Key:**
+```typescript
+const result = await generateText({
+  model: anthropic('claude-sonnet-4-5-20250929'),
+  tools: {
+    search: youSearch({ apiKey: 'your-custom-key' }),
+  },
+  prompt: 'Your prompt here',
+});
+```
+
+**Complete Example:**
+```typescript
+import { anthropic } from '@ai-sdk/anthropic';
+import { generateText } from 'ai';
+import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+const main = async () => {
+  try {
+    const result = await generateText({
+      model: anthropic('claude-sonnet-4-5-20250929'),
+      tools: {
+        search: youSearch(),
+      },
+      maxSteps: 5,
+      prompt: 'What are the latest developments in quantum computing?',
+    });
+
+    console.log('Generated text:', result.text);
+    console.log('\nTool calls:', result.steps.flatMap(s => s.toolCalls));
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+};
+
+main();
+```
+
+### streamText() - Streaming Responses
+
+**Basic Streaming with stopWhen Pattern:**
+```typescript
+import { anthropic } from '@ai-sdk/anthropic';
+import { streamText, type StepResult } from 'ai';
+import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+// CRITICAL: Always use stopWhen for Anthropic streaming
+// Anthropic's SDK requires explicit stop conditions
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-5-20250929'),
+  tools: { search: youSearch() },
+  stopWhen: stepCountIs(3),  // Required for Anthropic
+  prompt: 'What are the latest AI developments?',
+});
+
+// Consume stream
+for await (const chunk of result.textStream) {
+  process.stdout.write(chunk);
+}
+```
+
+**Next.js Integration (App Router):**
+```typescript
+// app/api/chat/route.ts
+import { anthropic } from '@ai-sdk/anthropic';
+import { streamText, type StepResult } from 'ai';
+import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+
+  const result = streamText({
+    model: anthropic('claude-sonnet-4-5-20250929'),
+    tools: { search: youSearch() },
+    stopWhen: stepCountIs(5),
+    prompt,
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+**Express.js Integration:**
+```typescript
+// server.ts
+import express from 'express';
+import { anthropic } from '@ai-sdk/anthropic';
+import { streamText, type StepResult } from 'ai';
+import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+const app = express();
+app.use(express.json());
+
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
+
+app.post('/api/chat', async (req, res) => {
+  const { prompt } = req.body;
+
+  const result = streamText({
+    model: anthropic('claude-sonnet-4-5-20250929'),
+    tools: { search: youSearch() },
+    stopWhen: stepCountIs(5),
+    prompt,
+  });
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+
+  for await (const chunk of result.textStream) {
+    res.write(chunk);
+  }
+
+  res.end();
+});
+
+app.listen(3000);
+```
+
+**React Client (with Next.js):**
+```typescript
+// components/Chat.tsx
+'use client';
+
+import { useChat } from 'ai/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: '/api/chat',
+  });
+
+  return (
+    <div>
+      {messages.map(m => (
+        <div key={m.id}>
+          <strong>{m.role}:</strong> {m.content}
+        </div>
+      ))}
+
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+**Complete Streaming Example:**
+```typescript
+import { anthropic } from '@ai-sdk/anthropic';
+import { streamText, type StepResult } from 'ai';
+import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
+
+const main = async () => {
+  try {
+    const result = streamText({
+      model: anthropic('claude-sonnet-4-5-20250929'),
+      tools: {
+        search: youSearch(),
+      },
+      stopWhen: stepCountIs(3),
+      prompt: 'What are the latest AI developments?',
+    });
+
+    // Stream to stdout
+    console.log('Streaming response:\n');
+    for await (const chunk of result.textStream) {
+      process.stdout.write(chunk);
+    }
+    console.log('\n\nDone!');
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  }
+};
+
+main();
+```
 
 ## Tool Invocation Patterns
 
@@ -128,15 +352,16 @@ AI agent with web context - model determines parameters (input, tools)
 ### youContents
 Web page content extraction - model determines parameters (urls, format)
 
-## Key Template Patterns
+## Key Integration Patterns
 
-Templates show:
+The examples above demonstrate:
 * Import statements (AI SDK + provider + You.com tools)
 * Env var validation (optional for new files)
 * Tool configuration based on env var
 * generateText/streamText usage with tools
 * Result handling (especially textStream destructuring for streamText)
 * Anthropic streaming pattern (stopWhen: stepCountIs(3))
+* Web framework integration (Next.js, Express, React)
 
 ## Implementation Checklist
 
@@ -298,5 +523,5 @@ description: 'Search the web'
 ## Additional Resources
 
 * Package README: https://github.com/youdotcom-oss/dx-toolkit/tree/main/packages/ai-sdk-plugin
-* Vercel AI SDK Docs: https://sdk.vercel.ai/docs
+* Vercel AI SDK Docs: https://ai-sdk.dev/docs
 * You.com API: https://you.com/platform/api-keys
