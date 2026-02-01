@@ -1,6 +1,8 @@
 # You.com Agent Skills
 
-Agent skills for integrating You.com's AI-powered search, content extraction, and web capabilities with popular AI agent frameworks.
+Agent skills for integrating You.com's AI-powered search, content extraction, and web capabilities with popular AI agent frameworks and bash-based agents.
+
+These skills provide interactive workflows that guide your AI agent through setting up You.com integrations for SDKs, frameworks, and CLI tools.
 
 ## Available Skills
 
@@ -94,16 +96,72 @@ Integrate You.com's web search, AI answers, and content extraction with bash-bas
 
 ## Installation
 
-Get up and running in one command:
+### For Agent Skills Spec Compatible Agents
+
+**Install All Skills** (recommended):
 
 ```bash
+# Using npm
 npx skills add youdotcom-oss/agent-skills
+
+# Using Bun (recommended)
+bunx skills add youdotcom-oss/agent-skills
 ```
 
-**What this does:**
-- Clones the skills repository to your local machine
-- Makes all 5 skills available to your AI coding agent
-- Enables automatic skill activation when you request integration
+This installs all 5 skills at once:
+- `ai-sdk-integration`
+- `claude-agent-sdk-integration`
+- `openai-agent-sdk-integration`
+- `teams-anthropic-integration`
+- `youdotcom-cli`
+
+**Install Individual Skills**:
+
+```bash
+# Install just one skill
+npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli
+bunx skills add youdotcom-oss/agent-skills --skill ai-sdk-integration
+
+# Install multiple specific skills
+npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ai-sdk-integration
+```
+
+### For OpenClaw Agents
+
+**Install All Skills**:
+
+```bash
+# Using npm
+npx clawhub install youdotcom-oss/agent-skills
+
+# Using Bun (recommended)
+bunx clawhub install youdotcom-oss/agent-skills
+```
+
+**Install Individual Skills**:
+
+```bash
+# Install just one skill
+npx clawhub install youdotcom-cli
+bunx clawhub install ai-sdk-integration
+
+# Note: Individual skill names use kebab-case
+# Available: youdotcom-cli, ai-sdk-integration, claude-agent-sdk-integration,
+#            openai-agent-sdk-integration, teams-anthropic-integration
+```
+
+---
+
+## Quick Start
+
+Before using any skill, you'll need a You.com API key:
+
+1. **Get API Key**: Visit [you.com/platform/api-keys](https://you.com/platform/api-keys)
+2. **Set Environment Variable**:
+   ```bash
+   export YDC_API_KEY="your-api-key-here"
+   ```
+3. **Request Integration**: Ask your AI agent to integrate You.com (see Usage examples below)
 
 ---
 
@@ -123,18 +181,18 @@ Each skill provides step-by-step instructions, code templates, and validation ch
 
 ## Skill Structure
 
-Each skill follows the agent-skills-spec format:
+Each skill follows the [agent-skills-spec](https://agentskills.io) format:
 
 ```
 skills/{skill-name}/
 ├── SKILL.md          # Complete workflow with YAML frontmatter
-└── assets/           # Code templates (optional)
+└── assets/           # Code templates (optional, mostly inlined)
 ```
 
 **Skills are self-contained:**
-- YAML frontmatter defines skill metadata (name, description, compatibility)
-- Markdown body contains complete workflow, templates, validation, troubleshooting
-- Assets directory provides ready-to-use code templates
+- **YAML frontmatter** defines skill metadata (name, description, category, keywords, compatibility)
+- **Markdown body** contains complete workflow, inline code examples, templates, validation, and troubleshooting
+- **Assets directory** (optional) for additional templates - most examples are now inlined for immediate visibility
 
 ---
 
@@ -145,12 +203,9 @@ skills/{skill-name}/
 - Provider API keys (Anthropic, OpenAI, etc.) depending on the skill
 
 **Supported AI Agents:**
-- Claude Code (Anthropic)
-- Cursor
-- Cody (Sourcegraph)
-- Continue
-- VS Code extensions
-- And more (any agent supporting agent-skills-spec format)
+- **Bash-based agents**: OpenClaw, Claude Code, Codex, Cursor, Windsurf, Cody
+- **IDE extensions**: Continue, VS Code extensions, Cline
+- **Any agent** supporting agent-skills-spec format or bash commands
 
 ---
 
