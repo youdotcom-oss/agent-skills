@@ -1,5 +1,5 @@
 ---
-name: openai-agent-sdk-integration
+name: ydc-openai-agent-sdk-integration
 description: Integrate OpenAI Agents SDK with You.com MCP server - Hosted and Streamable HTTP support for Python and TypeScript. Use when developer mentions OpenAI Agents SDK, OpenAI agents, or integrating OpenAI with MCP.
 license: MIT
 compatibility: Python 3.10+ or Node.js 18+ with TypeScript
