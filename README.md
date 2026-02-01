@@ -6,7 +6,7 @@ These skills provide interactive workflows that guide your AI agent through sett
 
 ## Available Skills
 
-### ai-sdk-integration
+### ydc-ai-sdk-integration
 
 Integrate Vercel AI SDK applications with You.com tools for real-time web search, AI-powered answers, and content extraction.
 
@@ -23,7 +23,7 @@ Integrate Vercel AI SDK applications with You.com tools for real-time web search
 
 ---
 
-### claude-agent-sdk-integration
+### ydc-claude-agent-sdk-integration
 
 Connect Claude Agent SDK (Python and TypeScript) to You.com's HTTP MCP server for web search and content extraction.
 
@@ -40,7 +40,7 @@ Connect Claude Agent SDK (Python and TypeScript) to You.com's HTTP MCP server fo
 
 ---
 
-### openai-agent-sdk-integration
+### ydc-openai-agent-sdk-integration
 
 Add You.com MCP tools to OpenAI Agents SDK using Hosted MCP or Streamable HTTP modes.
 
@@ -109,9 +109,9 @@ bunx skills add youdotcom-oss/agent-skills
 ```
 
 This installs all 5 skills at once:
-- `ai-sdk-integration`
-- `claude-agent-sdk-integration`
-- `openai-agent-sdk-integration`
+- `ydc-ai-sdk-integration`
+- `ydc-claude-agent-sdk-integration`
+- `ydc-openai-agent-sdk-integration`
 - `teams-anthropic-integration`
 - `youdotcom-cli`
 
@@ -120,10 +120,10 @@ This installs all 5 skills at once:
 ```bash
 # Install just one skill
 npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli
-bunx skills add youdotcom-oss/agent-skills --skill ai-sdk-integration
+bunx skills add youdotcom-oss/agent-skills --skill ydc-ai-sdk-integration
 
 # Install multiple specific skills
-npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ai-sdk-integration
+npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ydc-ai-sdk-integration
 ```
 
 ### For OpenClaw Agents
