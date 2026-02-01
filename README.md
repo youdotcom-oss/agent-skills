@@ -72,6 +72,26 @@ Build Microsoft Teams applications powered by Anthropic's Claude model with You.
 
 ---
 
+### youdotcom-cli
+
+Integrate You.com's web search, AI answers, and content extraction with bash-based AI agents using a universal CLI tool.
+
+**Use when:**
+- Working with bash-capable AI agents (OpenClaw, Claude Code, Cursor, etc.)
+- Need fast web search with verifiable citations
+- Want simultaneous search + content extraction (livecrawl)
+- Building agent workflows with JSON CLI tools
+
+**Features:**
+- Schema-driven JSON input via `--json` flag
+- Schema discovery with `--schema` flag
+- Livecrawl: search + extract content in one API call
+- Client tracking with `--client` flag
+- Works with bunx/npx (no installation needed)
+- Compatible with any bash-based agent
+
+---
+
 ## Installation
 
 Get up and running in one command:
@@ -82,7 +102,7 @@ npx skills add youdotcom-oss/agent-skills
 
 **What this does:**
 - Clones the skills repository to your local machine
-- Makes all 4 skills available to your AI coding agent
+- Makes all 5 skills available to your AI coding agent
 - Enables automatic skill activation when you request integration
 
 ---
@@ -95,6 +115,7 @@ Once installed, your AI coding agent will automatically activate the relevant sk
 - "Set up Claude Agent SDK with You.com MCP"
 - "Add You.com to my Teams app with Anthropic"
 - "Configure OpenAI Agents SDK with You.com MCP"
+- "Add You.com CLI tools to my bash agent"
 
 Each skill provides step-by-step instructions, code templates, and validation checklists.
 
