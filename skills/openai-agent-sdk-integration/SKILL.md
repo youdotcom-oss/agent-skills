@@ -5,9 +5,8 @@ license: MIT
 compatibility: Python 3.10+ or Node.js 18+ with TypeScript
 metadata:
   author: youdotcom-oss
-  version: "0.2.0"
-  category: workflow
-  keywords: openai,agent-sdk,mcp,you.com,integration,hosted,streamable-http, web-search, search, crawling, scraping
+  category: sdk-integration
+  keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 
 # Integrate OpenAI Agents SDK with You.com MCP
@@ -523,25 +522,10 @@ try {
 
 ## Available You.com Tools
 
-After configuration, the AI agent can use these tools:
-
-### `mcp__ydc__you_search`
-Web and news search with filters:
-- `query`: Search query string
-- `freshness`: Filter by recency (day, week, month, year)
-- `country`: Country code for localized results
-- `count`: Number of results to return
-
-### `mcp__ydc__you_express`
-Fast AI agent with optional web search:
-- `input`: Query or instruction for the AI agent
-- `tools`: Optional list of tools to use (e.g., ["search"])
-
-### `mcp__ydc__you_contents`
-Web page content extraction:
-- `urls`: Array of URLs to extract content from
-- `formats`: Output formats - array of `"markdown"`, `"html"`, or `"metadata"`
-- `crawl_timeout`: Optional timeout in seconds (1-60)
+After configuration, agents can discover and use:
+- `mcp__ydc__you_search` - Web and news search
+- `mcp__ydc__you_express` - AI-powered answers with web context  
+- `mcp__ydc__you_contents` - Web page content extraction
 
 ## Environment Variables
 
@@ -692,64 +676,7 @@ const mcpServer = new MCPServerStreamableHttp({
 
 </details>
 
-## Advanced: MCP Server Development Patterns
 
-For developers creating custom MCP tools or contributing to @youdotcom-oss/mcp:
-
-### Schema Design
-
-Always use Zod for input/output validation:
-
-```ts
-export const MyToolInputSchema = z.object({
-  query: z.string().min(1).describe("Search query"),
-  limit: z.number().optional().describe("Max results"),
-});
-```
-
-**Why this pattern?**
-- Zod provides runtime validation and TypeScript types
-- `.describe()` adds documentation for MCP tool parameters
-- Schema validation catches invalid inputs before API calls
-
-### Error Handling
-
-Always use try/catch with typed error handling:
-
-```ts
-try {
-  const response = await apiCall();
-  return formatResponse(response);
-} catch (err: unknown) {
-  const errorMessage = err instanceof Error ? err.message : String(err);
-  await logger({ level: "error", data: `API call failed: ${errorMessage}` });
-  return {
-    content: [{ type: "text", text: `Error: ${errorMessage}` }],
-    isError: true,
-  };
-}
-```
-
-**Why this pattern?**
-- MCP tools must return structured responses, never throw
-- `err: unknown` ensures type safety in catch blocks
-- User-friendly error messages in `content`
-
-### Response Format
-
-Return both `content` and `structuredContent`:
-
-```ts
-return {
-  content: [{ type: "text", text: formattedText }],
-  structuredContent: responseData,
-};
-```
-
-**Why this pattern?**
-- `content` provides human-readable text for display
-- `structuredContent` provides machine-readable data
-- MCP clients can choose which format to use
 
 ## Additional Resources
 
