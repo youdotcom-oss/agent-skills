@@ -143,7 +143,7 @@ bunx @youdotcom-oss/api@latest search --json '{
 
 ### ⚡ AI Answers with Web Search - Cited Sources
 
-Do a search and extract contents with livecrawl. Retrieve top 10 urls content. Using this content synthesize an answer based on the users intent.
+Do a search and extract contents with Livecrawl. Retrieve top 10 URLs content. Using this content, synthesize an answer based on the user’s intent. Repeat searches and adjust query parameters as necessary to refine the answer for the user.
 
 ### 📄 Web Content Extraction - Multi-Format Output
 
