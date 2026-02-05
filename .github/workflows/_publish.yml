@@ -179,6 +179,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          token: ${{ secrets.PUBLISH_TOKEN }}
           fetch-depth: 0
 
       - name: Pull latest changes
@@ -187,7 +188,7 @@ jobs:
 
       - name: Create release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
           VERSION="${{ needs.update-version.outputs.version }}"
           SKILL_NAME="${{ needs.update-version.outputs.skill_name }}"
