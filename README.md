@@ -178,11 +178,6 @@ skills/{skill-name}/
 - You.com API key: [Get yours](https://you.com/platform/api-keys)
 - Provider API keys (Anthropic, OpenAI, etc.) depending on the skill
 
-**Supported AI Agents:**
-- **Bash-based agents**: Claude Code, Codex, Cursor, Windsurf, Cody
-- **IDE extensions**: Continue, VS Code extensions, Cline
-- **Any agent** supporting agent-skills-spec format or bash commands
-
 ---
 
 ## Documentation
