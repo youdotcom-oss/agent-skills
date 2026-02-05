@@ -25,6 +25,10 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 - Every search result includes citation URLs
 - Content extraction preserves metadata and structure
 
+**🔬 Research-Grade Citations**:
+- Deep-search: Multi-step reasoning with inline citations
+- Adjustable effort (30s/60s/300s) for speed vs depth tradeoff
+
 **🔄 Simultaneous Operations**:
 - **Livecrawl**: Search AND extract content in one call
 - Get both search results and full page content instantly
@@ -60,6 +64,7 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 4. **Ask: Which Features?**
    * Web search with livecrawl? (search + content in ONE call)
    * Content extraction? (contents)
+   * Deep research with citations? (deep-search)
    * Multiple?
 
 5. **Explain: Schema Discovery**
@@ -74,6 +79,26 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
    * Highlight livecrawl feature
    * Show error handling patterns with exit codes
    * Demonstrate jq parsing (direct access, no `.data` wrapper)
+
+## Tool Selection
+
+Match user intent to command:
+
+| User Pattern | Tool | Timing | Use When |
+|--------------|------|--------|----------|
+| "Extract https://..." | `contents` | 1-60s/URL | Known URL |
+| "Find articles..." | `search` | <5s | Snippets enough |
+| "What is X?" | `search + livecrawl` | <5s | **Express**: Quick full answer |
+| "Latest news..." | `search + freshness` | <5s | Recent events |
+| "Research X" | `deep-search low` | <30s | Quick check with citations |
+| "Compare X vs Y" | `deep-search medium` | <60s | Balanced research (default) |
+| "Comprehensive analysis" | `deep-search high` | <300s | **Deep**: Maximum thoroughness |
+
+**Express vs Research Mode:**
+- **Express** (`search + livecrawl`): <5s, full content, one source
+- **Research** (`deep-search`): 30-300s, cited synthesis, multiple sources
+
+*Verify:* Check user query for keywords: "what/how" → express, "research/compare" → deep-search
 
 ## CLI Usage Patterns
 
@@ -143,7 +168,58 @@ bunx @youdotcom-oss/api@latest search --json '{
 
 ### ⚡ AI Answers with Web Search - Cited Sources
 
-Do a search and extract contents with Livecrawl. Retrieve top 10 URLs content. Using this content, synthesize an answer based on the user’s intent. Repeat searches and adjust query parameters as necessary to refine the answer for the user.
+Do a search and extract contents with Livecrawl. Retrieve top 10 URLs content. Using this content, synthesize an answer based on the user's intent. Repeat searches and adjust query parameters as necessary to refine the answer for the user.
+
+### 🔬 Deep Research with Citations
+
+Multi-step reasoning with cited sources. Use for research tasks.
+
+**Effort levels:**
+| Level | Time | Use Case |
+|-------|------|----------|
+| `low` | <30s | Quick check |
+| `medium` | <60s | Default (recommended) |
+| `high` | <300s | Comprehensive |
+
+**Basic usage:**
+```bash
+# Quick research (<30s)
+bunx @youdotcom-oss/api@latest deep-search --json '{
+  "query":"What is JWT authentication?",
+  "search_effort":"low"
+}' --client Openclaw
+
+# Standard depth (<60s, default)
+bunx @youdotcom-oss/api@latest deep-search --json '{
+  "query":"Compare REST vs GraphQL",
+  "search_effort":"medium"
+}' --client Openclaw | jq -r '.answer'
+
+# Maximum depth (<300s) - requires timeout command
+timeout 330 bunx @youdotcom-oss/api@latest deep-search --json '{
+  "query":"Comprehensive analysis of microservices",
+  "search_effort":"high"
+}' --client Openclaw
+```
+
+**Response structure:**
+```json
+{
+  "answer": "Markdown with [inline citations]...",
+  "results": [{"url": "...", "title": "...", "snippets": ["..."]}]
+}
+```
+
+**Parse citations:**
+```bash
+result | jq -r '.results[] | "[\(.title)](\(.url))"'
+```
+
+**Cross-platform timeout:**
+- Linux: `timeout` (built-in)
+- macOS: `gtimeout` (install: `brew install coreutils`)
+
+*Verify:* Test schema with `bunx @youdotcom-oss/api@latest deep-search --schema`
 
 ### 📄 Web Content Extraction - Multi-Format Output
 
@@ -255,6 +331,8 @@ bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' \
 - [ ] Schema discovery tested: `bunx @youdotcom-oss/api@latest search --schema`
 - [ ] CLI tested with `--json` and `--client` flags
 - [ ] Livecrawl tested (search + content in one call)
+- [ ] Deep-search tested with low/medium/high effort levels
+- [ ] Cross-platform timeout handled (Linux timeout / macOS gtimeout)
 - [ ] Error handling added (exit codes + stderr)
 - [ ] Output parsing implemented (jq without `.data` wrapper)
 - [ ] Script integrated into workflow
@@ -323,6 +401,42 @@ done
 echo "Failed after 3 attempts"
 exit 1
 ```
+
+### Progressive Deep-Search
+
+Start low, escalate only if needed:
+
+```bash
+#!/usr/bin/env bash
+# Try low → medium → high until sufficient
+for effort in low medium high; do
+  result=$(bunx @youdotcom-oss/api@latest deep-search --json "{
+    \"query\":\"$1\",
+    \"search_effort\":\"$effort\"
+  }" --client Openclaw)
+
+  citations=$(echo "$result" | jq '.results | length')
+  [ "$citations" -ge 5 ] && echo "$result" | jq -r '.answer' && exit 0
+done
+```
+
+### Parallel Deep-Search
+
+Run multiple research questions concurrently:
+
+```bash
+#!/usr/bin/env bash
+# Parallel research (3×60s = ~60s total, not 180s)
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q1"}' --client Openclaw > q1.json &
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q2"}' --client Openclaw > q2.json &
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q3"}' --client Openclaw > q3.json &
+wait
+
+# Combine results
+for f in q*.json; do jq -r '.answer' "$f"; done
+```
+
+*Verify:* Progressive saves quota by avoiding unnecessary high effort
 
 ## Resources
 
