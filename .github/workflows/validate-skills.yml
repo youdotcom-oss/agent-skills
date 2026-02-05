@@ -3,13 +3,13 @@ name: Validate Skills
 on:
   pull_request:
     paths:
-      - 'skills/**'
-      - '.github/workflows/validate-skills.yml'
+      - "skills/**"
+      - ".github/workflows/validate-skills.yml"
   push:
     branches:
       - main
     paths:
-      - 'skills/**'
+      - "skills/**"
 
 permissions:
   contents: read
@@ -31,17 +31,30 @@ jobs:
       - name: Validate all skills
         run: |
           echo "🔍 Validating skills in skills/ directory..."
-          bunx @plaited/development-skills validate-skill skills/*
 
-          if [ $? -eq 0 ]; then
-            echo "✅ All skills are valid"
-          else
-            echo "❌ Skill validation failed"
+          # Get JSON output
+          RESULT=$(bunx @plaited/development-skills validate-skill skills/* --json)
+
+          # Pretty print results
+          echo "$RESULT" | jq .
+
+          # Check if all skills are valid
+          INVALID_COUNT=$(echo "$RESULT" | jq '[.[] | select(.valid == false)] | length')
+          TOTAL_COUNT=$(echo "$RESULT" | jq 'length')
+          VALID_COUNT=$((TOTAL_COUNT - INVALID_COUNT))
+
+          echo ""
+          echo "📊 Validation Summary:"
+          echo "   Total skills: $TOTAL_COUNT"
+          echo "   ✅ Valid: $VALID_COUNT"
+          echo "   ❌ Invalid: $INVALID_COUNT"
+
+          # Show errors if any
+          if [ "$INVALID_COUNT" -gt 0 ]; then
+            echo ""
+            echo "❌ Validation errors found:"
+            echo "$RESULT" | jq -r '.[] | select(.valid == false) | "\n[\(.path)]\nErrors: \(.errors | join(", "))"'
             exit 1
           fi
 
-      - name: Validate with JSON output (for debugging)
-        if: failure()
-        run: |
-          echo "📋 Detailed validation results:"
-          bunx @plaited/development-skills validate-skill skills/* --json
+          echo "✅ All skills are valid"

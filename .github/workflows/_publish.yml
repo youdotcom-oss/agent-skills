@@ -68,15 +68,25 @@ jobs:
       - name: Validate skill structure
         run: |
           echo "🔍 Validating skill: ${{ inputs.skill_name }}"
-          bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}"
 
-          if [ $? -eq 0 ]; then
-            echo "✅ Skill structure is valid"
-          else
-            echo "❌ Skill validation failed"
-            bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}" --json
+          # Get JSON output
+          RESULT=$(bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}" --json)
+
+          # Pretty print results
+          echo "$RESULT" | jq .
+
+          # Check if skill is valid
+          IS_VALID=$(echo "$RESULT" | jq -r '.[0].valid')
+
+          if [ "$IS_VALID" != "true" ]; then
+            echo ""
+            echo "❌ Skill validation failed for: ${{ inputs.skill_name }}"
+            ERRORS=$(echo "$RESULT" | jq -r '.[0].errors | join(", ")')
+            echo "Errors: $ERRORS"
             exit 1
           fi
+
+          echo "✅ Skill structure is valid"
 
       - name: Install yq
         run: |
