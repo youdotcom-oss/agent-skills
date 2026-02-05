@@ -1,0 +1,23 @@
+name: Publish teams-anthropic-integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (semver without v prefix, e.g., 1.2.0)'
+        required: true
+        type: string
+      next:
+        description: 'Prerelease number (optional, e.g., 2 for 1.2.0-next.2)'
+        required: false
+        type: string
+
+jobs:
+  publish:
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: 'teams-anthropic-integration'
+      version: ${{ inputs.version }}
+      next: ${{ inputs.next }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

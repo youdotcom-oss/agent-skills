@@ -1,0 +1,190 @@
+name: Publish Skill (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      skill_name:
+        description: 'Name of the skill directory (e.g., youdotcom-cli)'
+        required: true
+        type: string
+      version:
+        description: 'Semantic version without v prefix (e.g., 1.0.0)'
+        required: true
+        type: string
+      next:
+        description: 'Prerelease number (optional, e.g., 2 for 1.0.0-next.2)'
+        required: false
+        type: string
+    secrets:
+      PUBLISH_TOKEN:
+        description: 'GitHub token with permission to push to protected branches'
+        required: true
+
+jobs:
+  update-version:
+    name: Update Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.determine-version.outputs.version }}
+      is_prerelease: ${{ steps.determine-version.outputs.is_prerelease }}
+      skill_name: ${{ inputs.skill_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PUBLISH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Validate inputs
+        run: |
+          # Validate version format (semver without 'v' prefix)
+          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Version must be in semver format without 'v' prefix (e.g., 1.0.0)"
+            echo "Provided: ${{ inputs.version }}"
+            exit 1
+          fi
+
+          # Validate skill name (kebab-case)
+          if [[ ! "${{ inputs.skill_name }}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "❌ Error: Skill name must be in kebab-case (e.g., youdotcom-cli)"
+            echo "Provided: ${{ inputs.skill_name }}"
+            exit 1
+          fi
+
+          # Validate skill directory exists
+          if [[ ! -d "skills/${{ inputs.skill_name }}" ]]; then
+            echo "❌ Error: Skill directory not found: skills/${{ inputs.skill_name }}"
+            exit 1
+          fi
+
+          # Validate SKILL.md exists
+          if [[ ! -f "skills/${{ inputs.skill_name }}/SKILL.md" ]]; then
+            echo "❌ Error: SKILL.md not found in skills/${{ inputs.skill_name }}/"
+            exit 1
+          fi
+
+          echo "✅ Input validation passed"
+
+      - name: Determine version
+        id: determine-version
+        run: |
+          BASE_VERSION="${{ inputs.version }}"
+          NEXT="${{ inputs.next }}"
+          BRANCH="${{ github.ref_name }}"
+
+          if [[ "$BRANCH" == "main" ]]; then
+            if [[ -n "$NEXT" ]]; then
+              # Main branch with explicit prerelease
+              VERSION="${BASE_VERSION}-next.${NEXT}"
+              IS_PRERELEASE="true"
+              echo "📦 Publishing explicit prerelease: ${VERSION}"
+            else
+              # Main branch stable release
+              VERSION="${BASE_VERSION}"
+              IS_PRERELEASE="false"
+              echo "🚀 Publishing stable release: ${VERSION}"
+            fi
+          else
+            # Non-main branch: auto-increment prerelease
+            if [[ -z "$NEXT" ]]; then
+              NEXT="1"
+            fi
+            VERSION="${BASE_VERSION}-next.${NEXT}"
+            IS_PRERELEASE="true"
+            echo "🔬 Publishing prerelease from branch '${BRANCH}': ${VERSION}"
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/bin/yq
+
+      - name: Update SKILL.md version
+        run: |
+          VERSION="${{ steps.determine-version.outputs.version }}"
+          SKILL_FILE="skills/${{ inputs.skill_name }}/SKILL.md"
+
+          echo "📝 Updating version in ${SKILL_FILE} to ${VERSION}"
+
+          # Update version using yq (safe YAML manipulation)
+          yq eval '.metadata.version = "'"${VERSION}"'"' -i "${SKILL_FILE}"
+
+          # Verify the update
+          UPDATED_VERSION=$(yq eval '.metadata.version' "${SKILL_FILE}")
+          if [[ "${UPDATED_VERSION}" != "${VERSION}" ]]; then
+            echo "❌ Error: Version update failed. Expected ${VERSION}, got ${UPDATED_VERSION}"
+            exit 1
+          fi
+
+          echo "✅ Version updated successfully to ${VERSION}"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit version changes
+        run: |
+          VERSION="${{ steps.determine-version.outputs.version }}"
+          SKILL_NAME="${{ inputs.skill_name }}"
+
+          git add "skills/${SKILL_NAME}/SKILL.md"
+
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit (version already up-to-date)"
+          else
+            git commit -m "chore(${SKILL_NAME}): bump version to ${VERSION} [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+            echo "✅ Version changes committed and pushed"
+          fi
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: update-version
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Pull latest changes
+        run: |
+          git pull origin ${{ github.ref_name }}
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.update-version.outputs.version }}"
+          SKILL_NAME="${{ needs.update-version.outputs.skill_name }}"
+          IS_PRERELEASE="${{ needs.update-version.outputs.is_prerelease }}"
+          TAG="${SKILL_NAME}@v${VERSION}"
+
+          echo "🏷️ Creating release: ${TAG}"
+
+          # Generate release notes filtered to skill directory
+          RELEASE_NOTES=$(git log --pretty=format:"- %s (%h)" --grep="^.*${SKILL_NAME}" -- "skills/${SKILL_NAME}" | head -20)
+
+          if [[ -z "$RELEASE_NOTES" ]]; then
+            RELEASE_NOTES="Release ${VERSION} of ${SKILL_NAME}"
+          fi
+
+          # Create release
+          PRERELEASE_FLAG=""
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            PRERELEASE_FLAG="--prerelease"
+            echo "🔬 Marking as prerelease"
+          fi
+
+          gh release create "${TAG}" \
+            --title "${SKILL_NAME} v${VERSION}" \
+            --notes "${RELEASE_NOTES}" \
+            --target ${{ github.ref_name }} \
+            ${PRERELEASE_FLAG}
+
+          echo "✅ Release created: ${TAG}"

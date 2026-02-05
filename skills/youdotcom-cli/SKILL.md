@@ -1,13 +1,13 @@
 ---
 name: youdotcom-cli
-description: Search the web, generate fast AI answers with verifiable references, and extract web content using You.com's schema-driven JSON CLI tools — optimized for bash-based AI agents (OpenClaw, Claude Code, Codex, Cursor, etc.). Faster than builtin search APIs with simultaneous livecrawl, instant content extraction, and citation-backed answers. Schema discovery via --schema flag enables programmatic query building.
+description: Search the web, generate fast AI answers with verifiable references, and extract web content using You.com's schema-driven JSON CLI tools — optimized for bash-based AI agents (Claude Code, Codex, Cursor, etc.). Faster than builtin search APIs with simultaneous livecrawl, instant content extraction, and citation-backed answers. Schema discovery via --schema flag enables programmatic query building.
 license: MIT
 compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
 metadata:
   author: youdotcom-oss
   category: web-search-tools
   version: "1.2.0"
-  keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,openclaw,claude-code,codex,cursor
+  keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,claude-code,codex,cursor
 ---
 
 # Integrate You.com with Bash-Based AI Agents
@@ -49,8 +49,8 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
    * If neither installed: Install Bun (recommended): `curl -fsSL https://bun.sh/install | bash`
 
 2. **Ask agent: What's your name?**
-   * Use your agent name for the --client flag (e.g., "OpenClaw", "ClaudeCode", "Codex", "Cursor")
-   * Examples: `--client OpenClaw` or `--client ClaudeCode`
+   * Use your agent name for the --client flag (e.g., "ClaudeCode", "Codex", "Cursor")
+   * Examples: `--client ClaudeCode` or `--client Cursor`
    * Helps support respond to error reports (included in mailto links)
    * Can set default: `export YDC_CLIENT=YourAgentName`
 
@@ -123,10 +123,10 @@ bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'
 
 ```bash
 # Basic search with client tracking
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client Openclaw
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client ClaudeCode
 
 # Or with npx
-npx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client Openclaw
+npx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client ClaudeCode
 
 # LIVECRAWL: Search + extract content in ONE API call
 bunx @youdotcom-oss/api@latest search --json '{
@@ -134,7 +134,7 @@ bunx @youdotcom-oss/api@latest search --json '{
   "livecrawl":"web",
   "livecrawl_formats":"markdown",
   "count":5
-}' --client Openclaw
+}' --client ClaudeCode
 
 # Results include .contents.markdown with full page content!
 # No separate fetch needed - instant content extraction
@@ -151,10 +151,10 @@ bunx @youdotcom-oss/api@latest search --json '{
   "language":"en",
   "livecrawl":"web",
   "livecrawl_formats":"markdown"
-}' --client Openclaw
+}' --client ClaudeCode
 
 # Parse with jq - direct access, no .data wrapper
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw | \
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode | \
   jq -r '.results.web[] | "\(.title): \(.url)"'
 
 # Extract livecrawl content
@@ -162,7 +162,7 @@ bunx @youdotcom-oss/api@latest search --json '{
   "query":"docs",
   "livecrawl":"web",
   "livecrawl_formats":"markdown"
-}' --client Openclaw | \
+}' --client ClaudeCode | \
   jq -r '.results.web[0].contents.markdown'
 ```
 
@@ -187,19 +187,19 @@ Multi-step reasoning with cited sources. Use for research tasks.
 bunx @youdotcom-oss/api@latest deep-search --json '{
   "query":"What is JWT authentication?",
   "search_effort":"low"
-}' --client Openclaw
+}' --client ClaudeCode
 
 # Standard depth (<60s, default)
 bunx @youdotcom-oss/api@latest deep-search --json '{
   "query":"Compare REST vs GraphQL",
   "search_effort":"medium"
-}' --client Openclaw | jq -r '.answer'
+}' --client ClaudeCode | jq -r '.answer'
 
 # Maximum depth (<300s) - requires timeout command
 timeout 330 bunx @youdotcom-oss/api@latest deep-search --json '{
   "query":"Comprehensive analysis of microservices",
   "search_effort":"high"
-}' --client Openclaw
+}' --client ClaudeCode
 ```
 
 **Response structure:**
@@ -228,13 +228,13 @@ result | jq -r '.results[] | "[\(.title)](\(.url))"'
 bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown","html","metadata"]
-}' --client Openclaw
+}' --client ClaudeCode
 
 # Pipe markdown to file
 bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown"]
-}' --client Openclaw | \
+}' --client ClaudeCode | \
   jq -r '.[0].markdown' > content.md
 
 # Multiple URLs with timeout
@@ -242,13 +242,13 @@ bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://a.com","https://b.com"],
   "formats":["markdown","metadata"],
   "crawl_timeout":30
-}' --client Openclaw
+}' --client ClaudeCode
 
 # Extract just metadata
 bunx @youdotcom-oss/api@latest contents --json '{
   "urls":["https://example.com"],
   "formats":["metadata"]
-}' --client Openclaw | \
+}' --client ClaudeCode | \
   jq '.[0].metadata'
 ```
 
@@ -266,7 +266,7 @@ bunx @youdotcom-oss/api@latest contents --json '{
 **Pattern:**
 ```bash
 # Capture and check exit code
-if ! result=$(bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw); then
+if ! result=$(bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode); then
   echo "Search failed: $?"
   exit 1
 fi
@@ -300,10 +300,10 @@ fi
 **Using the CLI (recommended for agents):**
 ```bash
 # bunx with @latest checks for updates every 24 hours
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode
 
 # npx with @latest (note: has known caching issues, may not always fetch latest)
-npx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw
+npx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode
 ```
 
 **Note:** bunx is recommended because it checks for package updates every 24 hours when using `@latest`, while npx has [documented caching issues](https://github.com/npm/cli/issues/7838) that may prevent it from fetching the latest version.
@@ -312,7 +312,7 @@ npx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw
 
 ```bash
 export YDC_API_KEY="your-api-key"     # Required
-export YDC_CLIENT=Openclaw            # Default client name
+export YDC_CLIENT=ClaudeCode          # Default client name
 ```
 
 **Override per command:**
@@ -375,16 +375,16 @@ query=$(jq -n '{
 }')
 
 # Execute search (using bunx)
-bunx @youdotcom-oss/api@latest search --json "$query" --client Openclaw
+bunx @youdotcom-oss/api@latest search --json "$query" --client ClaudeCode
 ```
 
 ### Parallel Execution
 
 ```bash
 #!/usr/bin/env bash
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw &
-bunx @youdotcom-oss/api@latest search --json '{"query":"ML"}' --client Openclaw &
-bunx @youdotcom-oss/api@latest search --json '{"query":"LLM"}' --client Openclaw &
+bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode &
+bunx @youdotcom-oss/api@latest search --json '{"query":"ML"}' --client ClaudeCode &
+bunx @youdotcom-oss/api@latest search --json '{"query":"LLM"}' --client ClaudeCode &
 wait
 ```
 
@@ -393,7 +393,7 @@ wait
 ```bash
 #!/usr/bin/env bash
 for i in {1..3}; do
-  if bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client Openclaw; then
+  if bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode; then
     exit 0
   fi
   [ $i -lt 3 ] && sleep 5
@@ -413,7 +413,7 @@ for effort in low medium high; do
   result=$(bunx @youdotcom-oss/api@latest deep-search --json "{
     \"query\":\"$1\",
     \"search_effort\":\"$effort\"
-  }" --client Openclaw)
+  }" --client ClaudeCode)
 
   citations=$(echo "$result" | jq '.results | length')
   [ "$citations" -ge 5 ] && echo "$result" | jq -r '.answer' && exit 0
@@ -427,9 +427,9 @@ Run multiple research questions concurrently:
 ```bash
 #!/usr/bin/env bash
 # Parallel research (3×60s = ~60s total, not 180s)
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q1"}' --client Openclaw > q1.json &
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q2"}' --client Openclaw > q2.json &
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q3"}' --client Openclaw > q3.json &
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q1"}' --client ClaudeCode > q1.json &
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q2"}' --client ClaudeCode > q2.json &
+bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q3"}' --client ClaudeCode > q3.json &
 wait
 
 # Combine results

@@ -1,0 +1,23 @@
+name: Publish ydc-openai-agent-sdk-integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (semver without v prefix, e.g., 1.1.0)'
+        required: true
+        type: string
+      next:
+        description: 'Prerelease number (optional, e.g., 2 for 1.1.0-next.2)'
+        required: false
+        type: string
+
+jobs:
+  publish:
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: 'ydc-openai-agent-sdk-integration'
+      version: ${{ inputs.version }}
+      next: ${{ inputs.next }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

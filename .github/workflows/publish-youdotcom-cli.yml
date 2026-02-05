@@ -1,0 +1,23 @@
+name: Publish youdotcom-cli
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (semver without v prefix, e.g., 1.3.0)'
+        required: true
+        type: string
+      next:
+        description: 'Prerelease number (optional, e.g., 2 for 1.3.0-next.2)'
+        required: false
+        type: string
+
+jobs:
+  publish:
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: 'youdotcom-cli'
+      version: ${{ inputs.version }}
+      next: ${{ inputs.next }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
