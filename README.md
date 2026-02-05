@@ -79,7 +79,7 @@ Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet,
 Integrate You.com's web search, AI answers, and content extraction with bash-based AI agents using a universal CLI tool.
 
 **Use when:**
-- Working with bash-capable AI agents (OpenClaw, Claude Code, Cursor, etc.)
+- Working with bash-capable AI agents (Claude Code, Cursor, Codex, etc.)
 - Need fast web search with verifiable citations
 - Want simultaneous search + content extraction (livecrawl)
 - Building agent workflows with JSON CLI tools
@@ -125,32 +125,6 @@ bunx skills add youdotcom-oss/agent-skills --skill ydc-ai-sdk-integration
 # Install multiple specific skills
 npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ydc-ai-sdk-integration
 ```
-
-### For OpenClaw Agents
-
-OpenClaw's `clawhub` requires installing skills individually by name:
-
-```bash
-# Install specific skills (using npm)
-npx clawhub install youdotcom-cli
-npx clawhub install ydc-ai-sdk-integration
-npx clawhub install ydc-claude-agent-sdk-integration
-npx clawhub install ydc-openai-agent-sdk-integration
-npx clawhub install teams-anthropic-integration
-
-# Or using Bun (recommended)
-bunx clawhub install youdotcom-cli
-bunx clawhub install ydc-ai-sdk-integration
-```
-
-**Available skill names:**
-- `youdotcom-cli` - CLI tools for bash agents
-- `ydc-ai-sdk-integration` - Vercel AI SDK integration
-- `ydc-claude-agent-sdk-integration` - Claude Agent SDK integration
-- `ydc-openai-agent-sdk-integration` - OpenAI Agents SDK integration
-- `teams-anthropic-integration` - Microsoft Teams integration
-
-**Note**: Unlike the `skills` command, `clawhub` does not support installing entire repositories - you must install each skill individually.
 
 ---
 
@@ -203,11 +177,6 @@ skills/{skill-name}/
 **API Keys:**
 - You.com API key: [Get yours](https://you.com/platform/api-keys)
 - Provider API keys (Anthropic, OpenAI, etc.) depending on the skill
-
-**Supported AI Agents:**
-- **Bash-based agents**: OpenClaw, Claude Code, Codex, Cursor, Windsurf, Cody
-- **IDE extensions**: Continue, VS Code extensions, Cline
-- **Any agent** supporting agent-skills-spec format or bash commands
 
 ---
 

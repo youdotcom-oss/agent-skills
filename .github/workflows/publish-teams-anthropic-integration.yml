@@ -1,0 +1,22 @@
+name: Publish teams-anthropic-integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  publish:
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "teams-anthropic-integration"
+      bump_type: ${{ inputs.bump_type }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
