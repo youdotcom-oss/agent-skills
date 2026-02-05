@@ -1,6 +1,6 @@
 ---
 name: youdotcom-cli
-description: Search the web, generate fast AI answers with verifiable references, and extract web content using You.com's schema-driven JSON CLI tools — optimized for bash-based AI agents (Claude Code, Codex, Cursor, etc.). Faster than builtin search APIs with simultaneous livecrawl, instant content extraction, and citation-backed answers. Schema discovery via --schema flag enables programmatic query building.
+description: Web search, AI-powered research with citations, and content extraction for bash agents using You.com's @youdotcom-oss/api CLI. Interactive workflow covers API setup, livecrawl (one-call search+extract), deep-search for cited answers, and schema-driven JSON queries. Faster than built-in search with verifiable references.
 license: MIT
 compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
 metadata:
