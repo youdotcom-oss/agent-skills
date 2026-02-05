@@ -62,7 +62,8 @@ jobs:
 
       - name: Install yq
         run: |
-          sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          YQ_VERSION="v4.52.2"
+          sudo wget -qO /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
           sudo chmod +x /usr/bin/yq
 
       - name: Bump version
