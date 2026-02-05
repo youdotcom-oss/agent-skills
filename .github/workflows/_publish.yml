@@ -70,75 +70,84 @@ jobs:
 
           echo "✅ Skill structure is valid"
 
-      - name: Install yq
-        run: |
-          YQ_VERSION="v4.52.2"
-          sudo wget -qO /usr/bin/yq "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"
-          sudo chmod +x /usr/bin/yq
-
-      - name: Bump version
+      - name: Bump and update version
         id: bump-version
         run: |
-          SKILL_FILE="skills/${{ inputs.skill_name }}/SKILL.md"
-          BUMP_TYPE="${{ inputs.bump_type }}"
+          # Use Bun's native YAML API to read, bump, and write version
+          bun run - <<'SCRIPT'
+          import { readFileSync, writeFileSync } from 'fs';
+          import { parse, stringify } from 'yaml';
 
-          # Get current version from SKILL.md
-          CURRENT_VERSION=$(yq eval '.metadata.version' "${SKILL_FILE}")
+          const skillName = process.env.SKILL_NAME;
+          const bumpType = process.env.BUMP_TYPE;
+          const filePath = `skills/${skillName}/SKILL.md`;
 
-          echo "📌 Current version: ${CURRENT_VERSION}"
+          // Read and parse SKILL.md
+          const content = readFileSync(filePath, 'utf8');
 
-          # Parse current version
-          if [[ ! "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-            echo "❌ Error: Invalid version format in SKILL.md: ${CURRENT_VERSION}"
-            exit 1
-          fi
+          // Split frontmatter and body
+          const parts = content.split(/^---\n/m);
+          if (parts.length < 3) {
+            console.error('❌ Error: Invalid SKILL.md format (missing frontmatter)');
+            process.exit(1);
+          }
 
-          MAJOR="${BASH_REMATCH[1]}"
-          MINOR="${BASH_REMATCH[2]}"
-          PATCH="${BASH_REMATCH[3]}"
+          // Parse YAML frontmatter (parts[0] is empty, parts[1] is frontmatter)
+          const frontmatter = parse(parts[1]);
 
-          # Bump version based on type
-          case "$BUMP_TYPE" in
-            major)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              echo "🚀 Major version bump"
-              ;;
-            minor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              echo "✨ Minor version bump"
-              ;;
-            patch)
-              PATCH=$((PATCH + 1))
-              echo "🔧 Patch version bump"
-              ;;
-          esac
+          const currentVersion = frontmatter.metadata.version;
+          console.log(`📌 Current version: ${currentVersion}`);
 
-          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          echo "📦 New version: ${NEW_VERSION}"
+          // Parse version
+          const match = currentVersion.match(/^(\d+)\.(\d+)\.(\d+)$/);
+          if (!match) {
+            console.error(`❌ Error: Invalid version format: ${currentVersion}`);
+            process.exit(1);
+          }
 
-          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          let [_, major, minor, patch] = match;
+          major = parseInt(major);
+          minor = parseInt(minor);
+          patch = parseInt(patch);
 
-      - name: Update SKILL.md version
-        run: |
-          VERSION="${{ steps.bump-version.outputs.version }}"
-          SKILL_FILE="skills/${{ inputs.skill_name }}/SKILL.md"
+          // Bump version
+          switch (bumpType) {
+            case 'major':
+              major++;
+              minor = 0;
+              patch = 0;
+              console.log('🚀 Major version bump');
+              break;
+            case 'minor':
+              minor++;
+              patch = 0;
+              console.log('✨ Minor version bump');
+              break;
+            case 'patch':
+              patch++;
+              console.log('🔧 Patch version bump');
+              break;
+          }
 
-          echo "📝 Updating version in ${SKILL_FILE} to ${VERSION}"
+          const newVersion = `${major}.${minor}.${patch}`;
+          console.log(`📦 New version: ${newVersion}`);
 
-          # Update version using yq (safe YAML manipulation)
-          yq eval '.metadata.version = "'"${VERSION}"'"' -i "${SKILL_FILE}"
+          // Update frontmatter
+          frontmatter.metadata.version = newVersion;
 
-          # Verify the update
-          UPDATED_VERSION=$(yq eval '.metadata.version' "${SKILL_FILE}")
-          if [[ "${UPDATED_VERSION}" != "${VERSION}" ]]; then
-            echo "❌ Error: Version update failed. Expected ${VERSION}, got ${UPDATED_VERSION}"
-            exit 1
-          fi
+          // Write back to file
+          const newContent = `---\n${stringify(frontmatter)}---\n${parts.slice(2).join('---\n')}`;
+          writeFileSync(filePath, newContent, 'utf8');
 
-          echo "✅ Version updated successfully to ${VERSION}"
+          console.log(`✅ Version updated successfully to ${newVersion}`);
+
+          // Output for next steps
+          const output = `version=${newVersion}\n`;
+          writeFileSync(process.env.GITHUB_OUTPUT, output, { flag: 'a' });
+          SCRIPT
+        env:
+          SKILL_NAME: ${{ inputs.skill_name }}
+          BUMP_TYPE: ${{ inputs.bump_type }}
 
       - name: Configure git
         run: |
