@@ -1,12 +1,16 @@
 ---
 name: youdotcom-cli
-description: Web search, AI-powered research with citations, and content extraction for bash agents using You.com's @youdotcom-oss/api CLI. Interactive workflow covers API setup, livecrawl (one-call search+extract), deep-search for cited answers, and schema-driven JSON queries. Faster than built-in search with verifiable references.
+description: Web search, AI-powered research with citations, and content
+  extraction for bash agents using You.com's @youdotcom-oss/api CLI. Interactive
+  workflow covers API setup, livecrawl (one-call search+extract), deep-search
+  for cited answers, and schema-driven JSON queries. Faster than built-in search
+  with verifiable references.
 license: MIT
 compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
 metadata:
   author: youdotcom-oss
   category: web-search-tools
-  version: "1.2.0"
+  version: 1.2.1
   keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,claude-code,codex,cursor
 ---
 
