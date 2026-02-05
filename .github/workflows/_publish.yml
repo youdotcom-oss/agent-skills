@@ -60,6 +60,24 @@ jobs:
 
           echo "✅ Input validation passed"
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Validate skill structure
+        run: |
+          echo "🔍 Validating skill: ${{ inputs.skill_name }}"
+          bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}"
+
+          if [ $? -eq 0 ]; then
+            echo "✅ Skill structure is valid"
+          else
+            echo "❌ Skill validation failed"
+            bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}" --json
+            exit 1
+          fi
+
       - name: Install yq
         run: |
           YQ_VERSION="v4.52.2"

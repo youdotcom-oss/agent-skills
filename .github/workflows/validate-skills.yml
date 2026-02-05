@@ -1,0 +1,47 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - '.github/workflows/validate-skills.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'skills/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Skill Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Validate all skills
+        run: |
+          echo "🔍 Validating skills in skills/ directory..."
+          bunx @plaited/development-skills validate-skill skills/*
+
+          if [ $? -eq 0 ]; then
+            echo "✅ All skills are valid"
+          else
+            echo "❌ Skill validation failed"
+            exit 1
+          fi
+
+      - name: Validate with JSON output (for debugging)
+        if: failure()
+        run: |
+          echo "📋 Detailed validation results:"
+          bunx @plaited/development-skills validate-skill skills/* --json
