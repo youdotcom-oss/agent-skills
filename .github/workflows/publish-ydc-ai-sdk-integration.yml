@@ -3,21 +3,20 @@ name: Publish ydc-ai-sdk-integration
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to publish (semver without v prefix, e.g., 1.1.0)'
+      bump_type:
+        description: "Version bump type"
         required: true
-        type: string
-      next:
-        description: 'Prerelease number (optional, e.g., 2 for 1.1.0-next.2)'
-        required: false
-        type: string
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   publish:
     uses: ./.github/workflows/_publish.yml
     with:
-      skill_name: 'ydc-ai-sdk-integration'
-      version: ${{ inputs.version }}
-      next: ${{ inputs.next }}
+      skill_name: "ydc-ai-sdk-integration"
+      bump_type: ${{ inputs.bump_type }}
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

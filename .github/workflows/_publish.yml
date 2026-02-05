@@ -4,20 +4,16 @@ on:
   workflow_call:
     inputs:
       skill_name:
-        description: 'Name of the skill directory (e.g., youdotcom-cli)'
+        description: "Name of the skill directory (e.g., youdotcom-cli)"
         required: true
         type: string
-      version:
-        description: 'Semantic version without v prefix (e.g., 1.0.0)'
+      bump_type:
+        description: "Version bump type: major, minor, or patch"
         required: true
-        type: string
-      next:
-        description: 'Prerelease number (optional, e.g., 2 for 1.0.0-next.2)'
-        required: false
         type: string
     secrets:
       PUBLISH_TOKEN:
-        description: 'GitHub token with permission to push to protected branches'
+        description: "GitHub token with permission to push to protected branches"
         required: true
 
 jobs:
@@ -25,8 +21,7 @@ jobs:
     name: Update Version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.determine-version.outputs.version }}
-      is_prerelease: ${{ steps.determine-version.outputs.is_prerelease }}
+      version: ${{ steps.bump-version.outputs.version }}
       skill_name: ${{ inputs.skill_name }}
     steps:
       - name: Checkout repository
@@ -37,10 +32,10 @@ jobs:
 
       - name: Validate inputs
         run: |
-          # Validate version format (semver without 'v' prefix)
-          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Error: Version must be in semver format without 'v' prefix (e.g., 1.0.0)"
-            echo "Provided: ${{ inputs.version }}"
+          # Validate bump type
+          if [[ ! "${{ inputs.bump_type }}" =~ ^(major|minor|patch)$ ]]; then
+            echo "❌ Error: bump_type must be 'major', 'minor', or 'patch'"
+            echo "Provided: ${{ inputs.bump_type }}"
             exit 1
           fi
 
@@ -65,46 +60,59 @@ jobs:
 
           echo "✅ Input validation passed"
 
-      - name: Determine version
-        id: determine-version
-        run: |
-          BASE_VERSION="${{ inputs.version }}"
-          NEXT="${{ inputs.next }}"
-          BRANCH="${{ github.ref_name }}"
-
-          if [[ "$BRANCH" == "main" ]]; then
-            if [[ -n "$NEXT" ]]; then
-              # Main branch with explicit prerelease
-              VERSION="${BASE_VERSION}-next.${NEXT}"
-              IS_PRERELEASE="true"
-              echo "📦 Publishing explicit prerelease: ${VERSION}"
-            else
-              # Main branch stable release
-              VERSION="${BASE_VERSION}"
-              IS_PRERELEASE="false"
-              echo "🚀 Publishing stable release: ${VERSION}"
-            fi
-          else
-            # Non-main branch: auto-increment prerelease
-            if [[ -z "$NEXT" ]]; then
-              NEXT="1"
-            fi
-            VERSION="${BASE_VERSION}-next.${NEXT}"
-            IS_PRERELEASE="true"
-            echo "🔬 Publishing prerelease from branch '${BRANCH}': ${VERSION}"
-          fi
-
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "is_prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
-
       - name: Install yq
         run: |
           sudo wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/bin/yq
 
+      - name: Bump version
+        id: bump-version
+        run: |
+          SKILL_FILE="skills/${{ inputs.skill_name }}/SKILL.md"
+          BUMP_TYPE="${{ inputs.bump_type }}"
+
+          # Get current version from SKILL.md
+          CURRENT_VERSION=$(yq eval '.metadata.version' "${SKILL_FILE}")
+
+          echo "📌 Current version: ${CURRENT_VERSION}"
+
+          # Parse current version
+          if [[ ! "$CURRENT_VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "❌ Error: Invalid version format in SKILL.md: ${CURRENT_VERSION}"
+            exit 1
+          fi
+
+          MAJOR="${BASH_REMATCH[1]}"
+          MINOR="${BASH_REMATCH[2]}"
+          PATCH="${BASH_REMATCH[3]}"
+
+          # Bump version based on type
+          case "$BUMP_TYPE" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              echo "🚀 Major version bump"
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              echo "✨ Minor version bump"
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              echo "🔧 Patch version bump"
+              ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "📦 New version: ${NEW_VERSION}"
+
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
       - name: Update SKILL.md version
         run: |
-          VERSION="${{ steps.determine-version.outputs.version }}"
+          VERSION="${{ steps.bump-version.outputs.version }}"
           SKILL_FILE="skills/${{ inputs.skill_name }}/SKILL.md"
 
           echo "📝 Updating version in ${SKILL_FILE} to ${VERSION}"
@@ -128,15 +136,16 @@ jobs:
 
       - name: Commit version changes
         run: |
-          VERSION="${{ steps.determine-version.outputs.version }}"
+          VERSION="${{ steps.bump-version.outputs.version }}"
           SKILL_NAME="${{ inputs.skill_name }}"
+          BUMP_TYPE="${{ inputs.bump_type }}"
 
           git add "skills/${SKILL_NAME}/SKILL.md"
 
           if git diff --staged --quiet; then
             echo "ℹ️ No changes to commit (version already up-to-date)"
           else
-            git commit -m "chore(${SKILL_NAME}): bump version to ${VERSION} [skip ci]"
+            git commit -m "chore(${SKILL_NAME}): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
             echo "✅ Version changes committed and pushed"
           fi
@@ -162,7 +171,6 @@ jobs:
         run: |
           VERSION="${{ needs.update-version.outputs.version }}"
           SKILL_NAME="${{ needs.update-version.outputs.skill_name }}"
-          IS_PRERELEASE="${{ needs.update-version.outputs.is_prerelease }}"
           TAG="${SKILL_NAME}@v${VERSION}"
 
           echo "🏷️ Creating release: ${TAG}"
@@ -175,16 +183,9 @@ jobs:
           fi
 
           # Create release
-          PRERELEASE_FLAG=""
-          if [[ "$IS_PRERELEASE" == "true" ]]; then
-            PRERELEASE_FLAG="--prerelease"
-            echo "🔬 Marking as prerelease"
-          fi
-
           gh release create "${TAG}" \
             --title "${SKILL_NAME} v${VERSION}" \
             --notes "${RELEASE_NOTES}" \
-            --target ${{ github.ref_name }} \
-            ${PRERELEASE_FLAG}
+            --target ${{ github.ref_name }}
 
           echo "✅ Release created: ${TAG}"
