@@ -32,33 +32,15 @@ jobs:
 
       - name: Validate inputs
         run: |
-          # Validate bump type
+          # Validate bump type (workflow-specific validation)
           if [[ ! "${{ inputs.bump_type }}" =~ ^(major|minor|patch)$ ]]; then
             echo "❌ Error: bump_type must be 'major', 'minor', or 'patch'"
             echo "Provided: ${{ inputs.bump_type }}"
             exit 1
           fi
 
-          # Validate skill name (kebab-case)
-          if [[ ! "${{ inputs.skill_name }}" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
-            echo "❌ Error: Skill name must be in kebab-case (e.g., youdotcom-cli)"
-            echo "Provided: ${{ inputs.skill_name }}"
-            exit 1
-          fi
-
-          # Validate skill directory exists
-          if [[ ! -d "skills/${{ inputs.skill_name }}" ]]; then
-            echo "❌ Error: Skill directory not found: skills/${{ inputs.skill_name }}"
-            exit 1
-          fi
-
-          # Validate SKILL.md exists
-          if [[ ! -f "skills/${{ inputs.skill_name }}/SKILL.md" ]]; then
-            echo "❌ Error: SKILL.md not found in skills/${{ inputs.skill_name }}/"
-            exit 1
-          fi
-
           echo "✅ Input validation passed"
+          echo "Note: Skill structure validation happens in the next step"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
