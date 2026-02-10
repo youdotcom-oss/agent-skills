@@ -1,17 +1,24 @@
 ---
 name: youdotcom-cli
-description: Web search, AI-powered research with citations, and content
-  extraction for bash agents using You.com's @youdotcom-oss/api CLI. Interactive
-  workflow covers API setup, livecrawl (one-call search+extract), deep-search
-  for cited answers, and schema-driven JSON queries. Faster than built-in search
-  with verifiable references.
+description: Web search with livecrawl (search+extract) and content extraction for bash agents using You.com's @youdotcom-oss/api CLI. Interactive workflow covers API setup and simultaneous search+content operations. Faster than built-in search with verifiable references.
 license: MIT
-compatibility: Requires Node.js 18+ or Bun, bunx/npx for CLI execution
+compatibility: Requires Bun or Node.js 18+, bunx/npx for CLI execution
 metadata:
   author: youdotcom-oss
+  version: 2.0.0
   category: web-search-tools
-  version: 1.2.1
-  keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,citations,json,schema-driven,claude-code,codex,cursor
+  keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,claude-code,codex,cursor
+  package:
+    source: https://github.com/youdotcom-oss/dx-toolkit
+    npm: https://www.npmjs.com/package/@youdotcom-oss/api
+    homepage: https://you.com/platform
+environment_variables:
+  - name: YDC_API_KEY
+    required: true
+    description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
+  - name: YDC_CLIENT
+    required: false
+    description: Client identifier for error tracking (e.g., ClaudeCode, Cursor)
 ---
 
 # Integrate You.com with Bash-Based AI Agents
@@ -29,10 +36,6 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 - Every search result includes citation URLs
 - Content extraction preserves metadata and structure
 
-**🔬 Research-Grade Citations**:
-- Deep-search: Multi-step reasoning with inline citations
-- Adjustable effort (30s/60s/300s) for speed vs depth tradeoff
-
 **🔄 Simultaneous Operations**:
 - **Livecrawl**: Search AND extract content in one call
 - Get both search results and full page content instantly
@@ -45,12 +48,17 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 - Stdout/stderr separation (no success wrapper)
 - Lightweight CLI - no heavy dependencies
 
+**🔒 Security & Reproducibility**:
+- Version-pinned package for supply chain security
+- Explicit credential management with YDC_API_KEY
+- Source-verifiable from official GitHub repository
+
 ## Workflow
 
 1. **Check: Runtime Environment**
    * Node.js 18+ or Bun 1.0+ required
    * Test: `node --version` or `bun --version`
-   * If neither installed: Install Bun (recommended): `curl -fsSL https://bun.sh/install | bash`
+   * If neither installed: **Request permission from user to install** Node.js or Bun before proceeding
 
 2. **Ask agent: What's your name?**
    * Use your agent name for the --client flag (e.g., "ClaudeCode", "Codex", "Cursor")
@@ -67,15 +75,14 @@ Interactive workflow to add You.com capabilities to bash-based AI agents using `
 
 4. **Ask: Which Features?**
    * Web search with livecrawl? (search + content in ONE call)
-   * Content extraction? (contents)
-   * Deep research with citations? (deep-search)
-   * Multiple?
+   * Content extraction only? (contents)
+   * Both?
 
 5. **Explain: Schema Discovery**
    * Use `--schema` to discover available parameters
    * Returns JSON schema for what can be passed to --json
    * Build query objects programmatically
-   * Example: `bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'`
+   * Example: `bunx @youdotcom-oss/api search --schema | jq '.properties | keys'`
 
 6. **Show Examples**
    * All examples use `--json` flag with JSON input
@@ -90,19 +97,11 @@ Match user intent to command:
 
 | User Pattern | Tool | Timing | Use When |
 |--------------|------|--------|----------|
-| "Extract https://..." | `contents` | 1-60s/URL | Known URL |
-| "Find articles..." | `search` | <5s | Snippets enough |
-| "What is X?" | `search + livecrawl` | <5s | **Express**: Quick full answer |
-| "Latest news..." | `search + freshness` | <5s | Recent events |
-| "Research X" | `deep-search low` | <30s | Quick check with citations |
-| "Compare X vs Y" | `deep-search medium` | <60s | Balanced research (default) |
-| "Comprehensive analysis" | `deep-search high` | <300s | **Deep**: Maximum thoroughness |
-
-**Express vs Research Mode:**
-- **Express** (`search + livecrawl`): <5s, full content, one source
-- **Research** (`deep-search`): 30-300s, cited synthesis, multiple sources
-
-*Verify:* Check user query for keywords: "what/how" → express, "research/compare" → deep-search
+| "Extract https://..." | `contents` | 1-60s/URL | Known URL, need full content |
+| "Find articles..." | `search` | <5s | Snippets sufficient |
+| "What is X?" | `search + livecrawl` | <5s | Need full page content |
+| "Latest news..." | `search + freshness` | <5s | Recent events only |
+| "Get full content from search" | `search + livecrawl` | <5s | One-call search + extract |
 
 ## CLI Usage Patterns
 
@@ -112,13 +111,13 @@ Agents can discover what parameters each command accepts:
 
 ```bash
 # Get schema for search command
-bunx @youdotcom-oss/api@latest search --schema
+bunx @youdotcom-oss/api search --schema
 
 # Get schema for contents command
-bunx @youdotcom-oss/api@latest contents --schema
+bunx @youdotcom-oss/api contents --schema
 
 # List available search parameters
-bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'
+bunx @youdotcom-oss/api search --schema | jq '.properties | keys'
 ```
 
 ### 🔥 Web Search with Livecrawl - KEY ADVANTAGE
@@ -127,13 +126,13 @@ bunx @youdotcom-oss/api@latest search --schema | jq '.properties | keys'
 
 ```bash
 # Basic search with client tracking
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client ClaudeCode
+bunx @youdotcom-oss/api search --json '{"query":"AI developments"}' --client ClaudeCode
 
 # Or with npx
-npx @youdotcom-oss/api@latest search --json '{"query":"AI developments"}' --client ClaudeCode
+npx @youdotcom-oss/api search --json '{"query":"AI developments"}' --client ClaudeCode
 
 # LIVECRAWL: Search + extract content in ONE API call
-bunx @youdotcom-oss/api@latest search --json '{
+bunx @youdotcom-oss/api search --json '{
   "query":"documentation",
   "livecrawl":"web",
   "livecrawl_formats":"markdown",
@@ -144,7 +143,7 @@ bunx @youdotcom-oss/api@latest search --json '{
 # No separate fetch needed - instant content extraction
 
 # Advanced: All search options
-bunx @youdotcom-oss/api@latest search --json '{
+bunx @youdotcom-oss/api search --json '{
   "query":"machine learning",
   "count":10,
   "offset":0,
@@ -158,11 +157,11 @@ bunx @youdotcom-oss/api@latest search --json '{
 }' --client ClaudeCode
 
 # Parse with jq - direct access, no .data wrapper
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode | \
+bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode | \
   jq -r '.results.web[] | "\(.title): \(.url)"'
 
 # Extract livecrawl content
-bunx @youdotcom-oss/api@latest search --json '{
+bunx @youdotcom-oss/api search --json '{
   "query":"docs",
   "livecrawl":"web",
   "livecrawl_formats":"markdown"
@@ -174,82 +173,31 @@ bunx @youdotcom-oss/api@latest search --json '{
 
 Do a search and extract contents with Livecrawl. Retrieve top 10 URLs content. Using this content, synthesize an answer based on the user's intent. Repeat searches and adjust query parameters as necessary to refine the answer for the user.
 
-### 🔬 Deep Research with Citations
-
-Multi-step reasoning with cited sources. Use for research tasks.
-
-**Effort levels:**
-| Level | Time | Use Case |
-|-------|------|----------|
-| `low` | <30s | Quick check |
-| `medium` | <60s | Default (recommended) |
-| `high` | <300s | Comprehensive |
-
-**Basic usage:**
-```bash
-# Quick research (<30s)
-bunx @youdotcom-oss/api@latest deep-search --json '{
-  "query":"What is JWT authentication?",
-  "search_effort":"low"
-}' --client ClaudeCode
-
-# Standard depth (<60s, default)
-bunx @youdotcom-oss/api@latest deep-search --json '{
-  "query":"Compare REST vs GraphQL",
-  "search_effort":"medium"
-}' --client ClaudeCode | jq -r '.answer'
-
-# Maximum depth (<300s) - requires timeout command
-timeout 330 bunx @youdotcom-oss/api@latest deep-search --json '{
-  "query":"Comprehensive analysis of microservices",
-  "search_effort":"high"
-}' --client ClaudeCode
-```
-
-**Response structure:**
-```json
-{
-  "answer": "Markdown with [inline citations]...",
-  "results": [{"url": "...", "title": "...", "snippets": ["..."]}]
-}
-```
-
-**Parse citations:**
-```bash
-result | jq -r '.results[] | "[\(.title)](\(.url))"'
-```
-
-**Cross-platform timeout:**
-- Linux: `timeout` (built-in)
-- macOS: `gtimeout` (install: `brew install coreutils`)
-
-*Verify:* Test schema with `bunx @youdotcom-oss/api@latest deep-search --schema`
-
 ### 📄 Web Content Extraction - Multi-Format Output
 
 ```bash
 # Extract in multiple formats
-bunx @youdotcom-oss/api@latest contents --json '{
+bunx @youdotcom-oss/api contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown","html","metadata"]
 }' --client ClaudeCode
 
 # Pipe markdown to file
-bunx @youdotcom-oss/api@latest contents --json '{
+bunx @youdotcom-oss/api contents --json '{
   "urls":["https://example.com"],
   "formats":["markdown"]
 }' --client ClaudeCode | \
   jq -r '.[0].markdown' > content.md
 
 # Multiple URLs with timeout
-bunx @youdotcom-oss/api@latest contents --json '{
+bunx @youdotcom-oss/api contents --json '{
   "urls":["https://a.com","https://b.com"],
   "formats":["markdown","metadata"],
   "crawl_timeout":30
 }' --client ClaudeCode
 
 # Extract just metadata
-bunx @youdotcom-oss/api@latest contents --json '{
+bunx @youdotcom-oss/api contents --json '{
   "urls":["https://example.com"],
   "formats":["metadata"]
 }' --client ClaudeCode | \
@@ -270,7 +218,7 @@ bunx @youdotcom-oss/api@latest contents --json '{
 **Pattern:**
 ```bash
 # Capture and check exit code
-if ! result=$(bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode); then
+if ! result=$(bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode); then
   echo "Search failed: $?"
   exit 1
 fi
@@ -292,25 +240,23 @@ mailto:support@you.com?subject=API%20Issue%20CLI...
 ```bash
 # Check if Node.js or Bun installed
 if command -v bun &> /dev/null; then
-  echo "Bun installed"
+  echo "Bun installed: $(bun --version)"
 elif command -v node &> /dev/null; then
-  echo "Node.js installed"
+  echo "Node.js installed: $(node --version)"
 else
-  echo "Neither Node.js nor Bun found. Installing Bun (recommended)..."
-  curl -fsSL https://bun.sh/install | bash
+  echo "Neither Node.js nor Bun found."
+  echo "Request user permission to install Node.js or Bun"
 fi
 ```
 
 **Using the CLI (recommended for agents):**
 ```bash
-# bunx with @latest checks for updates every 24 hours
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode
+# bunx (recommended - faster and more reliable)
+bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode
 
-# npx with @latest (note: has known caching issues, may not always fetch latest)
-npx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode
+# npx (alternative)
+npx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode
 ```
-
-**Note:** bunx is recommended because it checks for package updates every 24 hours when using `@latest`, while npx has [documented caching issues](https://github.com/npm/cli/issues/7838) that may prevent it from fetching the latest version.
 
 ## Environment Variables
 
@@ -321,25 +267,43 @@ export YDC_CLIENT=ClaudeCode          # Default client name
 
 **Override per command:**
 ```bash
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' \
+bunx @youdotcom-oss/api search --json '{"query":"AI"}' \
   --api-key "different-key" \
   --client "DifferentAgent"
 ```
 
 ## Implementation Checklist
 
+### Environment Setup
 - [ ] Runtime check: Node.js 18+ or Bun 1.0+
-- [ ] If missing: `curl -fsSL https://bun.sh/install | bash`
-- [ ] API key from https://you.com/platform/api-keys
-- [ ] Environment variables set: YDC_API_KEY, YDC_CLIENT
-- [ ] Schema discovery tested: `bunx @youdotcom-oss/api@latest search --schema`
+- [ ] If missing: Request user permission to install Node.js or Bun
+- [ ] Verify installation: `node --version` or `bun --version`
+
+### Security Configuration
+- [ ] API key obtained from https://you.com/platform/api-keys (never from third parties)
+- [ ] Environment variables set: `YDC_API_KEY`, `YDC_CLIENT`
+- [ ] `.gitignore` includes `.env` if using dotenv files
+- [ ] API key NOT hardcoded in scripts
+- [ ] Package version verified: `npm view @youdotcom-oss/api repository`
+
+### Functional Testing
+- [ ] Schema discovery tested: `bunx @youdotcom-oss/api search --schema`
 - [ ] CLI tested with `--json` and `--client` flags
 - [ ] Livecrawl tested (search + content in one call)
-- [ ] Deep-search tested with low/medium/high effort levels
-- [ ] Cross-platform timeout handled (Linux timeout / macOS gtimeout)
-- [ ] Error handling added (exit codes + stderr)
+- [ ] Content extraction tested with markdown and metadata formats
+- [ ] Error handling tested (exit codes + stderr)
+
+### Security Testing
+- [ ] Input validation implemented for user queries
+- [ ] URL validation implemented for content extraction
+- [ ] Rate limiting tested (429 error handling with retry logic)
+- [ ] API key not exposed in logs or error messages
+- [ ] Content extraction output sanitized before display
+
+### Integration
 - [ ] Output parsing implemented (jq without `.data` wrapper)
 - [ ] Script integrated into workflow
+- [ ] Quota monitoring enabled on You.com platform
 
 ## Common Issues
 
@@ -350,13 +314,16 @@ Fix: Use bunx (no install needed): `bunx @youdotcom-oss/api` or `npx @youdotcom-
 Fix: Pass query as JSON: `--json '{"query":"..."}'`
 
 **"YDC_API_KEY environment variable is required"**
-Fix: `export YDC_API_KEY="your-key"`
+Fix: `export YDC_API_KEY="your-key"` (get key from https://you.com/platform/api-keys)
 
 **"Tool execution fails with 401"**
-Fix: Verify API key, get new key from platform
+Fix: Verify API key is correct, regenerate key from platform if needed
 
 **"Cannot parse jq: .data.results not found"**
-Fix: Remove `.data` wrapper - use `.results` directly
+Fix: Remove `.data` wrapper - use `.results` directly (API returns compact JSON)
+
+**"Rate limit exceeded (429)"**
+Fix: Implement exponential backoff retry logic (see Rate Limiting section)
 
 ## Advanced Patterns
 
@@ -379,16 +346,16 @@ query=$(jq -n '{
 }')
 
 # Execute search (using bunx)
-bunx @youdotcom-oss/api@latest search --json "$query" --client ClaudeCode
+bunx @youdotcom-oss/api search --json "$query" --client ClaudeCode
 ```
 
 ### Parallel Execution
 
 ```bash
 #!/usr/bin/env bash
-bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode &
-bunx @youdotcom-oss/api@latest search --json '{"query":"ML"}' --client ClaudeCode &
-bunx @youdotcom-oss/api@latest search --json '{"query":"LLM"}' --client ClaudeCode &
+bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode &
+bunx @youdotcom-oss/api search --json '{"query":"ML"}' --client ClaudeCode &
+bunx @youdotcom-oss/api search --json '{"query":"LLM"}' --client ClaudeCode &
 wait
 ```
 
@@ -397,7 +364,7 @@ wait
 ```bash
 #!/usr/bin/env bash
 for i in {1..3}; do
-  if bunx @youdotcom-oss/api@latest search --json '{"query":"AI"}' --client ClaudeCode; then
+  if bunx @youdotcom-oss/api search --json '{"query":"AI"}' --client ClaudeCode; then
     exit 0
   fi
   [ $i -lt 3 ] && sleep 5
@@ -406,41 +373,157 @@ echo "Failed after 3 attempts"
 exit 1
 ```
 
-### Progressive Deep-Search
+## Security Considerations
 
-Start low, escalate only if needed:
+### API Key Safety
 
+**DO:**
+- Store `YDC_API_KEY` in environment variables or secure vaults
+- Use `.env` files with `.gitignore` for local development
+- Rotate keys regularly from https://you.com/platform/api-keys
+- Restrict key permissions to minimum required scope
+
+**DON'T:**
+- Hardcode API keys in scripts or code
+- Commit keys to version control
+- Share keys in public forums or logs
+- Use production keys in development/testing
+
+### Package Security
+
+**Package Verification:**
+```bash
+# Check package metadata
+npm view @youdotcom-oss/api repository homepage
+
+# Verify package integrity
+npm view @youdotcom-oss/api dist.integrity
+
+# Check for security advisories
+npm audit @youdotcom-oss/api
+```
+
+**Updates:**
+- Review changelog before updating: https://github.com/youdotcom-oss/dx-toolkit/releases
+- Test in non-production environment first
+- Monitor for security advisories
+
+### Input Validation
+
+**Query Sanitization:**
+```bash
+# DON'T: Pass unsanitized user input
+query="$USER_INPUT"
+bunx @youdotcom-oss/api search --json "{\"query\":\"$query\"}" --client ClaudeCode
+
+# DO: Validate and escape input with jq
+query=$(echo "$USER_INPUT" | jq -Rs .)
+bunx @youdotcom-oss/api search --json "{\"query\":$query}" --client ClaudeCode
+```
+
+**URL Validation:**
+```bash
+# Validate URLs before content extraction
+url="$USER_URL"
+if [[ $url =~ ^https?:// ]]; then
+  bunx @youdotcom-oss/api contents --json "{\"urls\":[\"$url\"],\"formats\":[\"markdown\"]}" --client ClaudeCode
+else
+  echo "Invalid URL format" >&2
+  exit 1
+fi
+```
+
+### Content Extraction Risks
+
+**HTML Content Safety:**
+- Extracted HTML may contain malicious JavaScript or XSS vectors
+- **Never** render extracted HTML directly in web contexts without sanitization
+- Prefer `markdown` format for display; use `html` only for archival
+
+**Safe Content Handling:**
+```bash
+# DO: Extract as markdown (safer for display)
+bunx @youdotcom-oss/api contents --json '{
+  "urls":["'"$url"'"],
+  "formats":["markdown","metadata"]
+}' --client ClaudeCode
+
+# DON'T: Render extracted HTML directly in browsers without sanitization
+```
+
+### Error Handling & Information Disclosure
+
+**Sanitize Error Output:**
+```bash
+# Capture errors without exposing sensitive context
+if ! result=$(bunx @youdotcom-oss/api search --json "$query" --client ClaudeCode 2>&1); then
+  # Log sanitized error (remove API keys, tokens, sensitive URLs)
+  echo "Search failed" | sed 's/key=[^&]*/key=REDACTED/g' >&2
+  exit 1
+fi
+```
+
+**Production Logging:**
+- Remove API keys from logs: Filter `YDC_API_KEY` values
+- Sanitize URLs: May contain sensitive query parameters
+- Redact error context: Mailto links may include environment info
+
+### Rate Limiting & Abuse Prevention
+
+**Implement Exponential Backoff:**
 ```bash
 #!/usr/bin/env bash
-# Try low → medium → high until sufficient
-for effort in low medium high; do
-  result=$(bunx @youdotcom-oss/api@latest deep-search --json "{
-    \"query\":\"$1\",
-    \"search_effort\":\"$effort\"
-  }" --client ClaudeCode)
+max_retries=3
+retry_delay=2
 
-  citations=$(echo "$result" | jq '.results | length')
-  [ "$citations" -ge 5 ] && echo "$result" | jq -r '.answer' && exit 0
+for ((i=1; i<=max_retries; i++)); do
+  if bunx @youdotcom-oss/api search --json "$query" --client ClaudeCode; then
+    exit 0
+  fi
+  
+  if [ $i -lt $max_retries ]; then
+    delay=$((retry_delay ** i))
+    echo "Retry $i/$max_retries after ${delay}s..." >&2
+    sleep $delay
+  fi
 done
+
+echo "Failed after $max_retries attempts" >&2
+exit 1
 ```
 
-### Parallel Deep-Search
+### Agent Autonomy & Credential Access
 
-Run multiple research questions concurrently:
+**Considerations for AI Agents:**
+- Agents with access to `YDC_API_KEY` can perform unlimited API calls
+- Set quota alerts on You.com platform to monitor usage
+- Use read-only or restricted API keys when possible
+- Implement circuit breakers for runaway queries
 
-```bash
-#!/usr/bin/env bash
-# Parallel research (3×60s = ~60s total, not 180s)
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q1"}' --client ClaudeCode > q1.json &
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q2"}' --client ClaudeCode > q2.json &
-bunx @youdotcom-oss/api@latest deep-search --json '{"query":"Q3"}' --client ClaudeCode > q3.json &
-wait
+**Restricting Model Invocation:**
+If using this skill with autonomous agents:
+- Consider requiring user approval for each search (`always: true` in skill config)
+- Limit concurrent requests with semaphores
+- Implement query allowlists/denylists for sensitive terms
+- Monitor API usage dashboards regularly
 
-# Combine results
-for f in q*.json; do jq -r '.answer' "$f"; done
-```
+### Supply Chain Security
 
-*Verify:* Progressive saves quota by avoiding unnecessary high effort
+**Trust Chain:**
+1. **Runtime**: Bun/Node.js from official sources only
+2. **Package**: `@youdotcom-oss/api` from NPM registry
+3. **Source**: Verified at https://github.com/youdotcom-oss/dx-toolkit
+4. **Credentials**: `YDC_API_KEY` from https://you.com/platform/api-keys
+
+**Verification Checklist:**
+- [ ] Runtime installation requested user permission
+- [ ] Package version specified (not `@latest`)
+- [ ] API key obtained from official platform
+- [ ] Environment variables not committed to version control
+- [ ] Input validation implemented for user-provided queries/URLs
+- [ ] Error output sanitized in production
+- [ ] Rate limiting configured with exponential backoff
+- [ ] Security updates monitored via GitHub releases
 
 ## Resources
 
