@@ -1,0 +1,649 @@
+---
+name: ydc-crewai-mcp-integration
+description: Integrate You.com remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction. Use when developer mentions crewAI MCP integration, remote MCP servers, or You.com with crewAI.
+license: MIT
+compatibility: Requires Python 3.8+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
+metadata:
+  author: youdotcom-oss
+  version: "1.0.0"
+  category: mcp-integration
+  keywords: crewai,mcp,model-context-protocol,you.com,ydc-server,remote-mcp,web-search,ai-agent,content-extraction,http-transport
+  package:
+    source: https://github.com/youdotcom-oss/dx-toolkit
+    homepage: https://you.com/platform
+    docs: https://docs.you.com/developer-resources/mcp-server
+environment_variables:
+  - name: YOU_API_KEY
+    required: true
+    description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
+---
+
+# Integrate You.com MCP Server with crewAI
+
+Interactive workflow to add You.com's remote MCP server to your crewAI agents for web search, AI-powered answers, and content extraction.
+
+## Why Use You.com MCP Server with crewAI?
+
+**🌐 Real-Time Web Access**:
+- Give your crewAI agents access to current web information
+- Search billions of web pages and news articles
+- Extract content from any URL in markdown or HTML
+
+**🤖 Two Powerful Tools**:
+- **you-search**: Comprehensive web and news search with advanced filtering
+- **you-contents**: Full page content extraction in markdown/HTML
+
+**🚀 Simple Integration**:
+- Remote HTTP MCP server - no local installation needed
+- Two integration approaches: Simple DSL (recommended) or Advanced MCPServerAdapter
+- Automatic tool discovery and connection management
+
+**✅ Production Ready**:
+- Hosted at `https://api.you.com/mcp`
+- Bearer token authentication for security
+- Listed in Anthropic MCP Registry as `io.github.youdotcom-oss/mcp`
+- Supports both HTTP and Streamable HTTP transports
+
+## Workflow
+
+### 1. Choose Integration Approach
+
+**Ask:** Which integration approach do you prefer?
+
+**Option A: DSL Structured Configuration** (Recommended)
+- Automatic connection management using `MCPServerHTTP` in `mcps=[]` field
+- Declarative configuration with automatic cleanup
+- Simpler code, less boilerplate
+- Best for most use cases
+
+**Option B: Advanced MCPServerAdapter**
+- Manual connection management with explicit start/stop
+- More control over connection lifecycle
+- Better for complex scenarios requiring fine-grained control
+- Useful when you need to manage connections across multiple operations
+
+**Tradeoffs:**
+- **DSL**: Simpler, automatic cleanup, declarative, recommended for most cases
+- **MCPServerAdapter**: More control, manual lifecycle, better for complex scenarios
+
+### 2. Configure API Key
+
+**Ask:** How will you configure your You.com API key?
+
+**Options:**
+- **Environment variable** `YOU_API_KEY` (Recommended)
+- **Custom environment variable name** (specify your preference)
+- **Direct configuration** (not recommended for production)
+
+**Getting Your API Key:**
+1. Visit https://you.com/platform/api-keys
+2. Sign in or create an account
+3. Generate a new API key
+4. Set it as an environment variable:
+   ```bash
+   export YOU_API_KEY="your-api-key-here"
+   ```
+
+### 3. Select Tools to Use
+
+**Ask:** Which You.com MCP tools do you need?
+
+**Available Tools:**
+
+**you-search**
+- Comprehensive web and news search with advanced filtering
+- Returns search results with snippets, URLs, and citations
+- Supports parameters: query, count, freshness, country, etc.
+- **Use when:** Need to search for current information or news
+
+**you-contents**
+- Extract full page content from URLs
+- Returns content in markdown or HTML format
+- Supports multiple URLs in a single request
+- **Use when:** Need to extract and analyze web page content
+
+**Options:**
+- All tools (default)
+- Specific tools only (you-search, you-contents, or both)
+
+### 4. Locate Target File
+
+**Ask:** Are you integrating into an existing file or creating a new one?
+
+**Existing File:**
+- Which Python file contains your crewAI agent?
+- Provide the full path
+
+**New File:**
+- Where should the file be created?
+- What should it be named? (e.g., `research_agent.py`)
+
+### 5. Implementation
+
+Based on your choices, I'll implement the integration with complete, working code.
+
+## Integration Examples
+
+### Important Note About Authentication
+
+**String references** like `"https://server.com/mcp?api_key=value"` send parameters as URL query params, **NOT HTTP headers**. Since You.com MCP requires Bearer authentication in HTTP headers, you must use structured configuration.
+
+### DSL Structured Configuration (Recommended)
+
+**IMPORTANT:** You.com MCP requires Bearer token in HTTP **headers**, not query parameters. Use structured configuration:
+
+```python
+from crewai import Agent, Task, Crew
+from crewai.mcp import MCPServerHTTP
+import os
+
+ydc_key = os.getenv("YOU_API_KEY")
+
+# Option 1: Get all ydc-server tools
+research_agent = Agent(
+    role="Research Analyst",
+    goal="Research topics using You.com search and content extraction",
+    backstory="Expert researcher with access to web search tools",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            streamable=True  # Default: True (uses MCP standard HTTP/Streamable HTTP)
+        )
+    ]
+)
+
+# Option 2: Get specific tool using tool_filter
+from crewai.mcp.filters import create_static_tool_filter
+
+search_agent = Agent(
+    role="Search Specialist",
+    goal="Find relevant information quickly",
+    backstory="Search expert using You.com",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            # streamable defaults to True - omitted for brevity
+            tool_filter=create_static_tool_filter(
+                allowed_tool_names=["you-search"]
+            )
+        )
+    ]
+)
+
+# Option 3: Multiple specific tools with filter
+multi_tool_agent = Agent(
+    role="Web Content Analyst",
+    goal="Search and extract web content",
+    backstory="Analyst using You.com search and content extraction",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            tool_filter=create_static_tool_filter(
+                allowed_tool_names=["you-search", "you-contents"]
+            )
+        )
+    ]
+)
+```
+
+**Why structured configuration?**
+- HTTP headers (like `Authorization: Bearer token`) must be sent as actual headers
+- Query parameters (`?key=value`) don't work for Bearer authentication
+- `MCPServerHTTP` defaults to `streamable=True` (MCP standard HTTP transport)
+- Structured config gives access to tool_filter, caching, and transport options
+
+### Advanced MCPServerAdapter
+
+```python
+from crewai import Agent, Task, Crew
+from crewai_tools import MCPServerAdapter
+import os
+
+# HTTP Transport (MCP standard HTTP/Streamable HTTP)
+ydc_key = os.getenv("YOU_API_KEY")
+server_params = {
+    "url": "https://api.you.com/mcp",
+    "transport": "streamable-http",  # or "http" - both work (same MCP transport)
+    "headers": {
+        "Authorization": f"Bearer {ydc_key}"
+    }
+}
+
+# Using context manager (recommended)
+with MCPServerAdapter(server_params) as tools:
+    print(f"Available You.com tools: {[tool.name for tool in tools]}")
+    # Prints: ['you-search', 'you-contents']
+
+    researcher = Agent(
+        role="Advanced Researcher",
+        goal="Conduct comprehensive research using You.com",
+        backstory="Expert at leveraging multiple research tools",
+        tools=tools,
+        verbose=True
+    )
+
+    research_task = Task(
+        description="Research the latest AI agent frameworks",
+        expected_output="Comprehensive analysis with sources",
+        agent=researcher
+    )
+
+    crew = Crew(agents=[researcher], tasks=[research_task])
+    result = crew.kickoff()
+
+# Manual lifecycle management
+mcp_adapter = None
+try:
+    mcp_adapter = MCPServerAdapter(server_params)
+    mcp_adapter.start()
+    tools = mcp_adapter.tools
+
+    # Create agent with tools
+    agent = Agent(
+        role="Manual Researcher",
+        goal="Research with manual connection management",
+        backstory="Expert with precise control over connections",
+        tools=tools,
+        verbose=True
+    )
+
+    # Create and run crew...
+
+finally:
+    if mcp_adapter and mcp_adapter.is_connected:
+        mcp_adapter.stop()
+```
+
+**Note:** In MCP protocol, the standard HTTP transport IS streamable HTTP. Both `"http"` and `"streamable-http"` refer to the same transport. You.com server does NOT support SSE transport.
+
+### Tool Filtering with MCPServerAdapter
+
+```python
+# Filter to specific tools during initialization
+with MCPServerAdapter(server_params, "you-search") as tools:
+    agent = Agent(
+        role="Search Only Agent",
+        goal="Specialized in web search",
+        tools=tools,
+        verbose=True
+    )
+
+# Access single tool by name
+with MCPServerAdapter(server_params) as mcp_tools:
+    agent = Agent(
+        role="Specific Tool User",
+        goal="Use only the search tool",
+        tools=[mcp_tools["you-search"]],
+        verbose=True
+    )
+```
+
+### Complete Working Example
+
+```python
+from crewai import Agent, Task, Crew
+from crewai.mcp import MCPServerHTTP
+from crewai.mcp.filters import create_static_tool_filter
+import os
+
+# Configure You.com MCP server
+ydc_key = os.getenv("YOU_API_KEY")
+
+# Create researcher agent with You.com tools
+researcher = Agent(
+    role="AI Research Analyst",
+    goal="Find and analyze information about AI frameworks",
+    backstory="Expert researcher specializing in AI and software development",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            streamable=True
+        )
+    ],
+    verbose=True
+)
+
+# Create content extractor agent with specific tool
+content_analyst = Agent(
+    role="Content Extraction Specialist",
+    goal="Extract and summarize web content",
+    backstory="Specialist in web scraping and content analysis",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            tool_filter=create_static_tool_filter(
+                allowed_tool_names=["you-contents"]
+            )
+        )
+    ],
+    verbose=True
+)
+
+# Define tasks
+research_task = Task(
+    description="Search for the top 5 AI agent frameworks in 2026 and their key features",
+    expected_output="A detailed list of AI agent frameworks with descriptions",
+    agent=researcher
+)
+
+extraction_task = Task(
+    description="Extract detailed documentation from the official websites of the frameworks found",
+    expected_output="Comprehensive summary of framework documentation",
+    agent=content_analyst,
+    context=[research_task]  # Depends on research_task output
+)
+
+# Create and run crew
+crew = Crew(
+    agents=[researcher, content_analyst],
+    tasks=[research_task, extraction_task],
+    verbose=True
+)
+
+result = crew.kickoff()
+print("\n" + "="*50)
+print("FINAL RESULT")
+print("="*50)
+print(result)
+```
+
+## Available Tools
+
+### you-search
+
+Comprehensive web and news search with advanced filtering capabilities.
+
+**Parameters:**
+- `query` (required): Search query string
+- `count`: Number of results to return (default: 10)
+- `freshness`: Time filter ("day", "week", "month", "year")
+- `country`: Country code for localized results (e.g., "US", "GB")
+- `search_lang`: Language code for search (e.g., "en", "es")
+- `ui_lang`: Language code for UI elements
+
+**Returns:**
+- Search results with snippets, URLs, titles
+- Citations and source information
+- Ranked by relevance
+
+**Example Use Cases:**
+- "Search for recent news about AI regulations"
+- "Find technical documentation for Python asyncio"
+- "What are the latest developments in quantum computing?"
+
+### you-contents
+
+Extract full page content from one or more URLs in markdown or HTML format.
+
+**Parameters:**
+- `urls` (required): Single URL string or array of URLs
+- `format`: Output format - "markdown" (default) or "html"
+
+**Returns:**
+- Full page content in requested format
+- Preserves structure and formatting
+- Handles multiple URLs in single request
+
+**Format Guidance:**
+- **Use HTML** for: Layout preservation, interactive content, visual fidelity
+- **Use Markdown** for: Text extraction, simpler consumption, readability
+
+**Example Use Cases:**
+- "Extract the content from this documentation page"
+- "Get the HTML of this landing page to analyze its structure"
+- "Convert these 3 blog posts to markdown for analysis"
+
+## Implementation Checklist
+
+### For DSL Structured Configuration:
+- [ ] Install `mcp` library: `uv add mcp` or `pip install mcp`
+- [ ] Import `MCPServerHTTP` from `crewai.mcp`
+- [ ] Set `YOU_API_KEY` environment variable
+- [ ] Add `mcps=[]` field to agent with `MCPServerHTTP` object
+- [ ] Configure Bearer token in `headers` parameter
+- [ ] Optional: Add `tool_filter` to restrict to specific tools
+- [ ] Test agent to verify tools are discovered (should see: you-search, you-contents)
+
+### For Advanced MCPServerAdapter:
+- [ ] Install `crewai-tools[mcp]`: `uv add crewai-tools[mcp]` or `pip install crewai-tools[mcp]`
+- [ ] Import `MCPServerAdapter` from `crewai_tools`
+- [ ] Set `YOU_API_KEY` environment variable (if using env var)
+- [ ] Configure `server_params` dict with URL, transport, and headers
+- [ ] Implement context manager or manual lifecycle management
+- [ ] Pass tools to agent explicitly in `tools` parameter
+- [ ] Ensure connection is properly closed (if using manual lifecycle)
+- [ ] Test connection and tool discovery
+
+## Common Issues
+
+### API Key Not Found
+
+**Symptom:** Error message about missing or invalid API key
+
+**Solution:**
+```bash
+# Check if environment variable is set
+echo $YOU_API_KEY
+
+# Set it if missing
+export YOU_API_KEY="your-api-key-here"
+
+# For permanent setup, add to ~/.bashrc or ~/.zshrc
+echo 'export YOU_API_KEY="your-api-key-here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Connection Timeouts
+
+**Symptom:** Connection timeout errors when connecting to You.com MCP server
+
+**Possible Causes:**
+- Network connectivity issues
+- Firewall blocking HTTPS connections
+- Invalid API key
+
+**Solution:**
+```python
+# Test connection manually
+import requests
+
+response = requests.get(
+    "https://api.you.com/mcp",
+    headers={"Authorization": f"Bearer {ydc_key}"}
+)
+print(f"Status: {response.status_code}")
+```
+
+### Tool Discovery Failures
+
+**Symptom:** Agent created but no tools available
+
+**Solution:**
+1. Verify API key is valid at https://you.com/platform/api-keys
+2. Check that Bearer token is in headers (not query params)
+3. Enable verbose mode to see connection logs:
+   ```python
+   agent = Agent(..., verbose=True)
+   ```
+4. For MCPServerAdapter, verify connection:
+   ```python
+   print(f"Connected: {mcp_adapter.is_connected}")
+   print(f"Tools: {[t.name for t in mcp_adapter.tools]}")
+   ```
+
+### Transport Type Issues
+
+**Symptom:** "Transport not supported" or connection errors
+
+**Important:** You.com MCP server supports:
+- ✅ HTTP (standard MCP HTTP transport)
+- ✅ Streamable HTTP (same as HTTP - this is the MCP standard)
+- ❌ SSE (Server-Sent Events) - NOT supported
+
+**Solution:**
+```python
+# Correct - use HTTP or streamable-http
+server_params = {
+    "url": "https://api.you.com/mcp",
+    "transport": "streamable-http",  # or "http"
+    "headers": {"Authorization": f"Bearer {ydc_key}"}
+}
+
+# Wrong - SSE not supported by You.com
+# server_params = {"url": "...", "transport": "sse"}  # Don't use this
+```
+
+### Missing Library Installation
+
+**Symptom:** Import errors for `MCPServerHTTP` or `MCPServerAdapter`
+
+**Solution:**
+```bash
+# For DSL (MCPServerHTTP)
+uv add mcp
+# or
+pip install mcp
+
+# For MCPServerAdapter
+uv add crewai-tools[mcp]
+# or
+pip install crewai-tools[mcp]
+```
+
+### Tool Filter Not Working
+
+**Symptom:** All tools available despite using `tool_filter`
+
+**Solution:**
+```python
+# Ensure you're importing and using the filter correctly
+from crewai.mcp.filters import create_static_tool_filter
+
+agent = Agent(
+    role="Filtered Agent",
+    mcps=[
+        MCPServerHTTP(
+            url="https://api.you.com/mcp",
+            headers={"Authorization": f"Bearer {ydc_key}"},
+            tool_filter=create_static_tool_filter(
+                allowed_tool_names=["you-search"]  # Must be exact tool name
+            )
+        )
+    ]
+)
+```
+
+## Security Considerations
+
+### Never Hardcode API Keys
+
+**Bad:**
+```python
+# DON'T DO THIS
+ydc_key = "yd-v3-your-actual-key-here"
+```
+
+**Good:**
+```python
+# DO THIS
+import os
+ydc_key = os.getenv("YOU_API_KEY")
+
+if not ydc_key:
+    raise ValueError("YOU_API_KEY environment variable not set")
+```
+
+### Use Environment Variables
+
+Store sensitive credentials in environment variables or secure secret management systems:
+
+```bash
+# Development
+export YOU_API_KEY="your-api-key"
+
+# Production (example with Docker)
+docker run -e YOU_API_KEY="your-api-key" your-image
+
+# Production (example with Kubernetes secrets)
+kubectl create secret generic ydc-credentials --from-literal=YOU_API_KEY=your-key
+```
+
+### HTTPS for Remote Servers
+
+Always use HTTPS URLs for remote MCP servers to ensure encrypted communication:
+
+```python
+# Correct - HTTPS
+url="https://api.you.com/mcp"
+
+# Wrong - HTTP (insecure)
+# url="http://api.you.com/mcp"  # Don't use this
+```
+
+### Validate API Key Format
+
+Optionally validate API key format before using:
+
+```python
+import os
+import re
+
+ydc_key = os.getenv("YOU_API_KEY")
+
+if not ydc_key:
+    raise ValueError("YOU_API_KEY not set")
+
+# You.com keys typically start with 'yd-v3-'
+if not re.match(r'^yd-v\d+-', ydc_key):
+    print("Warning: API key format may be invalid")
+```
+
+### Rate Limiting and Quotas
+
+Be aware of API rate limits:
+- Monitor your usage at https://you.com/platform
+- Implement exponential backoff for retries
+- Cache results when appropriate to reduce API calls
+
+```python
+import time
+from functools import wraps
+
+def retry_with_backoff(max_retries=3, initial_delay=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            delay = initial_delay
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise
+                    print(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay}s...")
+                    time.sleep(delay)
+                    delay *= 2
+        return wrapper
+    return decorator
+```
+
+## Additional Resources
+
+- **You.com Platform**: https://you.com/platform
+- **API Keys**: https://you.com/platform/api-keys
+- **MCP Documentation**: https://docs.you.com/developer-resources/mcp-server
+- **GitHub Repository**: https://github.com/youdotcom-oss/dx-toolkit
+- **crewAI MCP Docs**: https://docs.crewai.com/mcp/overview
+- **Anthropic MCP Registry**: Search for `io.github.youdotcom-oss/mcp`
+
+## Support
+
+For issues or questions:
+- You.com MCP: https://github.com/youdotcom-oss/dx-toolkit/issues
+- crewAI: https://github.com/crewAIInc/crewAI/issues
+- MCP Protocol: https://modelcontextprotocol.io
