@@ -2,7 +2,7 @@
 name: ydc-crewai-mcp-integration
 description: Integrate You.com remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction. Use when developer mentions crewAI MCP integration, remote MCP servers, or You.com with crewAI.
 license: MIT
-compatibility: Requires Python 3.8+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
+compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
 metadata:
   author: youdotcom-oss
   version: "1.0.0"
@@ -13,7 +13,7 @@ metadata:
     homepage: https://you.com/platform
     docs: https://docs.you.com/developer-resources/mcp-server
   environment_variables:
-    - name: YOU_API_KEY
+    - name: YDC_API_KEY
       required: true
       description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
 ---
@@ -71,7 +71,7 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 **Ask:** How will you configure your You.com API key?
 
 **Options:**
-- **Environment variable** `YOU_API_KEY` (Recommended)
+- **Environment variable** `YDC_API_KEY` (Recommended)
 - **Custom environment variable name** (specify your preference)
 - **Direct configuration** (not recommended for production)
 
@@ -81,7 +81,7 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 3. Generate a new API key
 4. Set it as an environment variable:
    ```bash
-   export YOU_API_KEY="your-api-key-here"
+   export YDC_API_KEY="your-api-key-here"
    ```
 
 ### 3. Select Tools to Use
@@ -137,7 +137,7 @@ from crewai import Agent, Task, Crew
 from crewai.mcp import MCPServerHTTP
 import os
 
-ydc_key = os.getenv("YOU_API_KEY")
+ydc_key = os.getenv("YDC_API_KEY")
 
 # Option 1: Get all ydc-server tools
 research_agent = Agent(
@@ -203,7 +203,7 @@ from crewai_tools import MCPServerAdapter
 import os
 
 # HTTP Transport (MCP standard HTTP/Streamable HTTP)
-ydc_key = os.getenv("YOU_API_KEY")
+ydc_key = os.getenv("YDC_API_KEY")
 server_params = {
     "url": "https://api.you.com/mcp",
     "transport": "streamable-http",  # or "http" - both work (same MCP transport)
@@ -290,7 +290,7 @@ from crewai.mcp.filters import create_static_tool_filter
 import os
 
 # Configure You.com MCP server
-ydc_key = os.getenv("YOU_API_KEY")
+ydc_key = os.getenv("YDC_API_KEY")
 
 # Create researcher agent with You.com tools
 researcher = Agent(
@@ -359,12 +359,14 @@ print(result)
 Comprehensive web and news search with advanced filtering capabilities.
 
 **Parameters:**
-- `query` (required): Search query string
-- `count`: Number of results to return (default: 10)
-- `freshness`: Time filter ("day", "week", "month", "year")
-- `country`: Country code for localized results (e.g., "US", "GB")
-- `search_lang`: Language code for search (e.g., "en", "es")
-- `ui_lang`: Language code for UI elements
+- `query` (required): Search query. Supports operators: `site:domain.com` (domain filter), `filetype:pdf` (file type), `+term` (include), `-term` (exclude), `AND/OR/NOT` (boolean logic), `lang:en` (language). Example: `"machine learning (Python OR PyTorch) -TensorFlow filetype:pdf"`
+- `count` (optional): Max results per section. Integer between 1-100
+- `freshness` (optional): Time filter. Values: `"day"`, `"week"`, `"month"`, `"year"`, or date range `"YYYY-MM-DDtoYYYY-MM-DD"`
+- `offset` (optional): Pagination offset. Integer between 0-9
+- `country` (optional): Country code. Values: `"AR"`, `"AU"`, `"AT"`, `"BE"`, `"BR"`, `"CA"`, `"CL"`, `"DK"`, `"FI"`, `"FR"`, `"DE"`, `"HK"`, `"IN"`, `"ID"`, `"IT"`, `"JP"`, `"KR"`, `"MY"`, `"MX"`, `"NL"`, `"NZ"`, `"NO"`, `"CN"`, `"PL"`, `"PT"`, `"PT-BR"`, `"PH"`, `"RU"`, `"SA"`, `"ZA"`, `"ES"`, `"SE"`, `"CH"`, `"TW"`, `"TR"`, `"GB"`, `"US"`
+- `safesearch` (optional): Filter level. Values: `"off"`, `"moderate"`, `"strict"`
+- `livecrawl` (optional): Live-crawl sections for full content. Values: `"web"`, `"news"`, `"all"`
+- `livecrawl_formats` (optional): Format for crawled content. Values: `"html"`, `"markdown"`
 
 **Returns:**
 - Search results with snippets, URLs, titles
@@ -381,8 +383,10 @@ Comprehensive web and news search with advanced filtering capabilities.
 Extract full page content from one or more URLs in markdown or HTML format.
 
 **Parameters:**
-- `urls` (required): Single URL string or array of URLs
-- `format`: Output format - "markdown" (default) or "html"
+- `urls` (required): Array of webpage URLs to extract content from (e.g., `["https://example.com"]`)
+- `formats` (optional): Output formats array. Values: `"markdown"` (text), `"html"` (layout), or `"metadata"` (structured data)
+- `format` (optional, deprecated): Output format - `"markdown"` or `"html"`. Use `formats` array instead
+- `crawl_timeout` (optional): Optional timeout in seconds (1-60) for page crawling
 
 **Returns:**
 - Full page content in requested format
@@ -390,8 +394,9 @@ Extract full page content from one or more URLs in markdown or HTML format.
 - Handles multiple URLs in single request
 
 **Format Guidance:**
-- **Use HTML** for: Layout preservation, interactive content, visual fidelity
 - **Use Markdown** for: Text extraction, simpler consumption, readability
+- **Use HTML** for: Layout preservation, interactive content, visual fidelity
+- **Use Metadata** for: Structured page information (site name, favicon URL, OpenGraph data)
 
 **Example Use Cases:**
 - "Extract the content from this documentation page"
@@ -403,7 +408,7 @@ Extract full page content from one or more URLs in markdown or HTML format.
 ### For DSL Structured Configuration:
 - [ ] Install `mcp` library: `uv add mcp` or `pip install mcp`
 - [ ] Import `MCPServerHTTP` from `crewai.mcp`
-- [ ] Set `YOU_API_KEY` environment variable
+- [ ] Set `YDC_API_KEY` environment variable
 - [ ] Add `mcps=[]` field to agent with `MCPServerHTTP` object
 - [ ] Configure Bearer token in `headers` parameter
 - [ ] Optional: Add `tool_filter` to restrict to specific tools
@@ -412,7 +417,7 @@ Extract full page content from one or more URLs in markdown or HTML format.
 ### For Advanced MCPServerAdapter:
 - [ ] Install `crewai-tools[mcp]`: `uv add crewai-tools[mcp]` or `pip install crewai-tools[mcp]`
 - [ ] Import `MCPServerAdapter` from `crewai_tools`
-- [ ] Set `YOU_API_KEY` environment variable (if using env var)
+- [ ] Set `YDC_API_KEY` environment variable (if using env var)
 - [ ] Configure `server_params` dict with URL, transport, and headers
 - [ ] Implement context manager or manual lifecycle management
 - [ ] Pass tools to agent explicitly in `tools` parameter
@@ -428,13 +433,13 @@ Extract full page content from one or more URLs in markdown or HTML format.
 **Solution:**
 ```bash
 # Check if environment variable is set
-echo $YOU_API_KEY
+echo $YDC_API_KEY
 
 # Set it if missing
-export YOU_API_KEY="your-api-key-here"
+export YDC_API_KEY="your-api-key-here"
 
 # For permanent setup, add to ~/.bashrc or ~/.zshrc
-echo 'export YOU_API_KEY="your-api-key-here"' >> ~/.bashrc
+echo 'export YDC_API_KEY="your-api-key-here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -552,10 +557,10 @@ ydc_key = "yd-v3-your-actual-key-here"
 ```python
 # DO THIS
 import os
-ydc_key = os.getenv("YOU_API_KEY")
+ydc_key = os.getenv("YDC_API_KEY")
 
 if not ydc_key:
-    raise ValueError("YOU_API_KEY environment variable not set")
+    raise ValueError("YDC_API_KEY environment variable not set")
 ```
 
 ### Use Environment Variables
@@ -564,13 +569,13 @@ Store sensitive credentials in environment variables or secure secret management
 
 ```bash
 # Development
-export YOU_API_KEY="your-api-key"
+export YDC_API_KEY="your-api-key"
 
 # Production (example with Docker)
-docker run -e YOU_API_KEY="your-api-key" your-image
+docker run -e YDC_API_KEY="your-api-key" your-image
 
 # Production (example with Kubernetes secrets)
-kubectl create secret generic ydc-credentials --from-literal=YOU_API_KEY=your-key
+kubectl create secret generic ydc-credentials --from-literal=YDC_API_KEY=your-key
 ```
 
 ### HTTPS for Remote Servers
@@ -585,52 +590,12 @@ url="https://api.you.com/mcp"
 # url="http://api.you.com/mcp"  # Don't use this
 ```
 
-### Validate API Key Format
-
-Optionally validate API key format before using:
-
-```python
-import os
-import re
-
-ydc_key = os.getenv("YOU_API_KEY")
-
-if not ydc_key:
-    raise ValueError("YOU_API_KEY not set")
-
-# You.com keys typically start with 'yd-v3-'
-if not re.match(r'^yd-v\d+-', ydc_key):
-    print("Warning: API key format may be invalid")
-```
-
 ### Rate Limiting and Quotas
 
 Be aware of API rate limits:
 - Monitor your usage at https://you.com/platform
-- Implement exponential backoff for retries
 - Cache results when appropriate to reduce API calls
-
-```python
-import time
-from functools import wraps
-
-def retry_with_backoff(max_retries=3, initial_delay=1):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            delay = initial_delay
-            for attempt in range(max_retries):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        raise
-                    print(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay}s...")
-                    time.sleep(delay)
-                    delay *= 2
-        return wrapper
-    return decorator
-```
+- crewAI automatically handles MCP connection errors and retries
 
 ## Additional Resources
 
