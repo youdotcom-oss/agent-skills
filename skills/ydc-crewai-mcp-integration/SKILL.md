@@ -12,10 +12,10 @@ metadata:
     source: https://github.com/youdotcom-oss/dx-toolkit
     homepage: https://you.com/platform
     docs: https://docs.you.com/developer-resources/mcp-server
-environment_variables:
-  - name: YOU_API_KEY
-    required: true
-    description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
+  environment_variables:
+    - name: YOU_API_KEY
+      required: true
+      description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
 ---
 
 # Integrate You.com MCP Server with crewAI
