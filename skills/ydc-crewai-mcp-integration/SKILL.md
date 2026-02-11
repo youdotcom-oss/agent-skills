@@ -16,6 +16,42 @@ metadata:
     - name: YDC_API_KEY
       required: true
       description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
+  binaries:
+    - name: python
+      version: ">= 3.10.0"
+      description: Python runtime
+      install_url: https://www.python.org/
+      verification: "python --version"
+    - name: pip
+      version: ">= 21.0.0"
+      description: Python package manager
+      install_url: https://pip.pypa.io/
+      verification: "pip --version"
+    - name: uv
+      version: ">= 0.1.0"
+      description: Fast Python package installer (optional but recommended)
+      install_url: https://github.com/astral-sh/uv
+      verification: "uv --version"
+  dependencies:
+    python:
+      - name: "crewai"
+        version: "latest"
+        purpose: crewAI framework
+        source: https://pypi.org/project/crewai/
+      - name: "mcp"
+        version: "latest"
+        purpose: Model Context Protocol library (for DSL)
+        source: https://pypi.org/project/mcp/
+      - name: "crewai-tools[mcp]"
+        version: "latest"
+        purpose: crewAI tools with MCP support (for MCPServerAdapter)
+        source: https://pypi.org/project/crewai-tools/
+  security:
+    remote_endpoints:
+      - url: https://api.you.com/mcp
+        purpose: You.com MCP Server
+        authentication: Bearer token via YDC_API_KEY
+        verification: Test connection with valid Bearer token
 ---
 
 # Integrate You.com MCP Server with crewAI

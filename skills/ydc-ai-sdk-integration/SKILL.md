@@ -2,12 +2,46 @@
 name: ydc-ai-sdk-integration
 description: Integrate Vercel AI SDK applications with You.com tools (web search, AI agent, content extraction). Use when developer mentions AI SDK, Vercel AI SDK, generateText, streamText, or You.com integration with AI SDK.
 license: MIT
-compatibility: Requires Node.js 18+ and npm/bun/yarn/pnpm
+compatibility: Requires Node.js 18+ or Bun 1.0+ and npm/bun/yarn/pnpm
 metadata:
   author: youdotcom-oss
   category: sdk-integration
   version: "1.0.0"
   keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
+  package:
+    source: https://github.com/youdotcom-oss/dx-toolkit
+    npm: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
+  environment_variables:
+    - name: YDC_API_KEY
+      required: false
+      description: API key for You.com platform (optional if using AI provider's own key, obtain from https://you.com/platform/api-keys)
+    - name: ANTHROPIC_API_KEY
+      required: false
+      description: API key for Anthropic (if using Anthropic provider, obtain from https://console.anthropic.com/)
+    - name: OPENAI_API_KEY
+      required: false
+      description: API key for OpenAI (if using OpenAI provider, obtain from https://platform.openai.com/)
+  binaries:
+    - name: node
+      version: ">= 18.0.0"
+      description: JavaScript runtime
+      install_url: https://nodejs.org/
+      verification: "node --version"
+    - name: bun
+      version: ">= 1.0.0"
+      description: JavaScript runtime (alternative, faster)
+      install_url: https://bun.sh/
+      verification: "bun --version"
+  dependencies:
+    npm:
+      - name: "@youdotcom-oss/ai-sdk-plugin"
+        version: "latest"
+        purpose: You.com integration for Vercel AI SDK
+        source: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
+      - name: "ai"
+        version: ">=3.0.0"
+        purpose: Vercel AI SDK core
+        source: https://www.npmjs.com/package/ai
 ---
 
 # Integrate AI SDK with You.com Tools

@@ -2,12 +2,50 @@
 name: ydc-claude-agent-sdk-integration
 description: Integrate Claude Agent SDK with You.com HTTP MCP server for Python and TypeScript. Use when developer mentions Claude Agent SDK, Anthropic Agent SDK, or integrating Claude with MCP tools.
 license: MIT
-compatibility: Python 3.10+ or TypeScript 5.2+ (for v2), Node.js 18+
+compatibility: Python 3.10+ or TypeScript 5.2+ (for v2), Node.js 18+ or Bun 1.0+
 metadata:
   author: youdotcom-oss
   category: sdk-integration
   version: "1.0.0"
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
+  package:
+    source: https://github.com/youdotcom-oss/dx-toolkit
+    homepage: https://you.com/platform
+    docs: https://docs.you.com/developer-resources/mcp-server
+  environment_variables:
+    - name: YDC_API_KEY
+      required: true
+      description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
+    - name: ANTHROPIC_API_KEY
+      required: true
+      description: API key for Anthropic Claude API (obtain from https://console.anthropic.com/)
+  binaries:
+    - name: python
+      version: ">= 3.10.0"
+      description: Python runtime (for Python SDK)
+      install_url: https://www.python.org/
+      verification: "python --version"
+    - name: node
+      version: ">= 18.0.0"
+      description: JavaScript runtime (for TypeScript SDK v2)
+      install_url: https://nodejs.org/
+      verification: "node --version"
+    - name: bun
+      version: ">= 1.0.0"
+      description: JavaScript runtime (alternative for TypeScript SDK v2, faster)
+      install_url: https://bun.sh/
+      verification: "bun --version"
+  dependencies:
+    python:
+      - name: "claude-agent-sdk"
+        version: "latest"
+        purpose: Claude Agent SDK for Python
+        source: https://pypi.org/project/claude-agent-sdk/
+    npm:
+      - name: "@anthropic-ai/claude-agent-sdk"
+        version: "latest"
+        purpose: Claude Agent SDK for TypeScript (v2)
+        source: https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk
 ---
 
 # Integrate Claude Agent SDK with You.com MCP
