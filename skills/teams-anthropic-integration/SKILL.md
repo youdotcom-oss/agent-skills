@@ -2,12 +2,47 @@
 name: teams-anthropic-integration
 description: Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
 license: MIT
-compatibility: Node.js 18+, @microsoft/teams.ai
+compatibility: Node.js 18+ or Bun 1.0+, @microsoft/teams.ai
 metadata:
   author: youdotcom-oss
   category: enterprise-integration
   version: "1.1.0"
   keywords: microsoft-teams,teams-ai,anthropic,claude,mcp,you.com,web-search,content-extraction
+  package:
+    source: https://github.com/youdotcom-oss/dx-toolkit
+    npm: https://www.npmjs.com/package/@youdotcom-oss/teams-anthropic
+  environment_variables:
+    - name: ANTHROPIC_API_KEY
+      required: true
+      description: API key for Anthropic Claude API (obtain from https://console.anthropic.com/)
+    - name: YDC_API_KEY
+      required: false
+      description: API key for You.com platform (required only for Path B - MCP Integration, obtain from https://you.com/platform/api-keys)
+  binaries:
+    - name: node
+      version: ">= 18.0.0"
+      description: JavaScript runtime
+      install_url: https://nodejs.org/
+      verification: "node --version"
+    - name: bun
+      version: ">= 1.0.0"
+      description: JavaScript runtime (alternative, faster)
+      install_url: https://bun.sh/
+      verification: "bun --version"
+  dependencies:
+    npm:
+      - name: "@youdotcom-oss/teams-anthropic"
+        version: "latest"
+        purpose: You.com integration for Microsoft Teams.ai framework
+        source: https://www.npmjs.com/package/@youdotcom-oss/teams-anthropic
+      - name: "@anthropic-ai/sdk"
+        version: ">=0.24.0"
+        purpose: Anthropic Claude SDK
+        source: https://www.npmjs.com/package/@anthropic-ai/sdk
+      - name: "@microsoft/teams.ai"
+        version: "latest"
+        purpose: Microsoft Teams AI framework
+        source: https://www.npmjs.com/package/@microsoft/teams.ai
 ---
 
 # Build Teams.ai Apps with Anthropic Claude
