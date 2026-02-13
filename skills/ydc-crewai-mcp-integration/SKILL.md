@@ -1,57 +1,17 @@
 ---
 name: ydc-crewai-mcp-integration
-description: Integrate You.com remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction. Use when developer mentions crewAI MCP integration, remote MCP servers, or You.com with crewAI.
+description: |
+  Integrate You.com remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction.
+  - MANDATORY TRIGGERS: crewAI MCP, crewai mcp integration, remote MCP servers, You.com with crewAI, MCPServerHTTP, MCPServerAdapter
+  - Use when: developer mentions crewAI MCP integration, needs remote MCP servers, integrating You.com with crewAI
 license: MIT
 compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
+allowed-tools: Read Write Edit Bash(pip:install) Bash(uv:add)
 metadata:
   author: youdotcom-oss
-  version: "1.0.0"
+  version: "1.1.0"
   category: mcp-integration
   keywords: crewai,mcp,model-context-protocol,you.com,ydc-server,remote-mcp,web-search,ai-agent,content-extraction,http-transport
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    homepage: https://you.com/platform
-    docs: https://docs.you.com/developer-resources/mcp-server
-  environment_variables:
-    - name: YDC_API_KEY
-      required: true
-      description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
-  binaries:
-    - name: python
-      version: ">= 3.10.0"
-      description: Python runtime
-      install_url: https://www.python.org/
-      verification: "python --version"
-    - name: pip
-      version: ">= 21.0.0"
-      description: Python package manager
-      install_url: https://pip.pypa.io/
-      verification: "pip --version"
-    - name: uv
-      version: ">= 0.1.0"
-      description: Fast Python package installer (optional but recommended)
-      install_url: https://github.com/astral-sh/uv
-      verification: "uv --version"
-  dependencies:
-    python:
-      - name: "crewai"
-        version: "latest"
-        purpose: crewAI framework
-        source: https://pypi.org/project/crewai/
-      - name: "mcp"
-        version: "latest"
-        purpose: Model Context Protocol library (for DSL)
-        source: https://pypi.org/project/mcp/
-      - name: "crewai-tools[mcp]"
-        version: "latest"
-        purpose: crewAI tools with MCP support (for MCPServerAdapter)
-        source: https://pypi.org/project/crewai-tools/
-  security:
-    remote_endpoints:
-      - url: https://api.you.com/mcp
-        purpose: You.com MCP Server
-        authentication: Bearer token via YDC_API_KEY
-        verification: Test connection with valid Bearer token
 ---
 
 # Integrate You.com MCP Server with crewAI

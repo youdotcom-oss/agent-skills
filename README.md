@@ -17,7 +17,7 @@ Integrate Vercel AI SDK applications with You.com tools for real-time web search
 
 **Features:**
 - Interactive setup workflow for existing or new projects
-- Three powerful tools: `youSearch`, `youExpress`, `youContents`
+- Three powerful tools: `youSearch`, `youContents`
 - Smart integration with existing AI SDK code
 - Support for multiple AI providers (Anthropic, OpenAI, Google, etc.)
 
@@ -188,6 +188,106 @@ Each skill includes:
 - **Configuration examples** - Side-by-side comparisons for different modes
 - **Validation checklists** - Ensure your integration works correctly
 - **Troubleshooting** - Common issues and solutions
+
+---
+
+## Development
+
+### Environment Setup
+
+Create a `.env` file in the project root with the following API keys:
+
+```bash
+# Required for all skills
+YDC_API_KEY=your-you-com-api-key
+
+# Required for Claude Agent SDK skill
+ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Required for OpenAI Agent SDK skill
+OPENAI_API_KEY=your-openai-api-key
+```
+
+Get API keys from:
+- You.com: [you.com/platform/api-keys](https://you.com/platform/api-keys)
+- Anthropic: [console.anthropic.com](https://console.anthropic.com)
+- OpenAI: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+### Testing
+
+Run integration tests that validate skills against real APIs:
+
+```bash
+# Run all tests (TypeScript + Python)
+bun test
+
+# Run only TypeScript tests
+bun run test:ts
+
+# Run only Python tests
+bun run test:py
+```
+
+**Note**: Tests use real API keys from `.env` file (no mocking). Ensure you have valid API keys before running tests.
+
+### Test Structure
+
+Each test directory follows this pattern:
+
+```
+tests/{skill-name}/
+├── PROMPTS.md              # Prompts that trigger the skill
+├── {language}/
+│   ├── package.json        # Test dependencies (tracked in git)
+│   ├── integration.spec.ts # Tests for generated code (tracked in git)
+│   └── generated/          # Skill-generated code (gitignored via root .gitignore)
+```
+
+**Workflow:**
+1. **PROMPTS.md** contains prompts that trigger the skill (e.g., "Create a Teams app with Anthropic Claude")
+2. **Skill generates code** into `generated/` directory based on the prompt
+3. **Integration tests** validate the generated code works with real APIs
+4. **CI workflow** (future) will automate: prompt → generate → test
+
+**Current State:**
+- Tests contain reference implementations that simulate skill output
+- PROMPTS.md documents expected behavior for each scenario
+
+**Future State:**
+- CI uses Claude to execute prompts from PROMPTS.md
+- Skills generate code into `generated/` directories
+- Tests validate the freshly generated code
+
+### Linting & Formatting
+
+**Check for issues:**
+```bash
+# Check all files (TypeScript + Python)
+bun run check
+
+# Check only Python files
+bun run check:py
+```
+
+**Auto-fix issues:**
+```bash
+# Fix all files (TypeScript + Python)
+bun run check:write
+
+# Fix only Python files
+bun run check:write:py
+```
+
+**Tools:**
+- TypeScript: [Biome](https://biomejs.dev) for linting and formatting
+- Python: [Ruff](https://docs.astral.sh/ruff/) for linting and formatting
+- Python package management: [uv](https://docs.astral.sh/uv/)
+
+### Prerequisites
+
+- **Bun** >= 1.2.21 (for TypeScript tests and orchestration)
+- **Python** >= 3.12 (for Python tests)
+- **uv** (automatically used by Bun scripts for Python)
 
 ---
 

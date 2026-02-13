@@ -2,50 +2,13 @@
 name: ydc-claude-agent-sdk-integration
 description: Integrate Claude Agent SDK with You.com HTTP MCP server for Python and TypeScript. Use when developer mentions Claude Agent SDK, Anthropic Agent SDK, or integrating Claude with MCP tools.
 license: MIT
-compatibility: Python 3.10+ or TypeScript 5.2+ (for v2), Node.js 18+ or Bun 1.0+
+compatibility: Python 3.10+ or TypeScript 5.2+, Node.js 24+ or Bun 1.3+
+allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: "1.1.0"
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    homepage: https://you.com/platform
-    docs: https://docs.you.com/developer-resources/mcp-server
-  environment_variables:
-    - name: YDC_API_KEY
-      required: true
-      description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
-    - name: ANTHROPIC_API_KEY
-      required: true
-      description: API key for Anthropic Claude API (obtain from https://console.anthropic.com/)
-  binaries:
-    - name: python
-      version: ">= 3.10.0"
-      description: Python runtime (for Python SDK)
-      install_url: https://www.python.org/
-      verification: "python --version"
-    - name: node
-      version: ">= 18.0.0"
-      description: JavaScript runtime (for TypeScript SDK v2)
-      install_url: https://nodejs.org/
-      verification: "node --version"
-    - name: bun
-      version: ">= 1.0.0"
-      description: JavaScript runtime (alternative for TypeScript SDK v2, faster)
-      install_url: https://bun.sh/
-      verification: "bun --version"
-  dependencies:
-    python:
-      - name: "claude-agent-sdk"
-        version: "latest"
-        purpose: Claude Agent SDK for Python
-        source: https://pypi.org/project/claude-agent-sdk/
-    npm:
-      - name: "@anthropic-ai/claude-agent-sdk"
-        version: "latest"
-        purpose: Claude Agent SDK for TypeScript (v2)
-        source: https://www.npmjs.com/package/@anthropic-ai/claude-agent-sdk
 ---
 
 # Integrate Claude Agent SDK with You.com MCP
@@ -59,6 +22,7 @@ Interactive workflow to set up Claude Agent SDK with You.com's HTTP MCP server.
 
 2. **If TypeScript - Ask: SDK Version**
    * v1 (stable, generator-based) or v2 (preview, send/receive pattern)?
+   * ⚠️ **v2 Stability Warning**: The v2 SDK is in **preview** and uses `unstable_v2_*` APIs that may change. Only use v2 if you need the send/receive pattern and accept potential breaking changes. For production use, prefer v1.
    * Note: v2 requires TypeScript 5.2+ for `await using` support
 
 3. **Install Package**
@@ -101,7 +65,6 @@ Interactive workflow to set up Claude Agent SDK with You.com's HTTP MCP server.
          },
          allowed_tools=[
              "mcp__ydc__you_search",
-             "mcp__ydc__you_express",
              "mcp__ydc__you_contents"
          ]
      )
@@ -121,11 +84,43 @@ Interactive workflow to set up Claude Agent SDK with You.com's HTTP MCP server.
        },
        allowedTools: [
          'mcp__ydc__you_search',
-         'mcp__ydc__you_express',
          'mcp__ydc__you_contents'
        ]
      };
      ```
+
+## Alternative: Install as Claude Code Skill
+
+Instead of manually creating files, you can install this skill directly into Claude Code for easy access:
+
+**Installation:**
+```bash
+npx skills add youdotcom-oss/agent-skills/ydc-claude-agent-sdk-integration
+```
+
+**Important:** After installation, you must configure Claude Code to load skills from the filesystem. Add this to your Claude Code settings:
+
+```json
+{
+  "setting_sources": ["project"]
+}
+```
+
+**How it works:**
+- Skills are installed to `~/.claude/skills/`
+- Claude Code loads skills from this directory when `setting_sources` includes `"project"`
+- The skill becomes available via slash commands (e.g., `/ydc-claude-agent-sdk-integration`)
+- This provides an interactive workflow without manual file creation
+
+**When to use this approach:**
+- You want Claude Code to guide you through the integration interactively
+- You prefer not to manually create template files
+- You want the skill available across multiple projects
+
+**When to use manual templates (below):**
+- You need to customize the code extensively
+- You're integrating into existing codebases
+- You don't use Claude Code
 
 ## Complete Templates
 
@@ -175,7 +170,6 @@ async def main():
         },
         allowed_tools=[
             "mcp__ydc__you_search",
-            "mcp__ydc__you_express",
             "mcp__ydc__you_contents",
         ],
         model="claude-sonnet-4-5-20250929",
@@ -187,13 +181,10 @@ async def main():
         options=options,
     ):
         # Handle different message types
-        if message.type == "text":
-            print(message.content)
-        elif message.type == "tool_use":
-            print(f"\n[Tool: {message.name}]")
-            print(f"Input: {message.input}")
-        elif message.type == "tool_result":
-            print(f"Result: {message.content}")
+        # Messages from the SDK are typed objects with specific attributes
+        if hasattr(message, "result"):
+            # Final result message with the agent's response
+            print(message.result)
 
 
 if __name__ == "__main__":
@@ -247,7 +238,6 @@ async function main() {
       },
       allowedTools: [
         'mcp__ydc__you_search',
-        'mcp__ydc__you_express',
         'mcp__ydc__you_contents',
       ],
       model: 'claude-sonnet-4-5-20250929',
@@ -256,13 +246,11 @@ async function main() {
 
   // Process messages as they arrive
   for await (const msg of result) {
-    if (msg.type === 'text') {
-      console.log(msg.content);
-    } else if (msg.type === 'tool_use') {
-      console.log(`\n[Tool: ${msg.name}]`);
-      console.log(`Input: ${JSON.stringify(msg.input, null, 2)}`);
-    } else if (msg.type === 'tool_result') {
-      console.log(`Result: ${msg.content}`);
+    // Handle different message types
+    // Check for final result message
+    if ('result' in msg) {
+      // Final result message with the agent's response
+      console.log(msg.result);
     }
   }
 }
@@ -272,11 +260,14 @@ main().catch(console.error);
 
 ### TypeScript v2 Template (Complete Example)
 
+⚠️ **Preview API Warning**: This template uses `unstable_v2_createSession` which is a **preview API** subject to breaking changes. The v2 SDK is not recommended for production use. Consider using the v1 template above for stable, production-ready code.
+
 ```typescript
 /**
  * Claude Agent SDK with You.com HTTP MCP Server
  * TypeScript v2 implementation with send/receive pattern
  * Requires TypeScript 5.2+ for 'await using' support
+ * WARNING: v2 is a preview API and may have breaking changes
  */
 
 import { unstable_v2_createSession } from '@anthropic-ai/claude-agent-sdk';
@@ -317,7 +308,6 @@ async function main() {
     },
     allowedTools: [
       'mcp__ydc__you_search',
-      'mcp__ydc__you_express',
       'mcp__ydc__you_contents',
     ],
     model: 'claude-sonnet-4-5-20250929',
@@ -328,13 +318,11 @@ async function main() {
 
   // Receive and process messages
   for await (const msg of session.receive()) {
-    if (msg.type === 'text') {
-      console.log(msg.content);
-    } else if (msg.type === 'tool_use') {
-      console.log(`\n[Tool: ${msg.name}]`);
-      console.log(`Input: ${JSON.stringify(msg.input, null, 2)}`);
-    } else if (msg.type === 'tool_result') {
-      console.log(`Result: ${msg.content}`);
+    // Handle different message types
+    // Check for final result message
+    if ('result' in msg) {
+      // Final result message with the agent's response
+      console.log(msg.result);
     }
   }
 }
@@ -384,7 +372,6 @@ mcpServers: {
 
 After configuration, Claude can discover and use:
 - `mcp__ydc__you_search` - Web and news search
-- `mcp__ydc__you_express` - AI-powered answers with web context
 - `mcp__ydc__you_contents` - Web page content extraction
 
 ## Environment Variables
@@ -494,7 +481,6 @@ Verify your YDC_API_KEY is valid:
 
 Ensure `allowedTools` includes the correct tool names:
 - `mcp__ydc__you_search` (not `you_search`)
-- `mcp__ydc__you_express` (not `you_express`)
 - `mcp__ydc__you_contents` (not `you_contents`)
 
 Tool names must include the `mcp__ydc__` prefix.

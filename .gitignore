@@ -17,6 +17,10 @@ Thumbs.db
 # Dependencies
 node_modules/
 
+# Test artifacts
+generated/
+.build-test/
+
 # Logs
 *.log
 npm-debug.log*

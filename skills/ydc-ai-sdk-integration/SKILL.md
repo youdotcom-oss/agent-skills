@@ -2,46 +2,13 @@
 name: ydc-ai-sdk-integration
 description: Integrate Vercel AI SDK applications with You.com tools (web search, AI agent, content extraction). Use when developer mentions AI SDK, Vercel AI SDK, generateText, streamText, or You.com integration with AI SDK.
 license: MIT
-compatibility: Requires Node.js 18+ or Bun 1.0+ and npm/bun/yarn/pnpm
+compatibility: Requires Bun 1.3+ or Node.js 18+ 
+allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: "1.1.0"
   keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    npm: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
-  environment_variables:
-    - name: YDC_API_KEY
-      required: false
-      description: API key for You.com platform (optional if using AI provider's own key, obtain from https://you.com/platform/api-keys)
-    - name: ANTHROPIC_API_KEY
-      required: false
-      description: API key for Anthropic (if using Anthropic provider, obtain from https://console.anthropic.com/)
-    - name: OPENAI_API_KEY
-      required: false
-      description: API key for OpenAI (if using OpenAI provider, obtain from https://platform.openai.com/)
-  binaries:
-    - name: node
-      version: ">= 18.0.0"
-      description: JavaScript runtime
-      install_url: https://nodejs.org/
-      verification: "node --version"
-    - name: bun
-      version: ">= 1.0.0"
-      description: JavaScript runtime (alternative, faster)
-      install_url: https://bun.sh/
-      verification: "bun --version"
-  dependencies:
-    npm:
-      - name: "@youdotcom-oss/ai-sdk-plugin"
-        version: "latest"
-        purpose: You.com integration for Vercel AI SDK
-        source: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
-      - name: "ai"
-        version: ">=3.0.0"
-        purpose: Vercel AI SDK core
-        source: https://www.npmjs.com/package/ai
 ---
 
 # Integrate AI SDK with You.com Tools
@@ -78,11 +45,10 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
 5. **For Each File, Ask:**
    * Which tools to add?
      - `youSearch` (web search)
-     - `youExpress` (AI agent)
      - `youContents` (content extraction)
      - Multiple? (which combination?)
    * Using `generateText()` or `streamText()` in this file?
-   * Which AI provider model? (to determine if stopWhen needed)
+   * Using tools with multi-step execution? (stopWhen required for tool result processing)
 
 6. **Reference Integration Examples**
 
@@ -101,7 +67,7 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
      - Standard `YDC_API_KEY`: `youSearch()`
      - Custom name: `youSearch({ apiKey: process.env.CUSTOM_NAME })`
    * Add selected tools to tools object
-   * If streamText + Anthropic: Add stopWhen parameter
+   * If using tools with multi-step execution: Add stopWhen parameter
 
 ## Integration Examples
 
@@ -111,7 +77,7 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
-import { youContents, youExpress, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+import { youContents, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
 // Reads YDC_API_KEY from environment automatically
 const result = await generateText({
@@ -131,7 +97,6 @@ const result = await generateText({
   model: anthropic('claude-sonnet-4-5-20250929'),
   tools: {
     search: youSearch(),      // Web search with citations
-    agent: youExpress(),      // AI answers with web context
     extract: youContents(),   // Content extraction from URLs
   },
   prompt: 'Research quantum computing and summarize the key papers',
@@ -184,16 +149,16 @@ main();
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText, type StepResult } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
-
-// CRITICAL: Always use stopWhen for Anthropic streaming
-// Anthropic's SDK requires explicit stop conditions
+// CRITICAL: Always use stopWhen for multi-step tool calling
+// Required for ALL providers to process tool results automatically
+// Without this, the model only makes one generation and won't process tool results
 const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
   stepResult.stepNumber >= n;
 
 const result = streamText({
   model: anthropic('claude-sonnet-4-5-20250929'),
   tools: { search: youSearch() },
-  stopWhen: stepCountIs(3),  // Required for Anthropic
+  stopWhen: stepCountIs(3),  // Required for multi-step execution
   prompt: 'What are the latest AI developments?',
 });
 
@@ -354,24 +319,22 @@ tools: {
 
 **Multiple tools with standard env var:**
 ```typescript
-import { youSearch, youExpress, youContents } from '@youdotcom-oss/ai-sdk-plugin';
+import { youSearch, youContents } from '@youdotcom-oss/ai-sdk-plugin';
 
 tools: {
   search: youSearch(),
-  agent: youExpress(),
   extract: youContents(),
 }
 ```
 
 **Multiple tools with custom env var:**
 ```typescript
-import { youSearch, youExpress, youContents } from '@youdotcom-oss/ai-sdk-plugin';
+import { youSearch, youContents } from '@youdotcom-oss/ai-sdk-plugin';
 
 const apiKey = process.env.THEIR_CUSTOM_NAME;
 
 tools: {
   search: youSearch({ apiKey }),
-  agent: youExpress({ apiKey }),
   extract: youContents({ apiKey }),
 }
 ```
@@ -380,9 +343,6 @@ tools: {
 
 ### youSearch
 Web and news search - model determines parameters (query, count, country, etc.)
-
-### youExpress
-AI agent with web context - model determines parameters (input, tools)
 
 ### youContents
 Web page content extraction - model determines parameters (urls, format)
@@ -395,7 +355,7 @@ The examples above demonstrate:
 * Tool configuration based on env var
 * generateText/streamText usage with tools
 * Result handling (especially textStream destructuring for streamText)
-* Anthropic streaming pattern (stopWhen: stepCountIs(3))
+* Multi-step tool calling pattern (stopWhen: stepCountIs(3))
 * Web framework integration (Next.js, Express, React)
 
 ## Implementation Checklist
@@ -409,7 +369,7 @@ For each file being updated/created:
   - Standard env: `toolName()`
   - Custom env: `toolName({ apiKey })`
 - [ ] If streamText: Destructured `const { textStream } = ...`
-- [ ] If Anthropic + streamText: Added `stopWhen: stepCountIs(3)`
+- [ ] If using tools with multi-step execution: Added `stopWhen: stepCountIs(3)`
 
 Global checklist:
 

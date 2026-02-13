@@ -1,48 +1,17 @@
 ---
 name: teams-anthropic-integration
-description: Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
+description: |
+  Add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications using @youdotcom-oss/teams-anthropic. Optionally integrate You.com MCP server for web search and content extraction.
+  - MANDATORY TRIGGERS: teams-anthropic, @youdotcom-oss/teams-anthropic, Microsoft Teams.ai, Teams AI, Anthropic Claude, Teams MCP, Teams bot
+  - Use when: building Microsoft Teams bots with Claude, integrating Anthropic with Teams.ai, adding MCP tools to Teams applications
 license: MIT
-compatibility: Node.js 18+ or Bun 1.0+, @microsoft/teams.ai
+compatibility: Requires Bun 1.3+ or Node.js 24+
+allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
+  version: "1.1.1"
   category: enterprise-integration
-  version: "1.1.0"
   keywords: microsoft-teams,teams-ai,anthropic,claude,mcp,you.com,web-search,content-extraction
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    npm: https://www.npmjs.com/package/@youdotcom-oss/teams-anthropic
-  environment_variables:
-    - name: ANTHROPIC_API_KEY
-      required: true
-      description: API key for Anthropic Claude API (obtain from https://console.anthropic.com/)
-    - name: YDC_API_KEY
-      required: false
-      description: API key for You.com platform (required only for Path B - MCP Integration, obtain from https://you.com/platform/api-keys)
-  binaries:
-    - name: node
-      version: ">= 18.0.0"
-      description: JavaScript runtime
-      install_url: https://nodejs.org/
-      verification: "node --version"
-    - name: bun
-      version: ">= 1.0.0"
-      description: JavaScript runtime (alternative, faster)
-      install_url: https://bun.sh/
-      verification: "bun --version"
-  dependencies:
-    npm:
-      - name: "@youdotcom-oss/teams-anthropic"
-        version: "latest"
-        purpose: You.com integration for Microsoft Teams.ai framework
-        source: https://www.npmjs.com/package/@youdotcom-oss/teams-anthropic
-      - name: "@anthropic-ai/sdk"
-        version: ">=0.24.0"
-        purpose: Anthropic Claude SDK
-        source: https://www.npmjs.com/package/@anthropic-ai/sdk
-      - name: "@microsoft/teams.ai"
-        version: "latest"
-        purpose: Microsoft Teams AI framework
-        source: https://www.npmjs.com/package/@microsoft/teams.ai
 ---
 
 # Build Teams.ai Apps with Anthropic Claude
@@ -99,7 +68,7 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 **For NEW Apps:**
 
 ```typescript
-import { App } from '@microsoft/teams.apps';
+import { App, MessageActivity } from '@microsoft/teams.apps';
 import { AnthropicChatModel, AnthropicModel } from '@youdotcom-oss/teams-anthropic';
 
 if (!process.env.ANTHROPIC_API_KEY) {
@@ -125,7 +94,8 @@ app.on('message', async ({ send, activity }) => {
   );
 
   if (response.content) {
-    await send(response.content);
+    const message = new MessageActivity(response.content).addAiGenerated();
+    await send(message);
   }
 });
 
@@ -201,7 +171,7 @@ YDC_API_KEY=your-you-com-api-key
 **For NEW Apps:**
 
 ```typescript
-import { App } from '@microsoft/teams.apps';
+import { App, MessageActivity } from '@microsoft/teams.apps';
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { ConsoleLogger } from '@microsoft/teams.common';
 import { McpClientPlugin } from '@microsoft/teams.mcpclient';
@@ -245,7 +215,8 @@ app.on('message', async ({ send, activity }) => {
 
   const result = await prompt.send(activity.text);
   if (result.content) {
-    await send(result.content);
+    const message = new MessageActivity(result.content).addAiGenerated();
+    await send(message);
   }
 });
 
@@ -324,15 +295,19 @@ Ask Claude a question that requires web search:
 ### Streaming Responses
 
 ```typescript
-const response = await model.send(
-  { role: 'user', content: 'Write a short story' },
-  {
-    onChunk: async (delta) => {
-      // Stream each token as it arrives
-      process.stdout.write(delta);
-    },
-  }
-);
+app.on('message', async ({ send, stream, activity }) => {
+  await send({ type: 'typing' });
+
+  const response = await model.send(
+    { role: 'user', content: activity.text },
+    {
+      onChunk: async (delta) => {
+        // Stream each token to Teams client
+        stream.emit(delta);
+      },
+    }
+  );
+});
 ```
 
 ### Function Calling
@@ -448,6 +423,8 @@ getYouMcpConfig({ apiKey: 'your-custom-key' })
 ## Resources
 
 * **Package**: https://github.com/youdotcom-oss/dx-toolkit/tree/main/packages/teams-anthropic
+* **Microsoft Teams AI Library**: https://learn.microsoft.com/en-us/microsoftteams/platform/teams-ai-library/getting-started/overview
+* **Teams AI In-Depth Guides**: https://learn.microsoft.com/en-us/microsoftteams/platform/teams-ai-library/in-depth-guides/ai/overview?pivots=typescript
 * **You.com MCP**: https://documentation.you.com/developer-resources/mcp-server
 * **Anthropic API**: https://console.anthropic.com/
 * **You.com API Keys**: https://you.com/platform/api-keys

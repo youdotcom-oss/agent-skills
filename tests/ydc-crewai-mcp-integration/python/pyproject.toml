@@ -1,0 +1,13 @@
+[project]
+name = "test-crewai-mcp"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "crewai>=0.1.0",
+    "mcp>=0.1.0",
+    "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
