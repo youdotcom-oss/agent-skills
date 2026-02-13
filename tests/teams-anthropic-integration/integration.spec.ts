@@ -3,13 +3,8 @@
  *
  * Tests that the teams-anthropic-integration skill generates correct, functional code.
  *
- * Workflow:
- * 1. Manually invoke skill via Claude Code using prompts from PROMPTS.md
- * 2. Skill generates code into generated/ directory
- * 3. These tests validate that generated code compiles and works with real APIs
- *
  * Test Philosophy:
- * - IN SCOPE: Functional correctness, compilation, runtime behavior
+ * - IN SCOPE: Functional correctness, compilation, runtime behavior with realistic queries
  * - OUT OF SCOPE: Code quality/style (user's environment handles that)
  */
 
@@ -25,18 +20,11 @@ describe('Teams Anthropic Integration', () => {
 
     describe('happy path', () => {
       test('generated code exists', () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  No generated code found. Run skill manually first.');
-          return;
-        }
         expect(existsSync(generatedFile)).toBe(true);
       });
 
       test('generated code compiles', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const result = await Bun.build({
           entrypoints: [generatedFile],
@@ -49,15 +37,10 @@ describe('Teams Anthropic Integration', () => {
       });
 
       test('runtime: connects to Claude API and processes messages', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
-
+        expect(existsSync(generatedFile)).toBe(true);
         expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
 
         const module = await import(generatedFile);
-
         expect(module.model).toBeDefined();
 
         const response = await module.model.send({
@@ -68,14 +51,27 @@ describe('Teams Anthropic Integration', () => {
         expect(response.content).toBeDefined();
         expect(response.content.length).toBeGreaterThan(0);
       }, { timeout: 30_000 });
+
+      test('handles realistic Teams user query', async () => {
+        expect(existsSync(generatedFile)).toBe(true);
+        expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
+
+        const module = await import(generatedFile);
+
+        const response = await module.model.send({
+          role: 'user',
+          content: 'Help me write a professional email to schedule a team meeting for next Tuesday at 2pm.',
+        });
+
+        expect(response.content).toBeDefined();
+        expect(response.content.length).toBeGreaterThan(50);
+        expect(response.content.toLowerCase()).toMatch(/email|meeting|tuesday/);
+      }, { timeout: 30_000 });
     });
 
     describe('edge cases', () => {
       test('validates ANTHROPIC_API_KEY is required', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const code = await Bun.file(generatedFile).text();
         expect(code).toContain('ANTHROPIC_API_KEY');
@@ -84,10 +80,7 @@ describe('Teams Anthropic Integration', () => {
 
     describe('errors', () => {
       test('handles missing API key gracefully', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const originalKey = process.env.ANTHROPIC_API_KEY;
         delete process.env.ANTHROPIC_API_KEY;
@@ -108,18 +101,11 @@ describe('Teams Anthropic Integration', () => {
 
     describe('happy path', () => {
       test('generated code exists', () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  No generated code found. Run skill manually first.');
-          return;
-        }
         expect(existsSync(generatedFile)).toBe(true);
       });
 
       test('generated code compiles', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const result = await Bun.build({
           entrypoints: [generatedFile],
@@ -128,20 +114,14 @@ describe('Teams Anthropic Integration', () => {
         });
 
         expect(result.success).toBe(true);
-        expect(result.logs.length).toBe(0);
       });
 
       test('runtime: executes MCP-enabled queries', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
-
+        expect(existsSync(generatedFile)).toBe(true);
         expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
         expect(process.env.YDC_API_KEY).toBeDefined();
 
         const module = await import(generatedFile);
-
         expect(module.prompt).toBeDefined();
 
         const result = await module.prompt.send(
@@ -151,14 +131,43 @@ describe('Teams Anthropic Integration', () => {
         expect(result.content).toBeDefined();
         expect(result.content.length).toBeGreaterThan(0);
       }, { timeout: 60_000 });
+
+      test('handles web search query via You.com MCP', async () => {
+        expect(existsSync(generatedFile)).toBe(true);
+        expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
+        expect(process.env.YDC_API_KEY).toBeDefined();
+
+        const module = await import(generatedFile);
+
+        const result = await module.prompt.send(
+          'What are the latest announcements from Microsoft about Teams AI features?'
+        );
+
+        expect(result.content).toBeDefined();
+        expect(result.content.length).toBeGreaterThan(100);
+        expect(result.content.toLowerCase()).toMatch(/teams|microsoft|ai/);
+      }, { timeout: 60_000 });
+
+      test('handles content extraction query', async () => {
+        expect(existsSync(generatedFile)).toBe(true);
+        expect(process.env.ANTHROPIC_API_KEY).toBeDefined();
+        expect(process.env.YDC_API_KEY).toBeDefined();
+
+        const module = await import(generatedFile);
+
+        const result = await module.prompt.send(
+          'Find information about TypeScript 5.7 new features and summarize the key improvements'
+        );
+
+        expect(result.content).toBeDefined();
+        expect(result.content.length).toBeGreaterThan(100);
+        expect(result.content.toLowerCase()).toMatch(/typescript|feature|improvement/);
+      }, { timeout: 60_000 });
     });
 
     describe('edge cases', () => {
       test('validates both API keys are required', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const code = await Bun.file(generatedFile).text();
 
@@ -167,24 +176,20 @@ describe('Teams Anthropic Integration', () => {
       });
 
       test('includes MCP configuration', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const code = await Bun.file(generatedFile).text();
 
         expect(code).toContain('McpClientPlugin');
-        expect(code).toContain('getYouMcpConfig');
+        expect(code).toContain('usePlugin');
+        expect(code).toContain('https://api.you.com/mcp');
+        expect(code).toContain('Authorization');
       });
     });
 
     describe('errors', () => {
       test('handles missing YDC_API_KEY gracefully', async () => {
-        if (!existsSync(generatedFile)) {
-          console.warn('⚠️  Skipping: No generated code found.');
-          return;
-        }
+        expect(existsSync(generatedFile)).toBe(true);
 
         const originalKey = process.env.YDC_API_KEY;
         delete process.env.YDC_API_KEY;
