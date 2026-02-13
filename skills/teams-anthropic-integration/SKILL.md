@@ -68,14 +68,13 @@ ANTHROPIC_API_KEY=your-anthropic-api-key
 **For NEW Apps:**
 
 ```typescript
-import { App, MessageActivity } from '@microsoft/teams.apps';
 import { AnthropicChatModel, AnthropicModel } from '@youdotcom-oss/teams-anthropic';
 
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY environment variable is required');
 }
 
-const model = new AnthropicChatModel({
+export const model = new AnthropicChatModel({
   model: AnthropicModel.CLAUDE_SONNET_4_5,
   apiKey: process.env.ANTHROPIC_API_KEY,
   requestOptions: {
@@ -84,22 +83,8 @@ const model = new AnthropicChatModel({
   },
 });
 
-const app = new App();
-
-app.on('message', async ({ send, activity }) => {
-  await send({ type: 'typing' });
-
-  const response = await model.send(
-    { role: 'user', content: activity.text }
-  );
-
-  if (response.content) {
-    const message = new MessageActivity(response.content).addAiGenerated();
-    await send(message);
-  }
-});
-
-app.start().catch(console.error);
+// Use model.send() to interact with Claude
+// Example: const response = await model.send({ role: 'user', content: 'Hello!' });
 ```
 
 **For EXISTING Apps:**
@@ -171,17 +156,14 @@ YDC_API_KEY=your-you-com-api-key
 **For NEW Apps:**
 
 ```typescript
-import { App, MessageActivity } from '@microsoft/teams.apps';
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { ConsoleLogger } from '@microsoft/teams.common';
 import { McpClientPlugin } from '@microsoft/teams.mcpclient';
 import {
   AnthropicChatModel,
   AnthropicModel,
-  getYouMcpConfig,
 } from '@youdotcom-oss/teams-anthropic';
 
-// Validate environment
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY environment variable is required');
 }
@@ -190,37 +172,34 @@ if (!process.env.YDC_API_KEY) {
   throw new Error('YDC_API_KEY environment variable is required');
 }
 
-// Configure logger
 const logger = new ConsoleLogger('mcp-client', { level: 'info' });
 
-// Create prompt with MCP integration
-const prompt = new ChatPrompt(
-  {
-    instructions: 'You are a helpful assistant with access to web search and content extraction. Use these tools to provide accurate, up-to-date information.',
-    model: new AnthropicChatModel({
-      model: AnthropicModel.CLAUDE_SONNET_4_5,
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      requestOptions: {
-        max_tokens: 2048,
-      },
-    }),
+const model = new AnthropicChatModel({
+  model: AnthropicModel.CLAUDE_SONNET_4_5,
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  requestOptions: {
+    max_tokens: 2048,
   },
-  [new McpClientPlugin({ logger })],
-).usePlugin('mcpClient', getYouMcpConfig());
-
-const app = new App();
-
-app.on('message', async ({ send, activity }) => {
-  await send({ type: 'typing' });
-
-  const result = await prompt.send(activity.text);
-  if (result.content) {
-    const message = new MessageActivity(result.content).addAiGenerated();
-    await send(message);
-  }
 });
 
-app.start().catch(console.error);
+export const prompt = new ChatPrompt(
+  {
+    instructions: 'You are a helpful assistant with access to web search and content extraction. Use these tools to provide accurate, up-to-date information.',
+    model,
+  },
+  [new McpClientPlugin({ logger })],
+).usePlugin('mcpClient', {
+  url: 'https://api.you.com/mcp',
+  params: {
+    headers: {
+      'User-Agent': 'MCP/(You.com; microsoft-teams)',
+      Authorization: `Bearer ${process.env.YDC_API_KEY}`,
+    },
+  },
+});
+
+// Use prompt.send() to interact with Claude + MCP tools
+// Example: const result = await prompt.send('Search for TypeScript documentation');
 ```
 
 **For EXISTING Apps with Claude:**
@@ -237,7 +216,6 @@ If you already have Path A setup, add MCP integration:
    import { ChatPrompt } from '@microsoft/teams.ai';
    import { ConsoleLogger } from '@microsoft/teams.common';
    import { McpClientPlugin } from '@microsoft/teams.mcpclient';
-   import { getYouMcpConfig } from '@youdotcom-oss/teams-anthropic';
    ```
 
 3. **Validate You.com API key:**
@@ -260,12 +238,20 @@ If you already have Path A setup, add MCP integration:
        }),
      },
      [new McpClientPlugin({ logger })],
-   ).usePlugin('mcpClient', getYouMcpConfig());
+   ).usePlugin('mcpClient', {
+     url: 'https://api.you.com/mcp',
+     params: {
+       headers: {
+         'User-Agent': 'MCP/(You.com; microsoft-teams)',
+         Authorization: `Bearer ${process.env.YDC_API_KEY}`,
+       },
+     },
+   });
    ```
 
 5. **Use prompt.send() instead of model.send():**
    ```typescript
-   const result = await prompt.send(activity.text);
+   const result = await prompt.send('Your message here');
    ```
 
 ### B5. Test MCP Integration
@@ -369,7 +355,7 @@ const response = await model.send(
 - [ ] Additional package installed: `@microsoft/teams.mcpclient`
 - [ ] Environment variable set: `YDC_API_KEY`
 - [ ] Logger configured
-- [ ] ChatPrompt configured with `getYouMcpConfig()`
+- [ ] ChatPrompt configured with direct MCP configuration
 - [ ] App tested with web search queries
 
 ## Common Issues
@@ -405,20 +391,26 @@ npm install @youdotcom-oss/teams-anthropic @anthropic-ai/sdk
 npm install @microsoft/teams.mcpclient
 ```
 
-## getYouMcpConfig() Utility
+## You.com MCP Configuration
 
-Automatically configures You.com MCP connection:
-- **URL**: `https://api.you.com/mcp`
-- **Authentication**: Bearer token from `YDC_API_KEY`
-- **User-Agent**: Includes package version for telemetry
+Configure You.com MCP server connection directly:
 
 ```typescript
-// Option 1: Use environment variable (recommended)
-getYouMcpConfig()
-
-// Option 2: Custom API key
-getYouMcpConfig({ apiKey: 'your-custom-key' })
+.usePlugin('mcpClient', {
+  url: 'https://api.you.com/mcp',
+  params: {
+    headers: {
+      'User-Agent': 'MCP/(You.com; microsoft-teams)',
+      Authorization: `Bearer ${process.env.YDC_API_KEY}`,
+    },
+  },
+})
 ```
+
+**Configuration options:**
+- **url**: `https://api.you.com/mcp` (You.com's hosted MCP endpoint)
+- **Authorization**: Bearer token from `YDC_API_KEY` environment variable
+- **User-Agent**: Custom user agent for telemetry (optional)
 
 ## Resources
 
