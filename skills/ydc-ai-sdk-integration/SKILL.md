@@ -73,11 +73,17 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
 
 ### generateText() - Basic Text Generation
 
-**Environment Variables Setup:**
+**CRITICAL: Always use stopWhen for multi-step tool calling**
+Required for proper tool result processing. Without this, tool results may not be integrated into the response.
+
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { youContents, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+// Helper function for multi-step execution control
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
 
 // Reads YDC_API_KEY from environment automatically
 const result = await generateText({
@@ -85,6 +91,7 @@ const result = await generateText({
   tools: {
     search: youSearch(),
   },
+  stopWhen: stepCountIs(3),  // Required for tool result processing
   prompt: 'What are the latest developments in quantum computing?',
 });
 
@@ -99,6 +106,7 @@ const result = await generateText({
     search: youSearch(),      // Web search with citations
     extract: youContents(),   // Content extraction from URLs
   },
+  stopWhen: stepCountIs(5),   // Higher count for multi-tool workflows
   prompt: 'Research quantum computing and summarize the key papers',
 });
 ```
@@ -110,6 +118,7 @@ const result = await generateText({
   tools: {
     search: youSearch({ apiKey: 'your-custom-key' }),
   },
+  stopWhen: stepCountIs(3),
   prompt: 'Your prompt here',
 });
 ```
@@ -117,8 +126,12 @@ const result = await generateText({
 **Complete Example:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import { generateText, stepCountIs, type StepResult } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+
+// Helper function for multi-step execution control
+const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
+  stepResult.stepNumber >= n;
 
 const main = async () => {
   try {
@@ -127,7 +140,7 @@ const main = async () => {
       tools: {
         search: youSearch(),
       },
-      maxSteps: 5,
+      stopWhen: stepCountIs(3),  // Required for proper tool result processing
       prompt: 'What are the latest developments in quantum computing?',
     });
 
@@ -369,7 +382,9 @@ For each file being updated/created:
   - Standard env: `toolName()`
   - Custom env: `toolName({ apiKey })`
 - [ ] If streamText: Destructured `const { textStream } = ...`
-- [ ] If using tools with multi-step execution: Added `stopWhen: stepCountIs(3)`
+- [ ] If generateText with tools: Added `stopWhen: stepCountIs(3)` for tool result processing
+- [ ] If streamText with tools: Added `stopWhen: stepCountIs(3)` for multi-step execution
+- [ ] Imported `stepCountIs` from 'ai' and defined helper function
 
 Global checklist:
 
@@ -389,8 +404,11 @@ Global checklist:
 **Issue**: "Tool execution fails with 401"
 **Fix**: Verify API key is valid
 
+**Issue**: "Tool executes but no text generated" or "Empty response with tool calls"
+**Fix**: Add `stopWhen: stepCountIs(n)` to ensure tool results are processed. Start with n=3 for single tools, n=5 for multiple tools
+
 **Issue**: "Incomplete or missing response"
-**Fix**: If using streamText, increase the step count. Start with 3 and iterate up as needed (see README troubleshooting)
+**Fix**: Increase the step count in `stopWhen`. Start with 3 and iterate up as needed
 
 **Issue**: "textStream is not iterable"
 **Fix**: Destructure: `const { textStream } = streamText(...)`
