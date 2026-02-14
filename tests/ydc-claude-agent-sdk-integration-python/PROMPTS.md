@@ -115,3 +115,19 @@ Each generated file should:
 - [ ] Use type hints for function parameters
 - [ ] Include docstrings for main functions
 - [ ] Export a `main()` async function for testing
+
+---
+
+## Testing Notes
+
+**Environment Setup:**
+
+These integration tests are designed to run inside Claude Code. The `conftest.py` file automatically unsets the `CLAUDECODE` environment variable to bypass nested session protection, allowing the Python SDK to spawn Claude Code as a subprocess during testing.
+
+**Why this is needed:**
+- Claude Agent SDK (Python) launches Claude Code as a subprocess to execute queries
+- The `CLAUDECODE` environment variable prevents nested Claude Code sessions
+- Tests need to unset this variable to allow the subprocess to run
+
+**For normal usage:**
+Users won't encounter this issue - they'll be running their own applications that use the SDK, not running tests inside Claude Code. This workaround is purely for automated testing infrastructure.
