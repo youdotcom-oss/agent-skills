@@ -81,10 +81,6 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { generateText, stepCountIs } from 'ai';
 import { youContents, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
-// Helper function for multi-step execution control
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
-
 // Reads YDC_API_KEY from environment automatically
 const result = await generateText({
   model: anthropic('claude-sonnet-4-5-20250929'),
@@ -126,12 +122,8 @@ const result = await generateText({
 **Complete Example:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { generateText, stepCountIs, type StepResult } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
-
-// Helper function for multi-step execution control
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 const main = async () => {
   try {
@@ -160,13 +152,10 @@ main();
 **Basic Streaming with stopWhen Pattern:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 // CRITICAL: Always use stopWhen for multi-step tool calling
 // Required for ALL providers to process tool results automatically
-// Without this, the model only makes one generation and won't process tool results
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 const result = streamText({
   model: anthropic('claude-sonnet-4-5-20250929'),
@@ -185,11 +174,8 @@ for await (const chunk of result.textStream) {
 ```typescript
 // app/api/chat/route.ts
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs, type StepResult } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
-
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
@@ -210,14 +196,11 @@ export async function POST(req: Request) {
 // server.ts
 import express from 'express';
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
 const app = express();
 app.use(express.json());
-
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 app.post('/api/chat', async (req, res) => {
   const { prompt } = req.body;
@@ -274,11 +257,9 @@ export default function Chat() {
 **Complete Streaming Example:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 const main = async () => {
   try {
@@ -384,7 +365,7 @@ For each file being updated/created:
 - [ ] If streamText: Destructured `const { textStream } = ...`
 - [ ] If generateText with tools: Added `stopWhen: stepCountIs(3)` for tool result processing
 - [ ] If streamText with tools: Added `stopWhen: stepCountIs(3)` for multi-step execution
-- [ ] Imported `stepCountIs` from 'ai' and defined helper function
+- [ ] Imported `stepCountIs` from 'ai'
 
 Global checklist:
 
