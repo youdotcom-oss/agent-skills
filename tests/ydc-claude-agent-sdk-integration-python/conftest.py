@@ -22,7 +22,7 @@ def pytest_configure(config):
 
     if env_file.exists():
         # Simple .env parser (key=value format)
-        with open(env_file) as f:
+        with env_file.open() as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:

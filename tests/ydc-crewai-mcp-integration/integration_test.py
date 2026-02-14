@@ -116,7 +116,9 @@ class TestPathBToolFilter:
                 section_start = code.index("allowed_tool_names")
                 section_end = code.index("]", section_start) + 1
                 section = code[section_start:section_end]
-                assert "you-contents" not in section, "you-contents should not be in allowed_tool_names"
+                assert "you-contents" not in section, (
+                    "you-contents should not be in allowed_tool_names"
+                )
                 break
 
     @pytest.mark.skipif(
@@ -157,7 +159,11 @@ class TestPathCCustomKey:
         # Should use CUSTOM_YDC_KEY, not YDC_API_KEY
         assert "CUSTOM_YDC_KEY" in code, "Should use custom key"
         # It's OK if YDC_API_KEY appears in comments/docstrings, but not in getenv
-        lines = [line for line in code.split("\n") if "getenv" in line and not line.strip().startswith("#")]
+        lines = [
+            line
+            for line in code.split("\n")
+            if "getenv" in line and not line.strip().startswith("#")
+        ]
         for line in lines:
             if "getenv" in line:
                 assert "YDC_API_KEY" not in line, f"Should not use YDC_API_KEY in getenv: {line}"
