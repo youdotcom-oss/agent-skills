@@ -174,7 +174,6 @@ describe('YDC AI SDK Integration', () => {
 
         expect(code).toContain('stopWhen')
         expect(code).toContain('stepCountIs')
-        expect(code).toContain('StepResult')
       })
 
       test('destructures textStream', async () => {

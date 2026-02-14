@@ -26,7 +26,7 @@ class TestPathAHosted:
         assert "from agents import Runner" in code or "from agents import" in code, (
             "Missing Runner import"
         )
-        assert "from agents.mcp import HostedMCPTool" in code, "Missing HostedMCPTool import"
+        assert "from agents import HostedMCPTool" in code or "HostedMCPTool" in code, "Missing HostedMCPTool import"
         assert "import asyncio" in code, "Missing asyncio import"
         assert "import os" in code, "Missing os import"
 

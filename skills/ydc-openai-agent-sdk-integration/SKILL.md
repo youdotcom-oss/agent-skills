@@ -58,7 +58,7 @@ Interactive workflow to set up OpenAI Agents SDK with You.com's MCP server.
    **Hosted MCP configuration block (Python)**:
    ```python
    from agents import Agent, Runner
-   from agents.mcp import HostedMCPTool
+   from agents import HostedMCPTool
 
    # Validate: ydc_api_key = os.getenv("YDC_API_KEY")
    agent = Agent(
@@ -160,7 +160,7 @@ Python implementation with OpenAI-managed infrastructure
 import os
 import asyncio
 from agents import Agent, Runner
-from agents.mcp import HostedMCPTool
+from agents import HostedMCPTool
 
 # Validate environment variables
 ydc_api_key = os.getenv("YDC_API_KEY")
@@ -434,7 +434,7 @@ main().catch(console.error);
 
 **Python:**
 ```python
-from agents.mcp import HostedMCPTool
+from agents import HostedMCPTool
 
 tools=[
     HostedMCPTool(
