@@ -2,46 +2,13 @@
 name: ydc-ai-sdk-integration
 description: Integrate Vercel AI SDK applications with You.com tools (web search, AI agent, content extraction). Use when developer mentions AI SDK, Vercel AI SDK, generateText, streamText, or You.com integration with AI SDK.
 license: MIT
-compatibility: Requires Node.js 18+ or Bun 1.0+ and npm/bun/yarn/pnpm
+compatibility: Requires Bun 1.3+ or Node.js 18+ 
+allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: "1.1.0"
   keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    npm: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
-  environment_variables:
-    - name: YDC_API_KEY
-      required: false
-      description: API key for You.com platform (optional if using AI provider's own key, obtain from https://you.com/platform/api-keys)
-    - name: ANTHROPIC_API_KEY
-      required: false
-      description: API key for Anthropic (if using Anthropic provider, obtain from https://console.anthropic.com/)
-    - name: OPENAI_API_KEY
-      required: false
-      description: API key for OpenAI (if using OpenAI provider, obtain from https://platform.openai.com/)
-  binaries:
-    - name: node
-      version: ">= 18.0.0"
-      description: JavaScript runtime
-      install_url: https://nodejs.org/
-      verification: "node --version"
-    - name: bun
-      version: ">= 1.0.0"
-      description: JavaScript runtime (alternative, faster)
-      install_url: https://bun.sh/
-      verification: "bun --version"
-  dependencies:
-    npm:
-      - name: "@youdotcom-oss/ai-sdk-plugin"
-        version: "latest"
-        purpose: You.com integration for Vercel AI SDK
-        source: https://www.npmjs.com/package/@youdotcom-oss/ai-sdk-plugin
-      - name: "ai"
-        version: ">=3.0.0"
-        purpose: Vercel AI SDK core
-        source: https://www.npmjs.com/package/ai
 ---
 
 # Integrate AI SDK with You.com Tools
@@ -78,11 +45,10 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
 5. **For Each File, Ask:**
    * Which tools to add?
      - `youSearch` (web search)
-     - `youExpress` (AI agent)
      - `youContents` (content extraction)
      - Multiple? (which combination?)
    * Using `generateText()` or `streamText()` in this file?
-   * Which AI provider model? (to determine if stopWhen needed)
+   * Using tools with multi-step execution? (stopWhen required for tool result processing)
 
 6. **Reference Integration Examples**
 
@@ -101,17 +67,19 @@ Interactive workflow to add You.com tools to your Vercel AI SDK application usin
      - Standard `YDC_API_KEY`: `youSearch()`
      - Custom name: `youSearch({ apiKey: process.env.CUSTOM_NAME })`
    * Add selected tools to tools object
-   * If streamText + Anthropic: Add stopWhen parameter
+   * If using tools with multi-step execution: Add stopWhen parameter
 
 ## Integration Examples
 
 ### generateText() - Basic Text Generation
 
-**Environment Variables Setup:**
+**CRITICAL: Always use stopWhen for multi-step tool calling**
+Required for proper tool result processing. Without this, tool results may not be integrated into the response.
+
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
-import { youContents, youExpress, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
+import { generateText, stepCountIs } from 'ai';
+import { youContents, youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
 // Reads YDC_API_KEY from environment automatically
 const result = await generateText({
@@ -119,6 +87,7 @@ const result = await generateText({
   tools: {
     search: youSearch(),
   },
+  stopWhen: stepCountIs(3),  // Required for tool result processing
   prompt: 'What are the latest developments in quantum computing?',
 });
 
@@ -131,9 +100,9 @@ const result = await generateText({
   model: anthropic('claude-sonnet-4-5-20250929'),
   tools: {
     search: youSearch(),      // Web search with citations
-    agent: youExpress(),      // AI answers with web context
     extract: youContents(),   // Content extraction from URLs
   },
+  stopWhen: stepCountIs(5),   // Higher count for multi-tool workflows
   prompt: 'Research quantum computing and summarize the key papers',
 });
 ```
@@ -145,6 +114,7 @@ const result = await generateText({
   tools: {
     search: youSearch({ apiKey: 'your-custom-key' }),
   },
+  stopWhen: stepCountIs(3),
   prompt: 'Your prompt here',
 });
 ```
@@ -152,7 +122,7 @@ const result = await generateText({
 **Complete Example:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
 const main = async () => {
@@ -162,7 +132,7 @@ const main = async () => {
       tools: {
         search: youSearch(),
       },
-      maxSteps: 5,
+      stopWhen: stepCountIs(3),  // Required for proper tool result processing
       prompt: 'What are the latest developments in quantum computing?',
     });
 
@@ -182,18 +152,15 @@ main();
 **Basic Streaming with stopWhen Pattern:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
-
-// CRITICAL: Always use stopWhen for Anthropic streaming
-// Anthropic's SDK requires explicit stop conditions
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
+// CRITICAL: Always use stopWhen for multi-step tool calling
+// Required for ALL providers to process tool results automatically
 
 const result = streamText({
   model: anthropic('claude-sonnet-4-5-20250929'),
   tools: { search: youSearch() },
-  stopWhen: stepCountIs(3),  // Required for Anthropic
+  stopWhen: stepCountIs(3),  // Required for multi-step execution
   prompt: 'What are the latest AI developments?',
 });
 
@@ -207,11 +174,8 @@ for await (const chunk of result.textStream) {
 ```typescript
 // app/api/chat/route.ts
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs, type StepResult } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
-
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
@@ -232,14 +196,11 @@ export async function POST(req: Request) {
 // server.ts
 import express from 'express';
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
 const app = express();
 app.use(express.json());
-
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 app.post('/api/chat', async (req, res) => {
   const { prompt } = req.body;
@@ -296,11 +257,9 @@ export default function Chat() {
 **Complete Streaming Example:**
 ```typescript
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText, type StepResult } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { youSearch } from '@youdotcom-oss/ai-sdk-plugin';
 
-const stepCountIs = (n: number) => (stepResult: StepResult<any>) =>
-  stepResult.stepNumber >= n;
 
 const main = async () => {
   try {
@@ -354,24 +313,22 @@ tools: {
 
 **Multiple tools with standard env var:**
 ```typescript
-import { youSearch, youExpress, youContents } from '@youdotcom-oss/ai-sdk-plugin';
+import { youSearch, youContents } from '@youdotcom-oss/ai-sdk-plugin';
 
 tools: {
   search: youSearch(),
-  agent: youExpress(),
   extract: youContents(),
 }
 ```
 
 **Multiple tools with custom env var:**
 ```typescript
-import { youSearch, youExpress, youContents } from '@youdotcom-oss/ai-sdk-plugin';
+import { youSearch, youContents } from '@youdotcom-oss/ai-sdk-plugin';
 
 const apiKey = process.env.THEIR_CUSTOM_NAME;
 
 tools: {
   search: youSearch({ apiKey }),
-  agent: youExpress({ apiKey }),
   extract: youContents({ apiKey }),
 }
 ```
@@ -380,9 +337,6 @@ tools: {
 
 ### youSearch
 Web and news search - model determines parameters (query, count, country, etc.)
-
-### youExpress
-AI agent with web context - model determines parameters (input, tools)
 
 ### youContents
 Web page content extraction - model determines parameters (urls, format)
@@ -395,7 +349,7 @@ The examples above demonstrate:
 * Tool configuration based on env var
 * generateText/streamText usage with tools
 * Result handling (especially textStream destructuring for streamText)
-* Anthropic streaming pattern (stopWhen: stepCountIs(3))
+* Multi-step tool calling pattern (stopWhen: stepCountIs(3))
 * Web framework integration (Next.js, Express, React)
 
 ## Implementation Checklist
@@ -409,7 +363,9 @@ For each file being updated/created:
   - Standard env: `toolName()`
   - Custom env: `toolName({ apiKey })`
 - [ ] If streamText: Destructured `const { textStream } = ...`
-- [ ] If Anthropic + streamText: Added `stopWhen: stepCountIs(3)`
+- [ ] If generateText with tools: Added `stopWhen: stepCountIs(3)` for tool result processing
+- [ ] If streamText with tools: Added `stopWhen: stepCountIs(3)` for multi-step execution
+- [ ] Imported `stepCountIs` from 'ai'
 
 Global checklist:
 
@@ -429,8 +385,11 @@ Global checklist:
 **Issue**: "Tool execution fails with 401"
 **Fix**: Verify API key is valid
 
+**Issue**: "Tool executes but no text generated" or "Empty response with tool calls"
+**Fix**: Add `stopWhen: stepCountIs(n)` to ensure tool results are processed. Start with n=3 for single tools, n=5 for multiple tools
+
 **Issue**: "Incomplete or missing response"
-**Fix**: If using streamText, increase the step count. Start with 3 and iterate up as needed (see README troubleshooting)
+**Fix**: Increase the step count in `stopWhen`. Start with 3 and iterate up as needed
 
 **Issue**: "textStream is not iterable"
 **Fix**: Destructure: `const { textStream } = streamText(...)`

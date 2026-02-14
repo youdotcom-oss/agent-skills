@@ -1,51 +1,17 @@
 ---
 name: ydc-openai-agent-sdk-integration
-description: Integrate OpenAI Agents SDK with You.com MCP server - Hosted and Streamable HTTP support for Python and TypeScript. Use when developer mentions OpenAI Agents SDK, OpenAI agents, or integrating OpenAI with MCP.
+description: |
+  Integrate OpenAI Agents SDK with You.com MCP server - Hosted and Streamable HTTP support for Python and TypeScript.
+  - MANDATORY TRIGGERS: OpenAI Agents SDK, OpenAI agents, openai-agents, @openai/agents, integrating OpenAI with MCP
+  - Use when: developer mentions OpenAI Agents SDK, needs MCP integration with OpenAI agents
 license: MIT
 compatibility: Python 3.10+ or Node.js 18+ or Bun 1.0+ with TypeScript
+allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: "1.1.0"
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
-  package:
-    source: https://github.com/youdotcom-oss/dx-toolkit
-    homepage: https://you.com/platform
-    docs: https://docs.you.com/developer-resources/mcp-server
-  environment_variables:
-    - name: YDC_API_KEY
-      required: true
-      description: API key for You.com platform (obtain from https://you.com/platform/api-keys)
-    - name: OPENAI_API_KEY
-      required: true
-      description: API key for OpenAI (obtain from https://platform.openai.com/)
-  binaries:
-    - name: python
-      version: ">= 3.10.0"
-      description: Python runtime
-      install_url: https://www.python.org/
-      verification: "python --version"
-    - name: node
-      version: ">= 18.0.0"
-      description: JavaScript runtime
-      install_url: https://nodejs.org/
-      verification: "node --version"
-    - name: bun
-      version: ">= 1.0.0"
-      description: JavaScript runtime (alternative, faster)
-      install_url: https://bun.sh/
-      verification: "bun --version"
-  dependencies:
-    python:
-      - name: "openai-agents"
-        version: "latest"
-        purpose: OpenAI Agents SDK for Python
-        source: https://pypi.org/project/openai-agents/
-    npm:
-      - name: "@openai/agents"
-        version: "latest"
-        purpose: OpenAI Agents SDK for TypeScript
-        source: https://www.npmjs.com/package/@openai/agents
 ---
 
 # Integrate OpenAI Agents SDK with You.com MCP
@@ -92,7 +58,7 @@ Interactive workflow to set up OpenAI Agents SDK with You.com's MCP server.
    **Hosted MCP configuration block (Python)**:
    ```python
    from agents import Agent, Runner
-   from agents.mcp import HostedMCPTool
+   from agents import HostedMCPTool
 
    # Validate: ydc_api_key = os.getenv("YDC_API_KEY")
    agent = Agent(
@@ -194,7 +160,7 @@ Python implementation with OpenAI-managed infrastructure
 import os
 import asyncio
 from agents import Agent, Runner
-from agents.mcp import HostedMCPTool
+from agents import HostedMCPTool
 
 # Validate environment variables
 ydc_api_key = os.getenv("YDC_API_KEY")
@@ -468,7 +434,7 @@ main().catch(console.error);
 
 **Python:**
 ```python
-from agents.mcp import HostedMCPTool
+from agents import HostedMCPTool
 
 tools=[
     HostedMCPTool(
@@ -563,7 +529,6 @@ try {
 
 After configuration, agents can discover and use:
 - `mcp__ydc__you_search` - Web and news search
-- `mcp__ydc__you_express` - AI-powered answers with web context  
 - `mcp__ydc__you_contents` - Web page content extraction
 
 ## Environment Variables
