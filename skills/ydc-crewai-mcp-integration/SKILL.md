@@ -99,8 +99,9 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 - **Use when:** Need to extract and analyze web page content
 
 **Options:**
-- All tools (default)
-- Specific tools only (you-search, you-contents, or both)
+- **you-search only** (DSL path) — use `create_static_tool_filter(allowed_tool_names=["you-search"])`
+- **Both tools** — use MCPServerAdapter with schema patching (see Advanced section)
+- **you-contents only** — MCPServerAdapter only; DSL cannot use you-contents due to crewAI schema conversion bug
 
 ### 4. Locate Target File
 
@@ -128,58 +129,30 @@ Based on your choices, I'll implement the integration with complete, working cod
 
 **IMPORTANT:** You.com MCP requires Bearer token in HTTP **headers**, not query parameters. Use structured configuration:
 
+> **⚠️ Known Limitation:** crewAI's DSL path (`mcps=[]`) converts MCP tool schemas to Pydantic models internally. Its `_json_type_to_python` maps all `"array"` types to bare `list`, which Pydantic v2 generates as `{"items": {}}` — a schema OpenAI rejects. This means **`you-contents` cannot be used via DSL without causing a `BadRequestError`**. Always use `create_static_tool_filter` to restrict to `you-search` in DSL paths. To use both tools, use MCPServerAdapter (see below).
+
 ```python
 from crewai import Agent, Task, Crew
 from crewai.mcp import MCPServerHTTP
+from crewai.mcp.filters import create_static_tool_filter
 import os
 
 ydc_key = os.getenv("YDC_API_KEY")
 
-# Option 1: Get all ydc-server tools
+# Standard DSL pattern: always use tool_filter with you-search
+# (you-contents cannot be used in DSL due to crewAI schema conversion bug)
 research_agent = Agent(
     role="Research Analyst",
-    goal="Research topics using You.com search and content extraction",
+    goal="Research topics using You.com search",
     backstory="Expert researcher with access to web search tools",
     mcps=[
         MCPServerHTTP(
             url="https://api.you.com/mcp",
             headers={"Authorization": f"Bearer {ydc_key}"},
-            streamable=True  # Default: True (uses MCP standard HTTP/Streamable HTTP)
-        )
-    ]
-)
-
-# Option 2: Get specific tool using tool_filter
-from crewai.mcp.filters import create_static_tool_filter
-
-search_agent = Agent(
-    role="Search Specialist",
-    goal="Find relevant information quickly",
-    backstory="Search expert using You.com",
-    mcps=[
-        MCPServerHTTP(
-            url="https://api.you.com/mcp",
-            headers={"Authorization": f"Bearer {ydc_key}"},
-            # streamable defaults to True - omitted for brevity
+            streamable=True,  # Default: True (MCP standard HTTP transport)
             tool_filter=create_static_tool_filter(
                 allowed_tool_names=["you-search"]
-            )
-        )
-    ]
-)
-
-# Option 3: Multiple specific tools with filter
-multi_tool_agent = Agent(
-    role="Web Content Analyst",
-    goal="Search and extract web content",
-    backstory="Analyst using You.com search and content extraction",
-    mcps=[
-        MCPServerHTTP(
-            url="https://api.you.com/mcp",
-            headers={"Authorization": f"Bearer {ydc_key}"},
-            tool_filter=create_static_tool_filter(
-                allowed_tool_names=["you-search", "you-contents"]
-            )
+            ),
         )
     ]
 )
@@ -329,7 +302,7 @@ import os
 # Configure You.com MCP server
 ydc_key = os.getenv("YDC_API_KEY")
 
-# Create researcher agent with You.com tools
+# Research agent: you-search only (DSL cannot use you-contents — see Known Limitation above)
 researcher = Agent(
     role="AI Research Analyst",
     goal="Find and analyze information about AI frameworks",
@@ -338,13 +311,17 @@ researcher = Agent(
         MCPServerHTTP(
             url="https://api.you.com/mcp",
             headers={"Authorization": f"Bearer {ydc_key}"},
-            streamable=True
+            streamable=True,
+            tool_filter=create_static_tool_filter(
+                allowed_tool_names=["you-search"]
+            ),
         )
     ],
     verbose=True
 )
 
-# Create content extractor agent with specific tool
+# Content analyst: also you-search only for same reason
+# To use you-contents, use MCPServerAdapter with schema patching (see below)
 content_analyst = Agent(
     role="Content Extraction Specialist",
     goal="Extract and summarize web content",
@@ -353,9 +330,10 @@ content_analyst = Agent(
         MCPServerHTTP(
             url="https://api.you.com/mcp",
             headers={"Authorization": f"Bearer {ydc_key}"},
+            streamable=True,
             tool_filter=create_static_tool_filter(
-                allowed_tool_names=["you-contents"]
-            )
+                allowed_tool_names=["you-search"]
+            ),
         )
     ],
     verbose=True
@@ -444,12 +422,12 @@ Extract full page content from one or more URLs in markdown or HTML format.
 
 ### For DSL Structured Configuration:
 - [ ] Install `mcp` library: `uv add mcp` or `pip install mcp`
-- [ ] Import `MCPServerHTTP` from `crewai.mcp`
+- [ ] Import `MCPServerHTTP` from `crewai.mcp` and `create_static_tool_filter` from `crewai.mcp.filters`
 - [ ] Set `YDC_API_KEY` environment variable
 - [ ] Add `mcps=[]` field to agent with `MCPServerHTTP` object
 - [ ] Configure Bearer token in `headers` parameter
-- [ ] Optional: Add `tool_filter` to restrict to specific tools
-- [ ] Test agent to verify tools are discovered (should see: you-search, you-contents)
+- [ ] **Always** add `tool_filter=create_static_tool_filter(allowed_tool_names=["you-search"])` — DSL cannot use you-contents (crewAI schema conversion bug)
+- [ ] Test agent to verify you-search tool is discovered and functional
 
 ### For Advanced MCPServerAdapter:
 - [ ] Install `crewai-tools[mcp]`: `uv add crewai-tools[mcp]` or `pip install crewai-tools[mcp]`
