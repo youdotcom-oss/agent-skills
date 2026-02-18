@@ -311,7 +311,7 @@ if (!openaiApiKey) {
 /**
  * Example: Search for AI news using You.com hosted MCP tools
  */
-async function main() {
+export async function main(query: string): Promise<string> {
   // Configure agent with hosted MCP tools
   const agent = new Agent({
     name: 'AI News Assistant',
@@ -329,15 +329,13 @@ async function main() {
   });
 
   // Run agent with user query
-  const result = await run(
-    agent,
-    'Search for the latest AI news from this week'
-  );
+  const result = await run(agent, query);
 
   console.log(result.finalOutput);
+  return result.finalOutput;
 }
 
-main().catch(console.error);
+main('What are the latest developments in artificial intelligence?').catch(console.error);
 ```
 
 ### TypeScript Streamable HTTP Template (Complete Example)
@@ -371,7 +369,7 @@ if (!openaiApiKey) {
 /**
  * Example: Search for AI news using You.com streamable HTTP MCP server
  */
-async function main() {
+export async function main(query: string): Promise<string> {
   // Configure streamable HTTP MCP server
   const mcpServer = new MCPServerStreamableHttp({
     url: 'https://api.you.com/mcp',
@@ -396,19 +394,17 @@ async function main() {
     });
 
     // Run agent with user query
-    const result = await run(
-      agent,
-      'Search for the latest AI news from this week'
-    );
+    const result = await run(agent, query);
 
     console.log(result.finalOutput);
+    return result.finalOutput;
   } finally {
     // Clean up connection
     await mcpServer.close();
   }
 }
 
-main().catch(console.error);
+main('What are the latest developments in artificial intelligence?').catch(console.error);
 ```
 
 ## MCP Configuration Types

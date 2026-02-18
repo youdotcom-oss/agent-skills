@@ -40,12 +40,13 @@ describe('YDC Claude Agent SDK Integration - TypeScript', () => {
           const module = await import(generatedFile)
           expect(module.main).toBeDefined()
 
-          // Execute main function
-          const result = await module.main()
+          // Execute main function with a web search query
+          const result = await module.main('What are the latest developments in artificial intelligence?')
 
           expect(result).toBeDefined()
           expect(typeof result).toBe('string')
           expect(result.length).toBeGreaterThan(0)
+          expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/)
         },
         { timeout: 60_000 },
       )
@@ -133,10 +134,12 @@ describe('YDC Claude Agent SDK Integration - TypeScript', () => {
           expect(process.env.ANTHROPIC_API_KEY).toBeDefined()
 
           const module = await import(generatedFile)
-          const result = await module.main()
+          const result = await module.main('What are the latest developments in artificial intelligence?')
 
           expect(result).toBeDefined()
           expect(typeof result).toBe('string')
+          expect(result.length).toBeGreaterThan(0)
+          expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/)
         },
         { timeout: 60_000 },
       )
@@ -192,10 +195,12 @@ describe('YDC Claude Agent SDK Integration - TypeScript', () => {
 
           try {
             const module = await import(generatedFile)
-            const result = await module.main()
+            const result = await module.main('What are the latest developments in artificial intelligence?')
 
             expect(result).toBeDefined()
             expect(typeof result).toBe('string')
+            expect(result.length).toBeGreaterThan(0)
+            expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/)
           } finally {
             delete process.env.CUSTOM_YDC_KEY
             delete process.env.CUSTOM_ANTHROPIC_KEY
@@ -273,10 +278,12 @@ describe('YDC Claude Agent SDK Integration - TypeScript', () => {
           expect(process.env.ANTHROPIC_API_KEY).toBeDefined()
 
           const module = await import(generatedFile)
-          const result = await module.main()
+          const result = await module.main('What are the latest developments in artificial intelligence?')
 
           expect(result).toBeDefined()
           expect(typeof result).toBe('string')
+          expect(result.length).toBeGreaterThan(0)
+          expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/)
         },
         { timeout: 60_000 },
       )

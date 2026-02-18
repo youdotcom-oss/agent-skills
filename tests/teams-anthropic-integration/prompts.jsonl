@@ -1,0 +1,6 @@
+{"prompt":"Create a new Teams app using Anthropic Claude Sonnet 4.5 for message handling. Save the code to generated/path-a-basic.ts."}
+{"prompt":"Create a new Teams app with Anthropic Claude Sonnet 4.5 and You.com MCP server for web search and content extraction. Save the code to generated/path-b-mcp.ts."}
+{"prompt":"Add Anthropic Claude models to my existing Teams.ai application. I want to use Claude Sonnet 4.5 for chat responses."}
+{"prompt":"Add You.com MCP server capabilities to my existing Teams app that uses Anthropic Claude."}
+{"prompt":"Create a Teams app with Anthropic Claude Opus 4.6 instead of Sonnet."}
+{"prompt":"Set up a Teams app with Anthropic Claude that uses streaming responses."}

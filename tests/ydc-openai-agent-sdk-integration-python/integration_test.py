@@ -6,8 +6,6 @@ Validates Hosted MCP and Streamable HTTP integration patterns
 import os
 from pathlib import Path
 
-import pytest
-
 
 class TestPathAHosted:
     """Test Hosted MCP configuration with HostedMCPTool"""
@@ -55,12 +53,9 @@ class TestPathAHosted:
         assert "tools=" in code, "Missing tools parameter"
         assert "Agent(" in code, "Missing Agent instantiation"
 
-    @pytest.mark.skipif(
-        not (os.getenv("YDC_API_KEY") and os.getenv("OPENAI_API_KEY")),
-        reason="API keys not set - skip runtime test",
-    )
-    def test_runtime_initializes_agent(self):
-        """Runtime: Initialize agent with Hosted MCP"""
+    def test_runtime_executes_search(self):
+        """Runtime: Execute end-to-end search with Hosted MCP"""
+        import asyncio
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_a_module", self.GENERATED_FILE)
@@ -69,8 +64,13 @@ class TestPathAHosted:
 
         assert hasattr(module, "main"), "Missing main() function"
 
-        # Note: Full execution requires async context
-        # Just verify imports work without errors
+        result = asyncio.run(module.main('What are the latest developments in artificial intelligence?'))
+
+        assert result is not None, "Expected non-None result from main()"
+        assert isinstance(result, str), "Expected string result from agent search"
+        assert len(result) > 0, "Expected non-empty result from search"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"
 
 
 class TestPathBStreamable:
@@ -113,12 +113,9 @@ class TestPathBStreamable:
         assert "mcp_servers=" in code, "Missing mcp_servers parameter"
         assert "Agent(" in code, "Missing Agent instantiation"
 
-    @pytest.mark.skipif(
-        not (os.getenv("YDC_API_KEY") and os.getenv("OPENAI_API_KEY")),
-        reason="API keys not set - skip runtime test",
-    )
-    def test_runtime_imports_work(self):
-        """Runtime: Verify imports work correctly"""
+    def test_runtime_executes_search(self):
+        """Runtime: Execute end-to-end search with Streamable HTTP"""
+        import asyncio
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_b_module", self.GENERATED_FILE)
@@ -126,6 +123,14 @@ class TestPathBStreamable:
         spec.loader.exec_module(module)
 
         assert hasattr(module, "main"), "Missing main() function"
+
+        result = asyncio.run(module.main('What are the latest developments in artificial intelligence?'))
+
+        assert result is not None, "Expected non-None result from main()"
+        assert isinstance(result, str), "Expected string result from agent search"
+        assert len(result) > 0, "Expected non-empty result from search"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"
 
 
 class TestPathCCustomKeys:
@@ -179,16 +184,14 @@ class TestPathCCustomKeys:
             "Missing validation logic"
         )
 
-    @pytest.mark.skipif(
-        not os.getenv("YDC_API_KEY"), reason="YDC_API_KEY not set - skip runtime test"
-    )
-    def test_runtime_uses_custom_keys(self):
-        """Runtime: Verify custom keys are used"""
+    def test_runtime_executes_search_with_custom_keys(self):
+        """Runtime: Execute end-to-end search with custom API keys"""
+        import asyncio
         import importlib.util
 
         # Set custom env vars
-        os.environ["CUSTOM_YDC_KEY"] = os.getenv("YDC_API_KEY")
-        os.environ["CUSTOM_OPENAI_KEY"] = os.getenv("OPENAI_API_KEY", "test-key")
+        os.environ["CUSTOM_YDC_KEY"] = os.getenv("YDC_API_KEY", "")
+        os.environ["CUSTOM_OPENAI_KEY"] = os.getenv("OPENAI_API_KEY", "")
 
         try:
             spec = importlib.util.spec_from_file_location("path_c_module", self.GENERATED_FILE)
@@ -196,6 +199,14 @@ class TestPathCCustomKeys:
             spec.loader.exec_module(module)
 
             assert hasattr(module, "main"), "Missing main() function"
+
+            result = asyncio.run(module.main('What are the latest developments in artificial intelligence?'))
+
+            assert result is not None, "Expected non-None result from main()"
+            assert isinstance(result, str), "Expected string result from agent search"
+            assert len(result) > 0, "Expected non-empty result from search"
+            assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+                "Expected search result to contain AI-related content"
         finally:
             # Cleanup
             if "CUSTOM_YDC_KEY" in os.environ:
@@ -233,12 +244,9 @@ class TestPathDStreamableConfig:
         assert "MCPServerStreamableHttp(" in code, "Missing MCPServerStreamableHttp instantiation"
         assert "async with" in code, "Missing async context manager"
 
-    @pytest.mark.skipif(
-        not (os.getenv("YDC_API_KEY") and os.getenv("OPENAI_API_KEY")),
-        reason="API keys not set - skip runtime test",
-    )
-    def test_runtime_imports_work(self):
-        """Runtime: Verify imports work correctly"""
+    def test_runtime_executes_search(self):
+        """Runtime: Execute end-to-end search with advanced Streamable HTTP config"""
+        import asyncio
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_d_module", self.GENERATED_FILE)
@@ -246,3 +254,11 @@ class TestPathDStreamableConfig:
         spec.loader.exec_module(module)
 
         assert hasattr(module, "main"), "Missing main() function"
+
+        result = asyncio.run(module.main('What are the latest developments in artificial intelligence?'))
+
+        assert result is not None, "Expected non-None result from main()"
+        assert isinstance(result, str), "Expected string result from agent search"
+        assert len(result) > 0, "Expected non-empty result from search"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"

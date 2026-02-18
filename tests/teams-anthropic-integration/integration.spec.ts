@@ -84,6 +84,25 @@ describe('Teams Anthropic Integration', () => {
         const code = await Bun.file(generatedFile).text()
         expect(code).toContain('ANTHROPIC_API_KEY')
       })
+
+      test('imports AnthropicChatModel from teams-anthropic', async () => {
+        expect(existsSync(generatedFile)).toBe(true)
+
+        const code = await Bun.file(generatedFile).text()
+
+        expect(code).toContain("from '@youdotcom-oss/teams-anthropic'")
+        expect(code).toContain('AnthropicChatModel')
+        expect(code).toContain('AnthropicModel')
+      })
+
+      test('uses Sonnet 4.5 model and exports model instance', async () => {
+        expect(existsSync(generatedFile)).toBe(true)
+
+        const code = await Bun.file(generatedFile).text()
+
+        expect(code).toContain('AnthropicModel.CLAUDE_SONNET_4_5')
+        expect(code).toContain('export const model')
+      })
     })
 
     describe('errors', () => {
@@ -202,6 +221,28 @@ describe('Teams Anthropic Integration', () => {
         expect(code).toContain('usePlugin')
         expect(code).toContain('https://api.you.com/mcp')
         expect(code).toContain('Authorization')
+      })
+
+      test('imports Teams.ai and teams-anthropic and exports prompt', async () => {
+        expect(existsSync(generatedFile)).toBe(true)
+
+        const code = await Bun.file(generatedFile).text()
+
+        expect(code).toContain("from '@microsoft/teams.ai'")
+        expect(code).toContain("from '@youdotcom-oss/teams-anthropic'")
+        expect(code).toContain('ChatPrompt')
+        expect(code).toContain('export const prompt')
+      })
+
+      test('uses Bearer token authentication for MCP', async () => {
+        expect(existsSync(generatedFile)).toBe(true)
+
+        const code = await Bun.file(generatedFile).text()
+
+        expect(code).toContain('Bearer')
+        expect(code).toContain('YDC_API_KEY')
+        // Authorization header must include the token, not a hardcoded string
+        expect(code).toMatch(/Authorization.*Bearer.*YDC_API_KEY/)
       })
     })
 

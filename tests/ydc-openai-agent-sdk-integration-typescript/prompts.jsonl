@@ -1,0 +1,6 @@
+{"prompt":"Create a TypeScript application using OpenAI Agents SDK with You.com Hosted MCP. Use TypeScript. Save the code to generated/path-a-hosted.ts."}
+{"prompt":"Create a TypeScript application using OpenAI Agents SDK with You.com Streamable HTTP MCP server. Use TypeScript. Save the code to generated/path-b-streamable.ts."}
+{"prompt":"Create a TypeScript application using OpenAI Agents SDK with You.com Hosted MCP. Use custom environment variables CUSTOM_YDC_KEY and CUSTOM_OPENAI_KEY. Use TypeScript. Save the code to generated/path-c-custom-keys.ts."}
+{"prompt":"Create a TypeScript application using OpenAI Agents SDK with You.com Streamable HTTP MCP server. Include request timeout and custom configuration. Use TypeScript. Save the code to generated/path-d-streamable-config.ts."}
+{"prompt":"Create a multi-agent system with OpenAI Agents SDK where different agents use different MCP tools."}
+{"prompt":"Create an OpenAI Agents SDK application with comprehensive error handling for MCP connection failures."}

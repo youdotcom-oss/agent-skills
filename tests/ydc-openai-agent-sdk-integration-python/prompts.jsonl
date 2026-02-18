@@ -1,0 +1,6 @@
+{"prompt":"Create a Python application using OpenAI Agents SDK with You.com Hosted MCP. Use Python. Save the code to generated/path_a_hosted.py."}
+{"prompt":"Create a Python application using OpenAI Agents SDK with You.com Streamable HTTP MCP server. Use Python. Save the code to generated/path_b_streamable.py."}
+{"prompt":"Create a Python application using OpenAI Agents SDK with You.com Hosted MCP. Use custom environment variables CUSTOM_YDC_KEY and CUSTOM_OPENAI_KEY. Use Python. Save the code to generated/path_c_custom_keys.py."}
+{"prompt":"Create a Python application using OpenAI Agents SDK with You.com Streamable HTTP MCP server. Include advanced configuration options like cache_tools_list and max_retry_attempts. Use Python. Save the code to generated/path_d_streamable_config.py."}
+{"prompt":"Create a multi-agent system with OpenAI Agents SDK where different agents use different MCP tools."}
+{"prompt":"Create an OpenAI Agents SDK application with comprehensive error handling for MCP connection failures."}

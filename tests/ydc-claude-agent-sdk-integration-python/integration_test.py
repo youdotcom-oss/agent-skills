@@ -84,11 +84,14 @@ class TestPathA:
 
         assert hasattr(module, "main"), "Generated module must export main() function"
 
-        # Execute main function
-        result = await module.main()
+        # Execute main function with a web search query
+        result = await module.main('What are the latest developments in artificial intelligence?')
 
-        # Verify result is not None or empty
         assert result is not None, "Expected non-None result from main()"
+        assert isinstance(result, str), "Expected string result from search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"
 
 
 class TestPathB:
@@ -115,6 +118,8 @@ class TestPathB:
         ]
         tools_section = "\n".join(lines_with_tools)
         assert "mcp__ydc__you_search" in tools_section
+        assert "mcp__ydc__you_contents" not in tools_section, \
+            "you_contents should not be in allowed_tools for search-only path"
 
     @pytest.mark.asyncio
     async def test_runtime_with_limited_tools(self, generated_file: Path):
@@ -133,8 +138,13 @@ class TestPathB:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-        result = await module.main()
+        result = await module.main('What are the latest developments in artificial intelligence?')
+
         assert result is not None
+        assert isinstance(result, str), "Expected string result from search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"
 
 
 class TestPathC:
@@ -175,8 +185,13 @@ class TestPathC:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
-            result = await module.main()
+            result = await module.main('What are the latest developments in artificial intelligence?')
+
             assert result is not None
+            assert isinstance(result, str), "Expected string result from search"
+            assert len(result) > 0, "Expected non-empty search result"
+            assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+                "Expected search result to contain AI-related content"
         finally:
             # Cleanup
             del os.environ["CUSTOM_YDC_KEY"]
@@ -219,5 +234,10 @@ class TestPathD:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-        result = await module.main()
+        result = await module.main('What are the latest developments in artificial intelligence?')
+
         assert result is not None
+        assert isinstance(result, str), "Expected string result from search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected search result to contain AI-related content"

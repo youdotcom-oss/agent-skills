@@ -193,25 +193,88 @@ multi_tool_agent = Agent(
 
 ### Advanced MCPServerAdapter
 
+**Important:** `MCPServerAdapter` uses the `mcpadapt` library to convert MCP tool schemas to Pydantic models. Due to a Pydantic v2 incompatibility in mcpadapt, the generated schemas include invalid fields (`anyOf: []`, `enum: null`) that OpenAI rejects. Always patch tool schemas before passing them to an Agent.
+
 ```python
 from crewai import Agent, Task, Crew
 from crewai_tools import MCPServerAdapter
 import os
+from typing import Any
 
-# HTTP Transport (MCP standard HTTP/Streamable HTTP)
+
+def _fix_property(prop: dict) -> dict | None:
+    """Clean a single mcpadapt-generated property schema.
+
+    mcpadapt injects invalid JSON Schema fields via Pydantic v2 json_schema_extra:
+    anyOf=[], enum=null, items=null, properties={}. Also loses type info for
+    optional fields. Returns None to drop properties that cannot be typed.
+    """
+    cleaned = {
+        k: v for k, v in prop.items()
+        if not (
+            (k == "anyOf" and v == [])
+            or (k in ("enum", "items") and v is None)
+            or (k == "properties" and v == {})
+            or (k == "title" and v == "")
+        )
+    }
+    if "type" in cleaned:
+        return cleaned
+    if "enum" in cleaned and cleaned["enum"]:
+        vals = cleaned["enum"]
+        if all(isinstance(e, str) for e in vals):
+            cleaned["type"] = "string"
+            return cleaned
+        if all(isinstance(e, (int, float)) for e in vals):
+            cleaned["type"] = "number"
+            return cleaned
+    if "items" in cleaned:
+        cleaned["type"] = "array"
+        return cleaned
+    return None  # drop untyped optional properties
+
+
+def _clean_tool_schema(schema: Any) -> Any:
+    """Recursively clean mcpadapt-generated JSON schema for OpenAI compatibility."""
+    if not isinstance(schema, dict):
+        return schema
+    if "properties" in schema and isinstance(schema["properties"], dict):
+        fixed: dict[str, Any] = {}
+        for name, prop in schema["properties"].items():
+            result = _fix_property(prop) if isinstance(prop, dict) else prop
+            if result is not None:
+                fixed[name] = result
+        return {**schema, "properties": fixed}
+    return schema
+
+
+def _patch_tool_schema(tool: Any) -> Any:
+    """Patch a tool's args_schema to return a clean JSON schema."""
+    if not (hasattr(tool, "args_schema") and tool.args_schema):
+        return tool
+    fixed = _clean_tool_schema(tool.args_schema.model_json_schema())
+
+    class PatchedSchema(tool.args_schema):
+        @classmethod
+        def model_json_schema(cls, *args: Any, **kwargs: Any) -> dict:
+            return fixed
+
+    PatchedSchema.__name__ = tool.args_schema.__name__
+    tool.args_schema = PatchedSchema
+    return tool
+
+
 ydc_key = os.getenv("YDC_API_KEY")
 server_params = {
     "url": "https://api.you.com/mcp",
     "transport": "streamable-http",  # or "http" - both work (same MCP transport)
-    "headers": {
-        "Authorization": f"Bearer {ydc_key}"
-    }
+    "headers": {"Authorization": f"Bearer {ydc_key}"}
 }
 
 # Using context manager (recommended)
 with MCPServerAdapter(server_params) as tools:
-    print(f"Available You.com tools: {[tool.name for tool in tools]}")
-    # Prints: ['you-search', 'you-contents']
+    # Patch schemas to fix mcpadapt Pydantic v2 incompatibility
+    tools = [_patch_tool_schema(t) for t in tools]
 
     researcher = Agent(
         role="Advanced Researcher",
@@ -229,28 +292,6 @@ with MCPServerAdapter(server_params) as tools:
 
     crew = Crew(agents=[researcher], tasks=[research_task])
     result = crew.kickoff()
-
-# Manual lifecycle management
-mcp_adapter = None
-try:
-    mcp_adapter = MCPServerAdapter(server_params)
-    mcp_adapter.start()
-    tools = mcp_adapter.tools
-
-    # Create agent with tools
-    agent = Agent(
-        role="Manual Researcher",
-        goal="Research with manual connection management",
-        backstory="Expert with precise control over connections",
-        tools=tools,
-        verbose=True
-    )
-
-    # Create and run crew...
-
-finally:
-    if mcp_adapter and mcp_adapter.is_connected:
-        mcp_adapter.stop()
 ```
 
 **Note:** In MCP protocol, the standard HTTP transport IS streamable HTTP. Both `"http"` and `"streamable-http"` refer to the same transport. You.com server does NOT support SSE transport.

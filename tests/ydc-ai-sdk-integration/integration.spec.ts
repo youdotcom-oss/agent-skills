@@ -184,6 +184,17 @@ describe('YDC AI SDK Integration', () => {
         expect(code).toContain('textStream')
         expect(code).toContain('streamText')
       })
+
+      test('main accepts optional onChunk callback parameter', async () => {
+        expect(existsSync(generatedFile)).toBe(true)
+
+        const code = await Bun.file(generatedFile).text()
+
+        // The streaming main() must accept an optional callback so callers can
+        // capture chunks without relying solely on stdout side effects
+        expect(code).toContain('onChunk')
+        expect(code).toMatch(/main\s*=?\s*async\s*\([^)]*onChunk/)
+      })
     })
 
     describe('errors', () => {

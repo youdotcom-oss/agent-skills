@@ -72,17 +72,21 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
     });
 
     describe('runtime', () => {
-      test('exports main function', async () => {
-        if (!process.env.YDC_API_KEY || !process.env.OPENAI_API_KEY) {
-          console.log('⚠️  Skipping runtime test - API keys not set');
-          return;
-        }
+      test('executes end-to-end search', async () => {
+        expect(process.env.YDC_API_KEY).toBeDefined();
+        expect(process.env.OPENAI_API_KEY).toBeDefined();
 
         expect(existsSync(generatedFile)).toBe(true);
         const module = await import(generatedFile);
         expect(module.main).toBeDefined();
-        expect(typeof module.main).toBe('function');
-      });
+
+        const result = await module.main('What are the latest developments in artificial intelligence?');
+
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+        expect(result.length).toBeGreaterThan(0);
+        expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/);
+      }, { timeout: 60_000 });
     });
   });
 
@@ -145,17 +149,21 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
     });
 
     describe('runtime', () => {
-      test('exports main function', async () => {
-        if (!process.env.YDC_API_KEY || !process.env.OPENAI_API_KEY) {
-          console.log('⚠️  Skipping runtime test - API keys not set');
-          return;
-        }
+      test('executes end-to-end search', async () => {
+        expect(process.env.YDC_API_KEY).toBeDefined();
+        expect(process.env.OPENAI_API_KEY).toBeDefined();
 
         expect(existsSync(generatedFile)).toBe(true);
         const module = await import(generatedFile);
         expect(module.main).toBeDefined();
-        expect(typeof module.main).toBe('function');
-      });
+
+        const result = await module.main('What are the latest developments in artificial intelligence?');
+
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+        expect(result.length).toBeGreaterThan(0);
+        expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/);
+      }, { timeout: 60_000 });
     });
   });
 
@@ -234,11 +242,9 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
     });
 
     describe('runtime', () => {
-      test('uses custom keys', async () => {
-        if (!process.env.YDC_API_KEY) {
-          console.log('⚠️  Skipping runtime test - YDC_API_KEY not set');
-          return;
-        }
+      test('executes end-to-end search with custom keys', async () => {
+        expect(process.env.YDC_API_KEY).toBeDefined();
+        expect(process.env.OPENAI_API_KEY).toBeDefined();
 
         expect(existsSync(generatedFile)).toBe(true);
 
@@ -247,13 +253,18 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
         const originalCustomOpenai = process.env.CUSTOM_OPENAI_KEY;
 
         process.env.CUSTOM_YDC_KEY = process.env.YDC_API_KEY;
-        process.env.CUSTOM_OPENAI_KEY =
-          process.env.OPENAI_API_KEY || 'test-key';
+        process.env.CUSTOM_OPENAI_KEY = process.env.OPENAI_API_KEY;
 
         try {
           const module = await import(generatedFile);
           expect(module.main).toBeDefined();
-          expect(typeof module.main).toBe('function');
+
+          const result = await module.main('What are the latest developments in artificial intelligence?');
+
+          expect(result).toBeDefined();
+          expect(typeof result).toBe('string');
+          expect(result.length).toBeGreaterThan(0);
+          expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/);
         } finally {
           // Cleanup
           if (originalCustomYdc !== undefined) {
@@ -267,7 +278,7 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
             delete process.env.CUSTOM_OPENAI_KEY;
           }
         }
-      });
+      }, { timeout: 60_000 });
     });
   });
 
@@ -320,17 +331,21 @@ describe('YDC OpenAI Agents SDK Integration (TypeScript)', () => {
     });
 
     describe('runtime', () => {
-      test('exports main function', async () => {
-        if (!process.env.YDC_API_KEY || !process.env.OPENAI_API_KEY) {
-          console.log('⚠️  Skipping runtime test - API keys not set');
-          return;
-        }
+      test('executes end-to-end search', async () => {
+        expect(process.env.YDC_API_KEY).toBeDefined();
+        expect(process.env.OPENAI_API_KEY).toBeDefined();
 
         expect(existsSync(generatedFile)).toBe(true);
         const module = await import(generatedFile);
         expect(module.main).toBeDefined();
-        expect(typeof module.main).toBe('function');
-      });
+
+        const result = await module.main('What are the latest developments in artificial intelligence?');
+
+        expect(result).toBeDefined();
+        expect(typeof result).toBe('string');
+        expect(result.length).toBeGreaterThan(0);
+        expect(result.toLowerCase()).toMatch(/ai|artificial|intelligence|model|development|research/);
+      }, { timeout: 60_000 });
     });
   });
 });

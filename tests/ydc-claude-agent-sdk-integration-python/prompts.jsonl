@@ -1,0 +1,6 @@
+{"prompt":"Create a Python application using Claude Agent SDK with You.com HTTP MCP server. Use Python. Save the code to generated/path_a_basic.py."}
+{"prompt":"Create a Python application using Claude Agent SDK with You.com HTTP MCP server. Configure allowed_tools to include only you_search. Use Python. Save the code to generated/path_b_tools.py."}
+{"prompt":"Create a Python application using Claude Agent SDK with You.com HTTP MCP server. Use custom environment variables CUSTOM_YDC_KEY and CUSTOM_ANTHROPIC_KEY. Use Python. Save the code to generated/path_c_custom_keys.py."}
+{"prompt":"Create a Python application using Claude Agent SDK with You.com HTTP MCP server. Use Claude Haiku 3.5 model for faster responses. Use Python. Save the code to generated/path_d_haiku.py."}
+{"prompt":"Create a Python application using Claude Agent SDK that handles a multi-turn conversation with context."}
+{"prompt":"Create a Python application with comprehensive error handling for HTTP MCP connection failures."}

@@ -6,8 +6,6 @@ Validates DSL and MCPServerAdapter integration patterns
 import os
 from pathlib import Path
 
-import pytest
-
 
 class TestPathABasicDSL:
     """Test basic DSL configuration with MCPServerHTTP"""
@@ -49,11 +47,8 @@ class TestPathABasicDSL:
         assert "mcps=" in code, "Missing mcps parameter"
         assert "Agent(" in code, "Missing Agent instantiation"
 
-    @pytest.mark.skipif(
-        not os.getenv("YDC_API_KEY"), reason="YDC_API_KEY not set - skip runtime test"
-    )
-    def test_runtime_initializes_agent(self):
-        """Runtime: Initialize agent with MCP server"""
+    def test_runtime_executes_search(self):
+        """Runtime: Execute end-to-end search via crew with MCP tools"""
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_a_module", self.GENERATED_FILE)
@@ -62,9 +57,13 @@ class TestPathABasicDSL:
 
         assert hasattr(module, "main"), "Missing main() function"
 
-        # Execute main - should initialize agent without errors
-        result = module.main()
-        assert result == 0, "main() should return 0 on success"
+        result = module.main('What are the latest developments in artificial intelligence?')
+
+        assert result is not None, "Expected non-None result from crew execution"
+        assert isinstance(result, str), "Expected string result from crew search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected crew search result to contain AI-related content"
 
 
 class TestPathBToolFilter:
@@ -121,19 +120,21 @@ class TestPathBToolFilter:
                 )
                 break
 
-    @pytest.mark.skipif(
-        not os.getenv("YDC_API_KEY"), reason="YDC_API_KEY not set - skip runtime test"
-    )
-    def test_runtime_initializes_agent_with_filter(self):
-        """Runtime: Initialize agent with tool filter"""
+    def test_runtime_executes_search_with_filter(self):
+        """Runtime: Execute end-to-end search with tool filter"""
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_b_module", self.GENERATED_FILE)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-        result = module.main()
-        assert result == 0, "main() should return 0 on success"
+        result = module.main('What are the latest developments in artificial intelligence?')
+
+        assert result is not None, "Expected non-None result from crew execution"
+        assert isinstance(result, str), "Expected string result from crew search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected crew search result to contain AI-related content"
 
 
 class TestPathCCustomKey:
@@ -178,11 +179,8 @@ class TestPathCCustomKey:
             "Missing validation logic"
         )
 
-    @pytest.mark.skipif(
-        not os.getenv("YDC_API_KEY"), reason="YDC_API_KEY not set - skip runtime test"
-    )
-    def test_runtime_uses_custom_key(self):
-        """Runtime: Initialize agent with custom API key"""
+    def test_runtime_executes_search_with_custom_key(self):
+        """Runtime: Execute end-to-end search with custom API key"""
         import importlib.util
 
         # Set custom env var
@@ -193,8 +191,13 @@ class TestPathCCustomKey:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
-            result = module.main()
-            assert result == 0, "main() should return 0 on success"
+            result = module.main('What are the latest developments in artificial intelligence?')
+
+            assert result is not None, "Expected non-None result from crew execution"
+            assert isinstance(result, str), "Expected string result from crew search"
+            assert len(result) > 0, "Expected non-empty search result"
+            assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+                "Expected crew search result to contain AI-related content"
         finally:
             # Cleanup
             if "CUSTOM_YDC_KEY" in os.environ:
@@ -242,16 +245,18 @@ class TestPathDAdapter:
         assert "tools=" in code, "Missing tools parameter"
         assert "Agent(" in code, "Missing Agent instantiation"
 
-    @pytest.mark.skipif(
-        not os.getenv("YDC_API_KEY"), reason="YDC_API_KEY not set - skip runtime test"
-    )
-    def test_runtime_uses_adapter(self):
-        """Runtime: Initialize agent with MCPServerAdapter"""
+    def test_runtime_executes_search_with_adapter(self):
+        """Runtime: Execute end-to-end search with MCPServerAdapter"""
         import importlib.util
 
         spec = importlib.util.spec_from_file_location("path_d_module", self.GENERATED_FILE)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-        result = module.main()
-        assert result == 0, "main() should return 0 on success"
+        result = module.main('What are the latest developments in artificial intelligence?')
+
+        assert result is not None, "Expected non-None result from crew execution"
+        assert isinstance(result, str), "Expected string result from crew search"
+        assert len(result) > 0, "Expected non-empty search result"
+        assert any(word in result.lower() for word in ['ai', 'artificial', 'intelligence', 'model', 'development', 'research']), \
+            "Expected crew search result to contain AI-related content"
