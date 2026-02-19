@@ -1,0 +1,84 @@
+name: Internal Contributor Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  internal-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Check if internal contributor
+        id: check_internal
+        run: |
+          # Check repository permission (works for both public and private org members)
+          RESPONSE=$(gh api repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}/permission 2>/dev/null || echo '{"permission":"none"}')
+          PERMISSION=$(echo "$RESPONSE" | jq -r '.permission')
+          echo "Author permission: $PERMISSION"
+
+          # Admin, maintain, or write = internal contributor
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
+            echo "Skipping review: Only users with admin, maintain, or write permissions can trigger internal code review"
+            echo "Current permission level: $PERMISSION"
+            echo "is_internal=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Author is authorized, proceeding with review"
+          echo "is_internal=true" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: actions/checkout@v4
+        if: steps.check_internal.outputs.is_internal == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        if: steps.check_internal.outputs.is_internal == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          settings: |
+            {
+              "hooks": {
+                "UserPromptSubmit": [
+                  {
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": ".claude/hooks/UserPromptSubmit"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Before reviewing, gather existing PR feedback:
+            - `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json comments,reviews,reviewThreads`
+
+            Please review this pull request focusing on:
+            - Code quality and adherence to project standards (see AGENTS.md)
+            - Potential bugs or edge cases
+            - Performance considerations
+            - Security concerns
+
+            Be constructive and helpful. Use inline comments for specific code issues.
+
+            Note: The PR branch is already checked out in the current working directory.
+
+            Use `gh pr comment` for top-level feedback.
+            Use `mcp__github_inline_comment__create_inline_comment` to highlight specific code issues.
+            Only post GitHub comments - don't submit review text as messages.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
