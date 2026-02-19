@@ -1,16 +1,21 @@
 ---
 name: ydc-openai-agent-sdk-integration
-description: |
-  Integrate OpenAI Agents SDK with You.com MCP server - Hosted and Streamable HTTP support for Python and TypeScript.
-  - MANDATORY TRIGGERS: OpenAI Agents SDK, OpenAI agents, openai-agents, @openai/agents, integrating OpenAI with MCP
-  - Use when: developer mentions OpenAI Agents SDK, needs MCP integration with OpenAI agents
+description: >
+  Integrate OpenAI Agents SDK with You.com MCP server - Hosted and Streamable
+  HTTP support for Python and TypeScript.
+
+  - MANDATORY TRIGGERS: OpenAI Agents SDK, OpenAI agents, openai-agents,
+  @openai/agents, integrating OpenAI with MCP
+
+  - Use when: developer mentions OpenAI Agents SDK, needs MCP integration with
+  OpenAI agents
 license: MIT
 compatibility: Python 3.10+ or Node.js 18+ or Bun 1.0+ with TypeScript
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.2.0"
+  version: 1.2.1
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 
