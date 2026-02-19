@@ -125,9 +125,9 @@ Respond with ONLY valid JSON:
       judgeReasoning = parsed.reasoning ?? ''
     }
   } catch {
-    judgeReasoning = 'LLM judge failed (API error)'
+    judgeReasoning = 'LLM judge failed (API error) — test exit code used as ground truth'
     judgePass = testsPassed
-    judgeScore = testsPassed ? 0.5 : 0
+    judgeScore = testsPassed ? 1.0 : 0
   }
 
   return {
