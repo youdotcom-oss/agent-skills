@@ -9,7 +9,7 @@ allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 1.2.1
+  version: 1.2.2
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
 ---
 

@@ -1,15 +1,21 @@
 ---
 name: youdotcom-cli
-description: |
-  Web search with livecrawl (search+extract) and content extraction for bash agents using You.com's @youdotcom-oss/api CLI.
-  - MANDATORY TRIGGERS: You.com, youdotcom, YDC, @youdotcom-oss/api, web search CLI, livecrawl
-  - Use when: web search needed, content extraction, URL crawling, real-time web data
+description: >
+  Web search with livecrawl (search+extract) and content extraction for bash
+  agents using You.com's @youdotcom-oss/api CLI.
+
+  - MANDATORY TRIGGERS: You.com, youdotcom, YDC, @youdotcom-oss/api, web search
+  CLI, livecrawl
+
+  - Use when: web search needed, content extraction, URL crawling, real-time web
+  data
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 18+, and access to the internet
-allowed-tools: Bash(bunx:@youdotcom-oss/api) Bash(npx:@youdotcom-oss/api) Bash(bunx:ydc) Bash(npx:ydc) Bash(jq:*)
+allowed-tools: Bash(bunx:@youdotcom-oss/api) Bash(npx:@youdotcom-oss/api)
+  Bash(bunx:ydc) Bash(npx:ydc) Bash(jq:*)
 metadata:
   author: youdotcom-oss
-  version: "2.0.6"
+  version: 2.0.7
   category: web-search-tools
   keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,claude-code,codex,cursor
 ---
