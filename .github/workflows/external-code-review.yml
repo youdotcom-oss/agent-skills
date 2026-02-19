@@ -19,24 +19,29 @@ jobs:
     steps:
       - name: Get PR author
         id: get_pr
-        run: |
-          PR_AUTHOR=$(gh pr view ${{ inputs.pr_number }} --json author --jq '.author.login')
-          echo "pr_author=${PR_AUTHOR}" >> $GITHUB_OUTPUT
         env:
+          PR_NUMBER: ${{ inputs.pr_number }}
           GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login')
+          echo "pr_author=${PR_AUTHOR}" >> $GITHUB_OUTPUT
 
       - name: Check if external contributor
         id: check_external
+        env:
+          REPO: ${{ github.repository }}
+          PR_AUTHOR: ${{ steps.get_pr.outputs.pr_author }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Check repository permission (works for both public and private org members)
-          RESPONSE=$(gh api repos/${{ github.repository }}/collaborators/${{ steps.get_pr.outputs.pr_author }}/permission 2>/dev/null || echo '{"permission":"none"}')
+          RESPONSE=$(gh api "repos/${REPO}/collaborators/${PR_AUTHOR}/permission" 2>/dev/null || echo '{"permission":"none"}')
           PERMISSION=$(echo "$RESPONSE" | jq -r '.permission')
           echo "Author permission: $PERMISSION"
 
           # Admin, maintain, or write = internal contributor (should use internal workflow)
           if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
             echo "❌ ERROR: This workflow is for external contributors only"
-            echo "PR author: ${{ steps.get_pr.outputs.pr_author }}"
+            echo "PR author: ${PR_AUTHOR}"
             echo "User has $PERMISSION permission (internal contributor)"
             echo "This PR author has repository access and should use the automatic internal review workflow"
             echo "The internal review runs automatically on PR open/sync for internal contributors"
@@ -46,8 +51,6 @@ jobs:
 
           echo "Author is external contributor, proceeding with review"
           echo "is_external=true" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - uses: actions/checkout@v4
         if: steps.check_external.outputs.is_external == 'true'
