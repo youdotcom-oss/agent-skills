@@ -1,13 +1,15 @@
 ---
 name: ydc-ai-sdk-integration
-description: Integrate Vercel AI SDK applications with You.com tools (web search, AI agent, content extraction). Use when developer mentions AI SDK, Vercel AI SDK, generateText, streamText, or You.com integration with AI SDK.
+description: Integrate Vercel AI SDK applications with You.com tools (web
+  search, AI agent, content extraction). Use when developer mentions AI SDK,
+  Vercel AI SDK, generateText, streamText, or You.com integration with AI SDK.
 license: MIT
-compatibility: Requires Bun 1.3+ or Node.js 18+ 
+compatibility: Requires Bun 1.3+ or Node.js 18+
 allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.2.0"
+  version: 1.2.1
   keywords: vercel,vercel-ai-sdk,ai-sdk,you.com,integration,anthropic,openai,web-search,content-extraction,livecrawl,citations
 ---
 
