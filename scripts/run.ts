@@ -147,13 +147,13 @@ Each result entry is a JSON line from results.jsonl. The score is 0.0-1.0 (pass 
 Results:
 ${lines.join('\n')}
 
-Generate a markdown report with:
-1. Overall pass rate (X/7 skills)
+Generate a concise markdown report with:
+1. Overall pass rate (X/${lines.length} skills)
 2. A table: | Skill | Pass | Score | Notes |
-3. Notable failure patterns
-4. Recommendations for improving failing skills
+3. If any skills failed: a "Failures" section with root cause and recommended fix per skill
+4. If all skills passed: nothing else — no recommendations, no observations
 
-Keep it concise. Focus on actionable insights.`,
+Keep it short. Only include failure analysis when there are actual failures.`,
       },
     ],
   })
