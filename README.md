@@ -57,6 +57,23 @@ Add You.com MCP tools to OpenAI Agents SDK using Hosted MCP or Streamable HTTP m
 
 ---
 
+### ydc-crewai-mcp-integration
+
+Integrate You.com's remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction.
+
+**Use when:**
+- Building crewAI agents that need real-time web access
+- Integrating You.com MCP via `MCPServerHTTP` or `MCPServerAdapter`
+- Adding web search and content extraction to existing crewAI workflows
+
+**Features:**
+- DSL and MCPServerAdapter integration patterns
+- Python implementation with uv/pip setup
+- Bearer token authentication for the remote MCP server
+- Complete crewAI crew and task configuration examples
+
+---
+
 ### teams-anthropic-integration
 
 Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
@@ -108,10 +125,11 @@ npx skills add youdotcom-oss/agent-skills
 bunx skills add youdotcom-oss/agent-skills
 ```
 
-This installs all 5 skills at once:
+This installs all 6 skills at once:
 - `ydc-ai-sdk-integration`
 - `ydc-claude-agent-sdk-integration`
 - `ydc-openai-agent-sdk-integration`
+- `ydc-crewai-mcp-integration`
 - `teams-anthropic-integration`
 - `youdotcom-cli`
 
@@ -149,6 +167,7 @@ Once installed, your AI coding agent will automatically activate the relevant sk
 - "Set up Claude Agent SDK with You.com MCP"
 - "Add You.com to my Teams app with Anthropic"
 - "Configure OpenAI Agents SDK with You.com MCP"
+- "Integrate You.com MCP with my crewAI agents"
 - "Add You.com CLI tools to my bash agent"
 
 Each skill provides step-by-step instructions, code templates, and validation checklists.
@@ -213,50 +232,76 @@ Get API keys from:
 - Anthropic: [console.anthropic.com](https://console.anthropic.com)
 - OpenAI: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
-### Testing
+### Skill Evals
 
-Run integration tests that validate skills against real APIs:
+Skills are validated by running Claude Code against prompts and checking that the generated integration code passes real API tests.
+
+**Run all skill evals:**
 
 ```bash
-# Run all tests (TypeScript + Python)
-bun test
-
-# Run only TypeScript tests
-bun run test:ts
-
-# Run only Python tests
-bun run test:py
+bun run eval
 ```
 
-**Note**: Tests use real API keys from `.env` file (no mocking). Ensure you have valid API keys before running tests.
+**Run a single skill eval:**
 
-### Test Structure
+```bash
+bun run eval --skill ydc-crewai-mcp-integration
+```
 
-Each test directory follows this pattern:
+**Run with parallelism:**
+
+```bash
+bun run eval -j 4
+```
+
+**Regenerate `data/RESULTS.md` from existing results (no re-run):**
+
+```bash
+bun run eval:summary
+```
+
+**Note**: Evals use real API keys from `.env` and invoke Claude Code as a subprocess to generate integration code. Valid API keys are required.
+
+### Eval Structure
 
 ```
-tests/{skill-name}/
-├── PROMPTS.md              # Prompts that trigger the skill
-├── {language}/
-│   ├── package.json        # Test dependencies (tracked in git)
-│   ├── integration.spec.ts # Tests for generated code (tracked in git)
-│   └── generated/          # Skill-generated code (gitignored via root .gitignore)
+data/
+├── prompts/
+│   └── prompts.jsonl       # One entry per skill variant (id, prompt, grader config)
+├── results/
+│   └── results.jsonl       # Grader output per eval run (gitignored)
+└── RESULTS.md              # Human-readable summary (committed on weekly CI run)
+
+tests/{skill-id}/           # Generated integration code lives here (gitignored)
+├── agent.ts                # Example: TypeScript integration file
+└── agent.spec.ts           # Tests that validate the generated code
+
+scripts/
+├── run.ts                  # Eval orchestrator (clean → harness → grade → summarize)
+└── grader.ts               # Scoring logic for generated integration code
 ```
+
+**Eval IDs and test directories use language suffixes where needed:**
+- `ydc-claude-agent-sdk-integration-python` → `tests/ydc-claude-agent-sdk-integration-python/`
+- `ydc-claude-agent-sdk-integration-typescript` → `tests/ydc-claude-agent-sdk-integration-typescript/`
+- `ydc-openai-agent-sdk-integration-python` → `tests/ydc-openai-agent-sdk-integration-python/`
+- `ydc-openai-agent-sdk-integration-typescript` → `tests/ydc-openai-agent-sdk-integration-typescript/`
+- Single-variant skills (e.g., `ydc-crewai-mcp-integration`) use a single test directory
 
 **Workflow:**
-1. **PROMPTS.md** contains prompts that trigger the skill (e.g., "Create a Teams app with Anthropic Claude")
-2. **Skill generates code** into `generated/` directory based on the prompt
-3. **Integration tests** validate the generated code works with real APIs
-4. **CI workflow** (future) will automate: prompt → generate → test
+1. `data/prompts/prompts.jsonl` contains prompts that trigger each skill
+2. The eval harness runs Claude Code against each prompt, generating code into `tests/{skill-id}/`
+3. The grader validates the generated code against the test files
+4. Results are written to `data/results/results.jsonl` and summarized in `data/RESULTS.md`
 
-**Current State:**
-- Tests contain reference implementations that simulate skill output
-- PROMPTS.md documents expected behavior for each scenario
+### CI
 
-**Future State:**
-- CI uses Claude to execute prompts from PROMPTS.md
-- Skills generate code into `generated/` directories
-- Tests validate the freshly generated code
+Evals run automatically on:
+- **Pull requests** that change `skills/*/SKILL.md`, assets, or eval scripts
+- **Pushes to main** for the same paths
+- **Weekly schedule** (Monday 06:00 UTC) — results committed back to `data/RESULTS.md`
+
+Current eval results: see [`data/RESULTS.md`](./data/RESULTS.md)
 
 ### Linting & Formatting
 
@@ -275,7 +320,7 @@ bun run check:py
 bun run check:write
 
 # Fix only Python files
-bun run check:write:py
+bun run check:write-py
 ```
 
 **Tools:**
@@ -285,8 +330,8 @@ bun run check:write:py
 
 ### Prerequisites
 
-- **Bun** >= 1.2.21 (for TypeScript tests and orchestration)
-- **Python** >= 3.12 (for Python tests)
+- **Bun** >= 1.2.21 (for TypeScript evals and orchestration)
+- **Python** >= 3.12 (for Python skill evals)
 - **uv** (automatically used by Bun scripts for Python)
 
 ---
@@ -299,8 +344,9 @@ Contributions are welcome! To add a new skill:
 2. Create a new skill directory in `skills/`
 3. Add `SKILL.md` following agent-skills-spec format
 4. Add optional assets in `assets/` subdirectory
-5. Test your skill with `npx skills add <your-fork>`
-6. Submit a pull request
+5. Add a prompt entry to `data/prompts/prompts.jsonl` and reference test files in `tests/`
+6. Test your skill with `npx skills add <your-fork>`
+7. Submit a pull request
 
 **Skill naming convention:**
 - Directory name must match `name` field in YAML frontmatter
