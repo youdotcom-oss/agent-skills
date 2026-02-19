@@ -4,10 +4,6 @@ description: Integrate Vercel AI SDK applications with You.com tools (web search
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 18+ 
 allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
-assets:
-  - path-a-generate.ts
-  - path-b-stream.ts
-  - integration.spec.ts
 metadata:
   author: youdotcom-oss
   category: sdk-integration

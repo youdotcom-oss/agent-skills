@@ -7,12 +7,6 @@ description: |
 license: MIT
 compatibility: Python 3.10+ or Node.js 18+ or Bun 1.0+ with TypeScript
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
-assets:
-  - path_a_hosted.py
-  - path-a-hosted.ts
-  - test_integration.py
-  - integration.spec.ts
-  - pyproject.toml
 metadata:
   author: youdotcom-oss
   category: sdk-integration

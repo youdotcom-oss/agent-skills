@@ -7,11 +7,6 @@ description: |
 license: MIT
 compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
 allowed-tools: Read Write Edit Bash(pip:install) Bash(uv:add)
-assets:
-  - path_a_basic_dsl.py
-  - path_b_tool_filter.py
-  - test_integration.py
-  - pyproject.toml
 metadata:
   author: youdotcom-oss
   version: "1.2.0"

@@ -7,7 +7,6 @@ description: |
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 24+
 allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
-assets: assets/path-a-basic.ts, assets/path-b-mcp.ts, assets/integration.spec.ts
 metadata:
   author: youdotcom-oss
   version: "1.2.0"

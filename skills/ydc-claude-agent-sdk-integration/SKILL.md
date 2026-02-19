@@ -4,12 +4,6 @@ description: Integrate Claude Agent SDK with You.com HTTP MCP server for Python 
 license: MIT
 compatibility: Python 3.10+ or TypeScript 5.2+, Node.js 24+ or Bun 1.3+
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
-assets:
-  - path_a_basic.py
-  - path-a-basic.ts
-  - test_integration.py
-  - integration.spec.ts
-  - pyproject.toml
 metadata:
   author: youdotcom-oss
   category: sdk-integration
