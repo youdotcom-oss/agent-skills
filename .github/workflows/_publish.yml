@@ -166,6 +166,7 @@ jobs:
             echo "ℹ️ No changes to commit (version already up-to-date)"
           else
             git commit -m "chore(${SKILL_NAME}): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
+            git pull origin ${{ github.ref_name }} --ff
             git push origin HEAD:${{ github.ref_name }}
             echo "✅ Version changes committed and pushed"
           fi
