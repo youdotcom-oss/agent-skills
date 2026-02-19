@@ -173,7 +173,8 @@ CONTENT=$(ydc contents --json '{"urls":["https://example.com"],"formats":["markd
 echo "<external-content>$CONTENT</external-content>"
 
 # Multiple URLs
-ydc contents --json '{"urls":["https://a.com","https://b.com"],"formats":["markdown"]}' --client YourAgent | jq -r '.[0].markdown'
+CONTENT=$(ydc contents --json '{"urls":["https://a.com","https://b.com"],"formats":["markdown"]}' --client YourAgent | jq -r '.[0].markdown')
+echo "<external-content>$CONTENT</external-content>"
 ```
 
 ## Troubleshooting
