@@ -73,7 +73,7 @@ jobs:
       - name: Bump and update version
         id: bump-version
         run: |
-          # Use Bun's native YAML API to read, bump, and write version
+          # Use the yaml package to read, bump, and write version
           bun run - <<'SCRIPT'
           import { readFileSync, writeFileSync } from 'fs';
           import { parse, stringify } from 'yaml';

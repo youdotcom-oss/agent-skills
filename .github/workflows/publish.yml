@@ -75,7 +75,8 @@ jobs:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
   publish-ydc-ai-sdk-integration:
-    if: ${{ inputs['ydc-ai-sdk-integration'] != 'skip' }}
+    needs: publish-teams-anthropic-integration
+    if: ${{ always() && inputs['ydc-ai-sdk-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
       skill_name: "ydc-ai-sdk-integration"
@@ -84,7 +85,8 @@ jobs:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
   publish-ydc-claude-agent-sdk-integration:
-    if: ${{ inputs['ydc-claude-agent-sdk-integration'] != 'skip' }}
+    needs: publish-ydc-ai-sdk-integration
+    if: ${{ always() && inputs['ydc-claude-agent-sdk-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
       skill_name: "ydc-claude-agent-sdk-integration"
@@ -93,7 +95,8 @@ jobs:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
   publish-ydc-crewai-mcp-integration:
-    if: ${{ inputs['ydc-crewai-mcp-integration'] != 'skip' }}
+    needs: publish-ydc-claude-agent-sdk-integration
+    if: ${{ always() && inputs['ydc-crewai-mcp-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
       skill_name: "ydc-crewai-mcp-integration"
@@ -102,7 +105,8 @@ jobs:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
   publish-ydc-openai-agent-sdk-integration:
-    if: ${{ inputs['ydc-openai-agent-sdk-integration'] != 'skip' }}
+    needs: publish-ydc-crewai-mcp-integration
+    if: ${{ always() && inputs['ydc-openai-agent-sdk-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
       skill_name: "ydc-openai-agent-sdk-integration"
@@ -111,7 +115,8 @@ jobs:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
   publish-youdotcom-cli:
-    if: ${{ inputs['youdotcom-cli'] != 'skip' }}
+    needs: publish-ydc-openai-agent-sdk-integration
+    if: ${{ always() && inputs['youdotcom-cli'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
       skill_name: "youdotcom-cli"
