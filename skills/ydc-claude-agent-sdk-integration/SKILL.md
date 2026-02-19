@@ -1,13 +1,15 @@
 ---
 name: ydc-claude-agent-sdk-integration
-description: Integrate Claude Agent SDK with You.com HTTP MCP server for Python and TypeScript. Use when developer mentions Claude Agent SDK, Anthropic Agent SDK, or integrating Claude with MCP tools.
+description: Integrate Claude Agent SDK with You.com HTTP MCP server for Python
+  and TypeScript. Use when developer mentions Claude Agent SDK, Anthropic Agent
+  SDK, or integrating Claude with MCP tools.
 license: MIT
 compatibility: Python 3.10+ or TypeScript 5.2+, Node.js 24+ or Bun 1.3+
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.2.0"
+  version: 1.2.1
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
 ---
 
