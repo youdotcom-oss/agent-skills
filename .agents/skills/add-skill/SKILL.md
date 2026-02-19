@@ -6,7 +6,7 @@ description: |
   symlink. Use when adding any new skill to skills/.
 license: MIT
 compatibility: Requires Bun 1.3+
-allowed-tools: Read Write Edit Bash Glob Grep
+allowed-tools: Read Write Edit Bash Glob Grep Skill
 metadata:
   author: youdotcom-oss
   version: "1.0.0"
@@ -126,17 +126,15 @@ publish-<skill-name>:
     PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 ```
 
-**Current job chain** — always append after the last entry:
+**Find the current last job at runtime** — do not rely on a hardcoded list.
+Run this to get the job ID to use as `needs`:
 
-```mermaid
-graph LR
-  A[publish-teams-anthropic-integration] --> B[publish-ydc-ai-sdk-integration]
-  B --> C[publish-ydc-claude-agent-sdk-integration]
-  C --> D[publish-ydc-crewai-mcp-integration]
-  D --> E[publish-ydc-openai-agent-sdk-integration]
-  E --> F[publish-youdotcom-cli]
-  F --> G[publish-your-new-skill]
+```bash
+grep '^  publish-' .github/workflows/publish.yml | tail -1
 ```
+
+The output will be a line like `  publish-youdotcom-cli:` — use the job ID
+(without the trailing colon) as `<current-last-job>`.
 
 The `always()` in `if:` is required — without it a skipped predecessor causes
 the dependent job to be skipped too, even if this skill was selected.
