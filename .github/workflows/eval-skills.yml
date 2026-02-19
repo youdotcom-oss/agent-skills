@@ -1,0 +1,241 @@
+name: Eval Skills
+
+on:
+  pull_request:
+    paths:
+      - "skills/*/SKILL.md"
+      - "skills/*/assets/**"
+      - "data/prompts/prompts.jsonl"
+      - "scripts/**"
+      - ".github/workflows/eval-skills.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "skills/*/SKILL.md"
+      - "skills/*/assets/**"
+      - "data/prompts/prompts.jsonl"
+      - "scripts/**"
+  schedule:
+    # Weekly on Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  detect-skills:
+    name: Detect Changed Skills
+    runs-on: ubuntu-latest
+    outputs:
+      skill_ids: ${{ steps.detect.outputs.skill_ids }}
+      run_all: ${{ steps.detect.outputs.run_all }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed skills
+        id: detect
+        run: |
+          # Weekly schedule or scripts/ change → run all skills
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "run_all=true" >> "$GITHUB_OUTPUT"
+            echo "skill_ids=[]" >> "$GITHUB_OUTPUT"
+            echo "Scheduled run — evaluating all skills"
+            exit 0
+          fi
+
+          # For push to main, compare with previous commit
+          # For PRs, compare with base branch
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE_SHA" HEAD)
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          # If scripts/ or prompts.jsonl changed, run all
+          if echo "$CHANGED" | grep -qE '^(scripts/|data/prompts/prompts\.jsonl)'; then
+            echo "run_all=true" >> "$GITHUB_OUTPUT"
+            echo "skill_ids=[]" >> "$GITHUB_OUTPUT"
+            echo "Core scripts or prompts changed — evaluating all skills"
+            exit 0
+          fi
+
+          # Extract unique skill directories that changed
+          SKILL_DIRS=$(echo "$CHANGED" | grep '^skills/' | sed 's|skills/\([^/]*\)/.*|\1|' | sort -u)
+
+          if [[ -z "$SKILL_DIRS" ]]; then
+            echo "run_all=false" >> "$GITHUB_OUTPUT"
+            echo "skill_ids=[]" >> "$GITHUB_OUTPUT"
+            echo "No skill changes detected — skipping eval"
+            exit 0
+          fi
+
+          # Map skill directory names to prompt IDs from prompts.jsonl
+          # A skill dir may have multiple prompt entries (e.g. -python / -typescript variants)
+          SKILL_IDS_JSON="["
+          FIRST=true
+          while IFS= read -r SKILL_DIR; do
+            MATCHES=$(grep -o "\"id\":\"[^\"]*\"" data/prompts/prompts.jsonl \
+              | sed 's/"id":"//;s/"//' \
+              | grep "^${SKILL_DIR}" || true)
+            while IFS= read -r ID; do
+              if [[ -n "$ID" ]]; then
+                if [[ "$FIRST" == "true" ]]; then
+                  SKILL_IDS_JSON+="\"$ID\""
+                  FIRST=false
+                else
+                  SKILL_IDS_JSON+=",\"$ID\""
+                fi
+              fi
+            done <<< "$MATCHES"
+          done <<< "$SKILL_DIRS"
+          SKILL_IDS_JSON+="]"
+
+          echo "run_all=false" >> "$GITHUB_OUTPUT"
+          echo "skill_ids=$SKILL_IDS_JSON" >> "$GITHUB_OUTPUT"
+          echo "Skills to evaluate: $SKILL_IDS_JSON"
+
+  eval:
+    name: Eval ${{ matrix.skill_id }}
+    needs: detect-skills
+    if: needs.detect-skills.outputs.run_all == 'true' || needs.detect-skills.outputs.skill_ids != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        skill_id: ${{ needs.detect-skills.outputs.run_all == 'true' && fromJson('["teams-anthropic-integration","ydc-ai-sdk-integration","ydc-claude-agent-sdk-integration-python","ydc-claude-agent-sdk-integration-typescript","ydc-crewai-mcp-integration","ydc-openai-agent-sdk-integration-python","ydc-openai-agent-sdk-integration-typescript"]') || fromJson(needs.detect-skills.outputs.skill_ids) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup uv (Python skills)
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install Claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run eval — ${{ matrix.skill_id }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+        run: bun scripts/run.ts --skill ${{ matrix.skill_id }}
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.skill_id }}
+          path: |
+            data/results/results.jsonl
+            data/RESULTS.md
+          retention-days: 30
+
+  report:
+    name: Report Results
+    needs: [detect-skills, eval]
+    if: always() && (needs.detect-skills.outputs.run_all == 'true' || needs.detect-skills.outputs.skill_ids != '[]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          merge-multiple: false
+          path: artifacts/
+
+      - name: Merge results and check failures
+        id: check
+        run: |
+          # Merge all results.jsonl files into one
+          mkdir -p data/results
+          find artifacts/ -name 'results.jsonl' -exec cat {} >> data/results/results.jsonl \;
+
+          if [[ ! -s data/results/results.jsonl ]]; then
+            echo "No results found"
+            echo "any_failed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Count failures below threshold
+          FAILURES=$(python3 -c "
+          import json, sys
+          threshold = 0.65
+          failed = []
+          with open('data/results/results.jsonl') as f:
+              for line in f:
+                  line = line.strip()
+                  if not line: continue
+                  d = json.loads(line)
+                  score = (d.get('score') or {}).get('score', 0)
+                  if score < threshold:
+                      failed.append(d['id'])
+          print('\n'.join(failed))
+          ")
+
+          if [[ -n "$FAILURES" ]]; then
+            echo "any_failed=true" >> "$GITHUB_OUTPUT"
+            echo "failures<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$FAILURES" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "Failed skills:"
+            echo "$FAILURES"
+          else
+            echo "any_failed=false" >> "$GITHUB_OUTPUT"
+            echo "All skills passed"
+          fi
+
+      - name: Open issue on weekly failure
+        if: github.event_name == 'schedule' && steps.check.outputs.any_failed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FAILURES="${{ steps.check.outputs.failures }}"
+          DATE=$(date -u +"%Y-%m-%d")
+
+          # Format failures as bullet list
+          BULLET_LIST=$(echo "$FAILURES" | sed 's/^/- /')
+
+          gh issue create \
+            --title "Weekly eval failure — ${DATE}" \
+            --label "eval-failure" \
+            --body "$(cat <<EOF
+          ## Weekly skill eval failed
+
+          The following skills scored below the pass threshold (0.65) on the weekly run:
+
+          ${BULLET_LIST}
+
+          See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for full details and the uploaded \`RESULTS.md\` artifact.
+
+          ### Next steps
+          - Download the \`results-<skill-id>\` artifact to inspect test output
+          - Check if the skill assets or prompts need updating
+          - Re-run manually: \`bun scripts/run.ts --skill <id>\`
+          EOF
+          )"
+
+      - name: Fail check on PR/push failure
+        if: github.event_name != 'schedule' && steps.check.outputs.any_failed == 'true'
+        run: |
+          echo "❌ One or more skills failed eval. See job logs above."
+          exit 1

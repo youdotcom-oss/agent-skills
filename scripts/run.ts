@@ -32,6 +32,7 @@ const skillId = skillFlag !== -1 ? args[skillFlag + 1] : null
 const concurrencyFlag = args.indexOf('-j')
 const concurrency = concurrencyFlag !== -1 ? args[concurrencyFlag + 1] : null
 const summaryOnly = args.includes('--summary-only')
+const PASS_THRESHOLD = 0.65
 
 // ── Step 1: Clean generated dirs ────────────────────────────────────────────
 
@@ -190,7 +191,41 @@ const generateBasicSummary = async (lines: string[]) => {
   console.log(`Basic summary written to ${RESULTS_MD}`)
 }
 
+// ── Step 5: Check pass/fail and exit ─────────────────────────────────────────
+
+type GraderResult = { pass: boolean; score: number; reasoning?: string }
+type ResultEntry = { id: string; score?: GraderResult }
+
+const checkResults = async (): Promise<number> => {
+  const resultsFileObj = Bun.file(RESULTS_FILE)
+  if (!(await resultsFileObj.exists())) return 1
+
+  const content = await resultsFileObj.text()
+  const lines = content.trim().split('\n').filter(Boolean)
+  if (lines.length === 0) return 1
+
+  const entries = lines.map((l) => JSON.parse(l) as ResultEntry)
+  const failures = entries.filter((e) => {
+    const score = e.score?.score ?? 0
+    return score < PASS_THRESHOLD
+  })
+
+  if (failures.length > 0) {
+    console.error(`\n❌ ${failures.length} skill(s) below pass threshold (${PASS_THRESHOLD}):`)
+    for (const f of failures) {
+      const score = f.score?.score ?? 0
+      console.error(`   - ${f.id}: score=${score.toFixed(2)} — ${f.score?.reasoning ?? 'no reasoning'}`)
+    }
+    return 1
+  }
+
+  console.log(`\n✅ All ${entries.length} skill(s) passed (threshold: ${PASS_THRESHOLD})`)
+  return 0
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
+
+let exitCode = 0
 
 if (summaryOnly) {
   await generateSummary()
@@ -199,4 +234,7 @@ if (summaryOnly) {
   const promptFile = await buildPromptFile()
   await runHarness(promptFile)
   await generateSummary()
+  exitCode = await checkResults()
 }
+
+process.exit(exitCode)
