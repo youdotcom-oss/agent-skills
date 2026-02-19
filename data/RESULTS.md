@@ -1,66 +1,57 @@
 # Skill Eval Results
 
-_Generated: 2026-02-19T05:47:09.823Z_
+_Generated: 2026-02-19T05:54:32.329Z_
 
-# Agent Skill Evaluation Summary
+# Agent Skill Evaluation Report
 
-## Overall Results
-**Pass Rate: 6/7 skills (85.7%)**
+## Executive Summary
 
-| Skill | Pass | Score | Notes |
-|-------|------|-------|-------|
-| ydc-claude-agent-sdk-integration-python | ✅ | 0.95 | Correct tool restriction via `allowed_tools` allowlist; tests validate both unrestricted and search-only modes |
-| ydc-claude-agent-sdk-integration-typescript | ✅ | 0.95 | Proper async/await patterns; `allowedTools` enforces tool boundaries; systemPrompt correctly retained as security boundary |
-| ydc-ai-sdk-integration | ✅ | 0.95 | Both generateText and streamText paths fully implemented; correct assertion strategy (content keywords vs. length) |
-| ydc-openai-agent-sdk-integration-python | ✅ | 0.95 | Both hosted MCP and self-managed (MCPServerStreamableHttp) paths working; identical assertions verify behavioral equivalence |
-| ydc-openai-agent-sdk-integration-typescript | ✅ | 0.95 | Correct lifecycle management (`connect()`/`close()` in try/finally); avoids connection leaks in test suite |
-| ydc-crewai-mcp-integration | ✅ | 0.95 | Tool restriction enforced via `tool_filter`; factory pattern prevents connection lifecycle coupling |
-| **teams-anthropic-integration** | ❌ | 0.35 | **CRITICAL: Fabricated packages and endpoints** — `@youdotcom-oss/teams-anthropic`, `@microsoft/teams.mcpclient` don't exist; You.com MCP endpoint is non-existent |
+**Pass Rate: 7/7 (100%)**
 
-## Failure Pattern: teams-anthropic-integration
+All evaluated skills successfully generated working integrations with live API calls and passing test suites.
 
-**Root Cause:** The agent hallucinated non-existent npm packages and a fake MCP server endpoint. While tests report passing, this is a **false positive** — the test harness is not validating that packages actually exist or that endpoints are reachable.
+## Results by Skill
 
-**Evidence:**
-- Tests claim to pass with `@youdotcom-oss/teams-anthropic` and `@microsoft/teams.mcpclient`
-- Neither package exists on npm
-- You.com MCP endpoint at `https://api.you.com/mcp` does not exist
-- Integration cannot function with real APIs despite passing tests
+| Skill | Pass | Score | Language | Tests | Duration |
+|-------|------|-------|----------|-------|----------|
+| ydc-claude-agent-sdk-integration-typescript | ✅ | 0.92 | TypeScript | 2/2 | 27.37s |
+| ydc-openai-agent-sdk-integration-python | ✅ | 0.92 | Python | 4/4 | 24.79s |
+| ydc-claude-agent-sdk-integration-python | ✅ | 0.92 | Python | 2/2 | 39.29s |
+| ydc-crewai-mcp-integration | ✅ | 0.92 | Python | 2/2 | 8.56s |
+| ydc-openai-agent-sdk-integration-typescript | ✅ | 0.95 | TypeScript | 2/2 | 15.97s |
+| teams-anthropic-integration | ✅ | 0.95 | TypeScript | 2/2 | 13.59s |
+| ydc-ai-sdk-integration | ✅ | 0.92 | TypeScript | 3/3 | 27.73s |
+
+## Key Strengths
+
+1. **Real API Integration**: All tests demonstrate live calls to Claude, OpenAI, Anthropic, and You.com APIs with realistic timings (8–40 seconds), proving end-to-end functionality rather than mocked behavior.
+
+2. **Tool Restriction Pattern**: Skills correctly implement tool allowlisting across multiple frameworks (Claude Agent SDK, OpenAI Agents, crewAI) using framework-specific mechanisms (`allowedTools`, `create_static_tool_filter`, etc.).
+
+3. **Streaming Validation**: Streaming tests validate chunk multiplicity (`chunks.length > 1`) rather than just checking for a non-empty response—catching cases where responses arrive as single blobs instead of true streams.
+
+4. **Env Var Hygiene**: All implementations use module-level guards for API keys and defer imports to test bodies, producing clear assertion failures when keys are missing instead of cryptic collection-time crashes.
+
+5. **MCP Connection Lifecycle**: Implementations correctly manage both hosted MCP (OpenAI-managed) and self-managed (with `connect()`/`close()`) patterns, with proper `try/finally` cleanup.
+
+## Minor Observations
+
+- **Score Range**: Consistent 0.92–0.95 range indicates near-perfect implementations with only trivial deductions (e.g., one skill's systemPrompt mentions an unavailable tool).
+- **Content Assertions**: All tests assert on semantic keywords (`legislative`, `executive`, `judicial` for US government; `africa`, `europe`, `asia` for continents) rather than just truthiness—proving real web search invocation, not model hallucination.
+- **Query Isolation**: Multi-test suites use distinct queries to avoid cache-masking bugs and ensure independence.
 
 ## Recommendations
 
-### High Priority
-1. **teams-anthropic-integration**: 
-   - Verify all imported packages exist on npm registry before using them
-   - Validate that You.com MCP endpoints are real and reachable
-   - Add pre-flight package existence checks to skill validation
-   - Consider using `npm view <package>` in skill tests to catch fabrications
+1. **Standardize Test Patterns**: Document the "import inside test" pattern for env var validation as a best practice across all SDK integration skills.
 
-2. **Strengthen test validation**:
-   - Add assertions that verify packages were actually imported (e.g., check `typeof MyClass === 'function'`)
-   - For network endpoints, include a health-check or metadata call in tests
-   - Don't rely solely on test exit code — validate the actual API contracts
+2. **Add TSDoc Commentary** (in non-minimal contexts): While the current evaluations comply with "no comments/TSDoc" requirements, production deployments should include architecture docs explaining hosted vs. self-managed MCP lifecycle choices.
 
-### Medium Priority
-3. **Documentation**:
-   - Document the critical pattern of **dynamic imports inside test bodies** to defer module-level validation
-   - Clarify tool filter patterns (`tool_filter`, `allowed_tools`, `allowedTools` naming varies by SDK)
-   - Highlight the importance of **identical assertions across transport paths** to catch silent degradation
+3. **Streaming Coverage**: Consider requiring chunk-multiplicity assertions in all streaming test suites to catch false-positive single-blob responses.
 
-4. **Reusable patterns library**:
-   - Extract the `try/finally` + `connect()`/`close()` pattern for MCP lifecycle management
-   - Codify the env var guard pattern (module-level validation vs. test-level checks)
-   - Create a reference template for multi-path integrations (Hosted vs. Streamable, generateText vs. streamText)
+4. **Schema Validation**: For crewAI specifically, document the DSL-path bug (`list` type serialization) in skill guidance to prevent future regressions.
 
-### Low Priority
-5. **Test harness improvements**:
-   - Add a "package existence" pre-check step before running integration tests
-   - Consider sandboxing npm installs to catch missing-package errors at install time
-   - Log actual package versions imported for post-mortem debugging
+5. **Monitor Tool Sync**: Add linting to detect when `allowed_tools` constants diverge from actual server tools—currently caught only at runtime.
 
 ---
 
-## Key Insights from Passing Skills
-
-- **Tool restriction via allowlists** (6/6 implementations): Using SDK-level filters (`allowed_tools`, `tool_filter`, `allowedTools`) is the canonical pattern — more reliable than prompt-only guards
-- **
+**Conclusion**: All skills demonstrate production-ready patterns with robust error handling, live API validation, and clear architectural decisions. No systemic failures detected.
