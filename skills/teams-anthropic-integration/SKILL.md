@@ -1,15 +1,21 @@
 ---
 name: teams-anthropic-integration
-description: |
-  Add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications using @youdotcom-oss/teams-anthropic. Optionally integrate You.com MCP server for web search and content extraction.
-  - MANDATORY TRIGGERS: teams-anthropic, @youdotcom-oss/teams-anthropic, Microsoft Teams.ai, Teams AI, Anthropic Claude, Teams MCP, Teams bot
-  - Use when: building Microsoft Teams bots with Claude, integrating Anthropic with Teams.ai, adding MCP tools to Teams applications
+description: >
+  Add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai
+  applications using @youdotcom-oss/teams-anthropic. Optionally integrate
+  You.com MCP server for web search and content extraction.
+
+  - MANDATORY TRIGGERS: teams-anthropic, @youdotcom-oss/teams-anthropic,
+  Microsoft Teams.ai, Teams AI, Anthropic Claude, Teams MCP, Teams bot
+
+  - Use when: building Microsoft Teams bots with Claude, integrating Anthropic
+  with Teams.ai, adding MCP tools to Teams applications
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 24+
 allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
-  version: "1.2.0"
+  version: 1.2.1
   category: enterprise-integration
   keywords: microsoft-teams,teams-ai,anthropic,claude,mcp,you.com,web-search,content-extraction
 ---
