@@ -1,0 +1,125 @@
+name: Publish Skills
+
+on:
+  workflow_dispatch:
+    inputs:
+      teams-anthropic-integration:
+        description: "teams-anthropic-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+      ydc-ai-sdk-integration:
+        description: "ydc-ai-sdk-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+      ydc-claude-agent-sdk-integration:
+        description: "ydc-claude-agent-sdk-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+      ydc-crewai-mcp-integration:
+        description: "ydc-crewai-mcp-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+      ydc-openai-agent-sdk-integration:
+        description: "ydc-openai-agent-sdk-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+      youdotcom-cli:
+        description: "youdotcom-cli"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
+
+jobs:
+  publish-teams-anthropic-integration:
+    if: ${{ inputs['teams-anthropic-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "teams-anthropic-integration"
+      bump_type: ${{ inputs['teams-anthropic-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-ydc-ai-sdk-integration:
+    needs: publish-teams-anthropic-integration
+    if: ${{ always() && inputs['ydc-ai-sdk-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-ai-sdk-integration"
+      bump_type: ${{ inputs['ydc-ai-sdk-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-ydc-claude-agent-sdk-integration:
+    needs: publish-ydc-ai-sdk-integration
+    if: ${{ always() && inputs['ydc-claude-agent-sdk-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-claude-agent-sdk-integration"
+      bump_type: ${{ inputs['ydc-claude-agent-sdk-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-ydc-crewai-mcp-integration:
+    needs: publish-ydc-claude-agent-sdk-integration
+    if: ${{ always() && inputs['ydc-crewai-mcp-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-crewai-mcp-integration"
+      bump_type: ${{ inputs['ydc-crewai-mcp-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-ydc-openai-agent-sdk-integration:
+    needs: publish-ydc-crewai-mcp-integration
+    if: ${{ always() && inputs['ydc-openai-agent-sdk-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-openai-agent-sdk-integration"
+      bump_type: ${{ inputs['ydc-openai-agent-sdk-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-youdotcom-cli:
+    needs: publish-ydc-openai-agent-sdk-integration
+    if: ${{ always() && inputs['youdotcom-cli'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "youdotcom-cli"
+      bump_type: ${{ inputs['youdotcom-cli'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
