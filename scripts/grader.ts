@@ -98,13 +98,24 @@ ${generatedFiles || '(none)'}
 ${testOutput}
 \`\`\`
 
-Assess whether the agent successfully completed the integration task:
-- Did it generate the required files?
-- Do the tests pass? (If exit code 0 with passing tests, the integration works — score high)
-- Does the test output show real API calls (non-trivial durations like 1000ms+)?
-- Are there any obvious structural issues (missing exports, wrong file names, no tests at all)?
+Assess whether the agent successfully completed the integration task across two dimensions:
 
-If tests pass with real timings, score 0.85–1.0. Only score below 0.65 if tests failed or no files were generated.
+**1. Does the integration work? (ground truth = test results)**
+- Did it generate the required files?
+- Do the tests pass? (exit code 0 = the integration works — do not second-guess this)
+- Does the test output show real API calls (non-trivial durations like 1000ms+)?
+
+**2. Are the tests meaningful? (assess the test file source in Generated files)**
+- Do tests assert on real content (keyword checks like toContain('legislative')) or just existence (toBeDefined(), length > 0)?
+- Do tests validate env vars before running?
+- Do tests use explicit tool-forcing queries like "Search the web for..." rather than plain factual questions the model could answer from memory?
+- Are there tests for both the basic integration AND the MCP extension?
+
+**Scoring rubric:**
+- 0.92–1.0: Tests pass with real timings AND assertions are meaningful (keyword checks, tool-forcing queries)
+- 0.85–0.91: Tests pass with real timings but assertions are weak (length checks, toBeDefined only)
+- 0.65–0.84: Tests pass but quality is poor (no env var validation, no MCP test, trivial assertions)
+- Below 0.65: Tests failed OR no test file generated
 
 Respond with ONLY valid JSON:
 {"pass": <true|false>, "score": <0.0-1.0>, "reasoning": "<2-3 sentences summarizing your assessment>"}`,
