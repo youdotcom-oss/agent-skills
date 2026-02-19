@@ -139,7 +139,18 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
-        run: bun scripts/run.ts --skill ${{ matrix.skill_id }}
+        run: |
+          for attempt in 1 2; do
+            echo "Attempt $attempt"
+            bun run eval --skill "${{ matrix.skill_id }}" && break
+            if [[ $attempt -lt 2 ]]; then
+              echo "Attempt $attempt failed — retrying in 30s..."
+              sleep 30
+            else
+              echo "All attempts failed"
+              exit 1
+            fi
+          done
 
       - name: Upload results
         if: always()
@@ -244,7 +255,7 @@ jobs:
           ### Next steps
           - Download the \`results-<skill-id>\` artifact to inspect test output
           - Check if the skill assets or prompts need updating
-          - Re-run manually: \`bun scripts/run.ts --skill <id>\`
+          - Re-run manually: \`bun run eval --skill <id>\`
           EOF
           )"
 
@@ -252,7 +263,7 @@ jobs:
         if: github.event_name == 'schedule'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: bun scripts/run.ts --summary-only
+        run: bun run eval:summary
 
       - name: Commit RESULTS.md to main
         if: github.event_name == 'schedule'

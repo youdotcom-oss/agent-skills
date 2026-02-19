@@ -162,7 +162,9 @@ Keep it short. Only include failure analysis when there are actual failures.`,
   const summaryText = firstContent?.type === 'text' ? firstContent.text : 'Summary generation failed.'
 
   const timestamp = new Date().toISOString()
-  const md = `# Skill Eval Results\n\n_Generated: ${timestamp}_\n\n${summaryText}\n`
+  const runId = process.env.GITHUB_RUN_ID
+  const header = runId ? `${timestamp} (CI run ${runId})` : timestamp
+  const md = `# Skill Eval Results\n\n_Generated: ${header}_\n\n${summaryText}\n`
   await Bun.write(RESULTS_MD, md)
   console.log(`Summary written to ${RESULTS_MD}`)
 }
@@ -186,7 +188,9 @@ const generateBasicSummary = async (lines: string[]) => {
     .join('\n')
 
   const timestamp = new Date().toISOString()
-  const md = `# Skill Eval Results\n\n_Generated: ${timestamp}_\n\n## Overall: ${passed}/${total} skills passing\n\n| Skill | Pass | Score | Notes |\n|-------|------|-------|-------|\n${rows}\n`
+  const runId = process.env.GITHUB_RUN_ID
+  const header = runId ? `${timestamp} (CI run ${runId})` : timestamp
+  const md = `# Skill Eval Results\n\n_Generated: ${header}_\n\n## Overall: ${passed}/${total} skills passing\n\n| Skill | Pass | Score | Notes |\n|-------|------|-------|-------|\n${rows}\n`
   await Bun.write(RESULTS_MD, md)
   console.log(`Basic summary written to ${RESULTS_MD}`)
 }
