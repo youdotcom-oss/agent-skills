@@ -31,11 +31,13 @@ jobs:
           fetch-depth: 0
 
       - name: Validate inputs
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
         run: |
           # Validate bump type (workflow-specific validation)
-          if [[ ! "${{ inputs.bump_type }}" =~ ^(major|minor|patch)$ ]]; then
+          if [[ ! "$BUMP_TYPE" =~ ^(major|minor|patch)$ ]]; then
             echo "❌ Error: bump_type must be 'major', 'minor', or 'patch'"
-            echo "Provided: ${{ inputs.bump_type }}"
+            echo "Provided: $BUMP_TYPE"
             exit 1
           fi
 
@@ -48,11 +50,13 @@ jobs:
           bun-version: latest
 
       - name: Validate skill structure
+        env:
+          SKILL_NAME: ${{ inputs.skill_name }}
         run: |
-          echo "🔍 Validating skill: ${{ inputs.skill_name }}"
+          echo "🔍 Validating skill: $SKILL_NAME"
 
           # Get JSON output
-          RESULT=$(bunx @plaited/development-skills validate-skill "skills/${{ inputs.skill_name }}" --json)
+          RESULT=$(bunx @plaited/development-skills validate-skill "skills/$SKILL_NAME" --json)
 
           # Pretty print results
           echo "$RESULT" | jq .
@@ -62,7 +66,7 @@ jobs:
 
           if [ "$IS_VALID" != "true" ]; then
             echo ""
-            echo "❌ Skill validation failed for: ${{ inputs.skill_name }}"
+            echo "❌ Skill validation failed for: $SKILL_NAME"
             ERRORS=$(echo "$RESULT" | jq -r '.[0].errors | join(", ")')
             echo "Errors: $ERRORS"
             exit 1
@@ -155,17 +159,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit version changes
+        env:
+          VERSION: ${{ steps.bump-version.outputs.version }}
+          SKILL_NAME: ${{ inputs.skill_name }}
+          BUMP_TYPE: ${{ inputs.bump_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          VERSION="${{ steps.bump-version.outputs.version }}"
-          SKILL_NAME="${{ inputs.skill_name }}"
-          BUMP_TYPE="${{ inputs.bump_type }}"
-
           git add "skills/${SKILL_NAME}/SKILL.md"
 
           if git diff --staged --quiet; then
             echo "ℹ️ No changes to commit (version already up-to-date)"
           else
             git commit -m "chore(${SKILL_NAME}): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
+            git pull origin "$REF_NAME" --ff-only
+            git push origin "HEAD:$REF_NAME"
             echo "✅ Version changes committed and pushed"
           fi
