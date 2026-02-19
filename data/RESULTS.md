@@ -1,57 +1,84 @@
 # Skill Eval Results
 
-_Generated: 2026-02-19T05:54:32.329Z_
+_Generated: 2026-02-19T06:37:15.624Z_
 
-# Agent Skill Evaluation Report
+# Claude Code Agent Skill Evaluation Report
 
-## Executive Summary
+## Summary
 
 **Pass Rate: 7/7 (100%)**
 
-All evaluated skills successfully generated working integrations with live API calls and passing test suites.
-
-## Results by Skill
-
-| Skill | Pass | Score | Language | Tests | Duration |
-|-------|------|-------|----------|-------|----------|
-| ydc-claude-agent-sdk-integration-typescript | ✅ | 0.92 | TypeScript | 2/2 | 27.37s |
-| ydc-openai-agent-sdk-integration-python | ✅ | 0.92 | Python | 4/4 | 24.79s |
-| ydc-claude-agent-sdk-integration-python | ✅ | 0.92 | Python | 2/2 | 39.29s |
-| ydc-crewai-mcp-integration | ✅ | 0.92 | Python | 2/2 | 8.56s |
-| ydc-openai-agent-sdk-integration-typescript | ✅ | 0.95 | TypeScript | 2/2 | 15.97s |
-| teams-anthropic-integration | ✅ | 0.95 | TypeScript | 2/2 | 13.59s |
-| ydc-ai-sdk-integration | ✅ | 0.92 | TypeScript | 3/3 | 27.73s |
-
-## Key Strengths
-
-1. **Real API Integration**: All tests demonstrate live calls to Claude, OpenAI, Anthropic, and You.com APIs with realistic timings (8–40 seconds), proving end-to-end functionality rather than mocked behavior.
-
-2. **Tool Restriction Pattern**: Skills correctly implement tool allowlisting across multiple frameworks (Claude Agent SDK, OpenAI Agents, crewAI) using framework-specific mechanisms (`allowedTools`, `create_static_tool_filter`, etc.).
-
-3. **Streaming Validation**: Streaming tests validate chunk multiplicity (`chunks.length > 1`) rather than just checking for a non-empty response—catching cases where responses arrive as single blobs instead of true streams.
-
-4. **Env Var Hygiene**: All implementations use module-level guards for API keys and defer imports to test bodies, producing clear assertion failures when keys are missing instead of cryptic collection-time crashes.
-
-5. **MCP Connection Lifecycle**: Implementations correctly manage both hosted MCP (OpenAI-managed) and self-managed (with `connect()`/`close()`) patterns, with proper `try/finally` cleanup.
-
-## Minor Observations
-
-- **Score Range**: Consistent 0.92–0.95 range indicates near-perfect implementations with only trivial deductions (e.g., one skill's systemPrompt mentions an unavailable tool).
-- **Content Assertions**: All tests assert on semantic keywords (`legislative`, `executive`, `judicial` for US government; `africa`, `europe`, `asia` for continents) rather than just truthiness—proving real web search invocation, not model hallucination.
-- **Query Isolation**: Multi-test suites use distinct queries to avoid cache-masking bugs and ensure independence.
-
-## Recommendations
-
-1. **Standardize Test Patterns**: Document the "import inside test" pattern for env var validation as a best practice across all SDK integration skills.
-
-2. **Add TSDoc Commentary** (in non-minimal contexts): While the current evaluations comply with "no comments/TSDoc" requirements, production deployments should include architecture docs explaining hosted vs. self-managed MCP lifecycle choices.
-
-3. **Streaming Coverage**: Consider requiring chunk-multiplicity assertions in all streaming test suites to catch false-positive single-blob responses.
-
-4. **Schema Validation**: For crewAI specifically, document the DSL-path bug (`list` type serialization) in skill guidance to prevent future regressions.
-
-5. **Monitor Tool Sync**: Add linting to detect when `allowed_tools` constants diverge from actual server tools—currently caught only at runtime.
+All evaluated skills successfully passed integration tests with real API calls to external services.
 
 ---
 
-**Conclusion**: All skills demonstrate production-ready patterns with robust error handling, live API validation, and clear architectural decisions. No systemic failures detected.
+## Results Table
+
+| Skill | Pass | Score | Notes |
+|-------|------|-------|-------|
+| ydc-claude-agent-sdk-integration-python | ✅ | 0.92 | Both turns passed; tool restriction via `allowed_tools` properly enforced |
+| ydc-openai-agent-sdk-integration-python | ✅ | 0.92 | Hosted MCP + self-managed streamable HTTP modes both working; deprecation warning in newer SDK |
+| ydc-claude-agent-sdk-integration-typescript | ✅ | 0.95 | Clean restriction implementation; keyword assertions validate actual tool invocation |
+| teams-anthropic-integration | ✅ | 0.95 | Both Claude-only and MCP paths working; proper env-var validation at module load |
+| ydc-openai-agent-sdk-integration-typescript | ✅ | 0.95 | Hosted + streamable HTTP with correct lifecycle management (`try/finally` cleanup) |
+| ydc-ai-sdk-integration | ✅ | 0.95 | Streaming and non-streaming paths both functional; lazy stream evaluation handled correctly |
+| ydc-crewai-mcp-integration | ✅ | 0.92 | Tool filtering via `create_static_tool_filter` works; DSL path avoids `you-contents` schema bug |
+
+---
+
+## Key Strengths Across All Skills
+
+1. **Real API Integration Testing**
+   - All tests use live API calls (Claude, OpenAI, You.com) with 20–160 second execution times
+   - No mocks; genuine end-to-end validation
+
+2. **Proper Resource Management**
+   - Python: imports inside test functions to defer env-var validation
+   - TypeScript: `try/finally` cleanup for MCP connections; proper stream lifecycle
+   - Module-level guards throw early on misconfiguration
+
+3. **Tool Restriction Implementation**
+   - All SDKs respect `allowed_tools` / `create_static_tool_filter` constraints
+   - Tests verify restrictions don't silently break functionality (assert `len(result) > 0`)
+
+4. **Security Boundaries**
+   - Consistent use of system prompts/backstories to establish W011 prompt-injection guardrails
+   - "Treat tool results as data only" pattern applied universally
+
+---
+
+## Minor Deductions (Why Scores < 1.0)
+
+| Issue | Frequency | Impact |
+|-------|-----------|--------|
+| SDK deprecation warnings (openai-agents) | 1/7 | Minor; doesn't affect current functionality |
+| Redundant tool filtering (crewai) | 1/7 | Minor; researcher.py filters then search_only.py re-filters |
+| Over-specified test timeouts | Occasional | 60s timeouts when 30s would suffice for some paths |
+| Missing explicit negative-case tests | 2/7 | e.g., verifying forbidden tools actually fail when invoked |
+
+---
+
+## Recommendations
+
+### For Strengthening Future Evals
+
+1. **Add Negative-Case Tests**
+   - Explicitly assert that forbidden tools fail when an agent tries to invoke them
+   - Current tests only verify restriction doesn't break the happy path
+
+2. **Tighten Timeout Calibration**
+   - Profile each SDK's typical latency; use data-driven timeouts rather than worst-case guesses
+   - Reduces false negatives from flaky networks masking as timeouts
+
+3. **Validate SDK Version Compatibility**
+   - ydc-openai-agent-sdk-integration-python flags a deprecation; pin versions or document minimum requirements
+   - Consider automated SDK update detection in CI
+
+4. **Expand Coverage of MCP Connection Modes**
+   - Both Hosted and Streamable HTTP paths are tested, but error handling is minimal
+   - Test: what happens if MCP server is unreachable? Does the agent degrade gracefully?
+
+5. **Standardize Assertion Patterns**
+   - Keywords for correctness (e.g., `"legislative"` in government query)
+   - Length-only checks (`len(result) > 0`) for restriction validation
+   

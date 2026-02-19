@@ -162,6 +162,14 @@ jobs:
         with:
           token: ${{ github.event_name != 'pull_request' && secrets.PUBLISH_TOKEN || secrets.GITHUB_TOKEN }}
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
       - name: Download all results
         uses: actions/download-artifact@v4
         with:
@@ -239,6 +247,26 @@ jobs:
           - Re-run manually: \`bun scripts/run.ts --skill <id>\`
           EOF
           )"
+
+      - name: Generate RESULTS.md
+        if: github.event_name == 'schedule'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bun scripts/run.ts --summary-only
+
+      - name: Commit RESULTS.md to main
+        if: github.event_name == 'schedule'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/RESULTS.md
+          if git diff --cached --quiet; then
+            echo "No changes to RESULTS.md — skipping commit"
+          else
+            DATE=$(date -u +"%Y-%m-%d")
+            git commit -m "chore: update RESULTS.md from weekly eval — ${DATE}"
+            git push
+          fi
 
       - name: Fail check on PR/push failure
         if: github.event_name != 'schedule' && steps.check.outputs.any_failed == 'true'
