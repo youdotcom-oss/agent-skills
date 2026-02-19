@@ -171,7 +171,7 @@ jobs:
             echo "ℹ️ No changes to commit (version already up-to-date)"
           else
             git commit -m "chore(${SKILL_NAME}): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
-            git pull origin "$REF_NAME" --ff-only
+            git pull origin "$REF_NAME" --rebase
             git push origin "HEAD:$REF_NAME"
             echo "✅ Version changes committed and pushed"
           fi
