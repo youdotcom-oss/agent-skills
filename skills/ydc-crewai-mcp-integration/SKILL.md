@@ -485,12 +485,25 @@ Use natural names that match your integration files (e.g. `researcher.py` → `t
 # Check if environment variable is set
 echo $YDC_API_KEY
 
-# Set it if missing
+# Set for current session
 export YDC_API_KEY="your-api-key-here"
+```
 
-# For permanent setup, add to ~/.bashrc or ~/.zshrc
-echo 'export YDC_API_KEY="your-api-key-here"' >> ~/.bashrc
-source ~/.bashrc
+For persistent configuration, use a `.env` file in your project root (never commit it):
+```bash
+# .env
+YDC_API_KEY=your-api-key-here
+```
+
+Then load it in your script:
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+Or with uv:
+```bash
+uv run --env-file .env python researcher.py
 ```
 
 ### Connection Timeouts
@@ -559,15 +572,15 @@ server_params = {
 
 **Solution:**
 ```bash
-# For DSL (MCPServerHTTP)
+# For DSL (MCPServerHTTP) — uv preferred (respects lockfile)
 uv add mcp
-# or
-pip install mcp
+# or pin a version with pip to avoid supply chain drift
+pip install "mcp>=1.0"
 
-# For MCPServerAdapter
-uv add crewai-tools[mcp]
+# For MCPServerAdapter — uv preferred
+uv add "crewai-tools[mcp]"
 # or
-pip install crewai-tools[mcp]
+pip install "crewai-tools[mcp]>=0.1"
 ```
 
 ### Tool Filter Not Working
