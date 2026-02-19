@@ -1,0 +1,97 @@
+name: External Contributor Review
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to review"
+        required: true
+        type: number
+
+jobs:
+  external-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Get PR author
+        id: get_pr
+        run: |
+          PR_AUTHOR=$(gh pr view ${{ inputs.pr_number }} --json author --jq '.author.login')
+          echo "pr_author=${PR_AUTHOR}" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check if external contributor
+        id: check_external
+        run: |
+          # Check repository permission (works for both public and private org members)
+          RESPONSE=$(gh api repos/${{ github.repository }}/collaborators/${{ steps.get_pr.outputs.pr_author }}/permission 2>/dev/null || echo '{"permission":"none"}')
+          PERMISSION=$(echo "$RESPONSE" | jq -r '.permission')
+          echo "Author permission: $PERMISSION"
+
+          # Admin, maintain, or write = internal contributor (should use internal workflow)
+          if [[ "$PERMISSION" == "admin" || "$PERMISSION" == "maintain" || "$PERMISSION" == "write" ]]; then
+            echo "❌ ERROR: This workflow is for external contributors only"
+            echo "PR author: ${{ steps.get_pr.outputs.pr_author }}"
+            echo "User has $PERMISSION permission (internal contributor)"
+            echo "This PR author has repository access and should use the automatic internal review workflow"
+            echo "The internal review runs automatically on PR open/sync for internal contributors"
+            echo "is_external=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "Author is external contributor, proceeding with review"
+          echo "is_external=true" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - uses: actions/checkout@v4
+        if: steps.check_external.outputs.is_external == 'true'
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        if: steps.check_external.outputs.is_external == 'true'
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          settings: |
+            {
+              "hooks": {
+                "UserPromptSubmit": [
+                  {
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": ".claude/hooks/UserPromptSubmit"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ inputs.pr_number }}
+
+            Before reviewing, gather existing PR feedback:
+            - `gh pr view ${{ inputs.pr_number }} --repo ${{ github.repository }} --json comments,reviews,reviewThreads`
+
+            This is a manually triggered review for an external contribution.
+
+            Please provide a comprehensive review focusing on:
+            - Compliance with project coding standards (see AGENTS.md and package-specific AGENTS.md)
+            - Proper test coverage for new functionality
+            - Documentation for public APIs
+            - Security considerations (OWASP top 10, command injection, XSS)
+            - Breaking changes to public APIs
+            - License compliance for new dependencies
+
+            Be welcoming but thorough. Use inline comments for code-specific feedback.
+            Use `gh pr view ${{ inputs.pr_number }}` and `gh pr diff ${{ inputs.pr_number }}` to examine the changes.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
