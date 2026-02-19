@@ -136,6 +136,7 @@ jobs:
       - name: Run eval — ${{ matrix.skill_id }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
         run: bun scripts/run.ts --skill ${{ matrix.skill_id }}
