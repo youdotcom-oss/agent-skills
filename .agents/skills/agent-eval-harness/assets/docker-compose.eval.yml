@@ -1,0 +1,19 @@
+# Agent Eval Harness Docker Compose Configuration
+#
+# Example docker-compose for running agent evaluations.
+# Copy this to your project and customize as needed.
+#
+# Usage:
+#   ANTHROPIC_API_KEY=sk-... docker compose -f docker-compose.eval.yml run --rm agent-eval-harness
+
+services:
+  agent-eval-harness:
+    build:
+      context: .
+      dockerfile: Dockerfile.eval
+    environment:
+      - ANTHROPIC_API_KEY
+    volumes:
+      # Mount output directory to persist results
+      - ./results:/app/results
+    command: ["bunx", "@plaited/agent-eval-harness", "capture", "prompts.jsonl", "--schema", "./claude.json", "-o", "results/output.jsonl"]

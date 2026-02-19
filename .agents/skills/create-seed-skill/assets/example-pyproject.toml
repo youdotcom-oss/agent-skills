@@ -1,0 +1,13 @@
+[project]
+name = "my-sdk-integration"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "my-sdk>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]

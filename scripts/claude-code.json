@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "name": "claude-code",
+  "command": ["claude"],
+  "sessionMode": "stream",
+  "prompt": {
+    "flag": "-p"
+  },
+  "output": {
+    "flag": "--output-format",
+    "value": "stream-json"
+  },
+  "autoApprove": ["--dangerously-skip-permissions", "--verbose"],
+  "resume": {
+    "flag": "--resume",
+    "sessionIdPath": "$.session_id"
+  },
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "assistant" },
+      "emitAs": "message",
+      "extract": { "content": "$.message.content[0].text" }
+    },
+    {
+      "match": { "path": "$.message.content[*].type", "value": "tool_use" },
+      "emitAs": "tool_call",
+      "extract": {
+        "title": "$.message.content[?(@.type=='tool_use')].name",
+        "status": "'pending'",
+        "toolName": "$.message.content[?(@.type=='tool_use')].name",
+        "input": "$.message.content[?(@.type=='tool_use')].input"
+      }
+    },
+    {
+      "match": { "path": "$.message.content[*].type", "value": "tool_result" },
+      "emitAs": "tool_call",
+      "extract": {
+        "title": "$.tool_use_id",
+        "status": "'completed'",
+        "output": "$.message.content[?(@.type=='tool_result')].content"
+      }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "result",
+    "contentPath": "$.result"
+  }
+}

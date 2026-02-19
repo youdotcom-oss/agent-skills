@@ -5,20 +5,19 @@
     "node": ">=18",
     "bun": ">= 1.2.21"
   },
-  "workspaces": [
-    "tests/*"
-  ],
   "scripts": {
-    "build": "bun run --filter '*' build",
-    "check": "bun run check:workspace-deps && bun run --filter '*' check && bun run check:py",
+    "check": "bun run check:js && bun run check:py && bun run check:package && check:types",
+    "check:js": "biome check",
+    "check:package": "format-package --check",
     "check:py": "uv tool run ruff check .",
-    "check:write": "bun run --filter '*' check:write && bun run check:write:py",
-    "check:write:py": "uv tool run ruff check --fix . && uv tool run ruff format .",
-    "format:py": "uv tool run ruff format .",
-    "prepare": "git config core.hooksPath .hooks",
-    "test": "bun run test:ts && bun run test:py",
-    "test:ts": "bun test",
-    "test:py": "uv run pytest tests/"
+    "check:types": "tsc --noEmit",
+    "check:write": "bun run check:write-js && bun run check:write-py && bun run check:write-package",
+    "check:write-js": "biome check --write",
+    "check:write-package": "format-package --write",
+    "check:write-py": "uv tool run ruff check --fix . && uv tool run ruff format .",
+    "eval": "bun scripts/run.ts",
+    "eval:summary": "bun scripts/run.ts --summary-only",
+    "prepare": "git config core.hooksPath .hooks"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -36,15 +35,29 @@
     ]
   },
   "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.42",
+    "@openai/agents": "^0.1.0",
+    "@anthropic-ai/sdk": "^0.29.0",
+    "@microsoft/teams.ai": "^2.0.5",
+    "@microsoft/teams.common": "^2.0.5",
+    "@microsoft/teams.apps": "^2.0.5",
+    "@microsoft/teams.mcpclient": "^2.0.5",
+    "@youdotcom-oss/teams-anthropic": "^1.1.0",
     "@biomejs/biome": "2.3.15",
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
-    "@plaited/development-skills": "0.8.1",
+    "@plaited/agent-eval-harness": "^0.12.1",
+    "@plaited/development-skills": "^0.8.1",
     "@types/bun": "latest",
     "format-package": "^7.0.0",
     "lint-staged": "^16.2.7",
-    "typescript": "5.9.3",
-    "typescript-language-server": "5.1.3",
+    "typescript": "^5.9.3",
+    "typescript-language-server": "^5.1.3",
     "zod": "^4.3.6"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.45",
+    "@youdotcom-oss/ai-sdk-plugin": "^2.0.6",
+    "ai": "^6.0.91"
   }
 }

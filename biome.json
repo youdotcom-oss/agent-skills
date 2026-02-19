@@ -41,7 +41,7 @@
       },
       "style": {
         "useConst": "error",
-        "useTemplate": "error",
+        "useTemplate": "off",
         "noNegationElse": "warn",
         "useImportType": "error"
       },
@@ -57,14 +57,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "demos/**/*.spec.ts",
-        "demos/**/*.test.ts",
-        "demos/**/tests/**/*.ts",
-        "src/tests/**/*.ts",
-        "*.spec.ts",
-        "*.test.ts"
-      ],
+      "includes": ["scripts/**"],
       "linter": {
         "rules": {
           "suspicious": {
