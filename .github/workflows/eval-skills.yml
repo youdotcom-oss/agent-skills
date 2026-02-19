@@ -142,7 +142,7 @@ jobs:
         run: |
           for attempt in 1 2; do
             echo "Attempt $attempt"
-            bun run eval --skill ${{ matrix.skill_id }} && break
+            bun run eval --skill "${{ matrix.skill_id }}" && break
             if [[ $attempt -lt 2 ]]; then
               echo "Attempt $attempt failed — retrying in 30s..."
               sleep 30
