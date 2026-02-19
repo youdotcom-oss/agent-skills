@@ -1,15 +1,21 @@
 ---
 name: ydc-crewai-mcp-integration
-description: |
-  Integrate You.com remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction.
-  - MANDATORY TRIGGERS: crewAI MCP, crewai mcp integration, remote MCP servers, You.com with crewAI, MCPServerHTTP, MCPServerAdapter
-  - Use when: developer mentions crewAI MCP integration, needs remote MCP servers, integrating You.com with crewAI
+description: >
+  Integrate You.com remote MCP server with crewAI agents for web search,
+  AI-powered answers, and content extraction.
+
+  - MANDATORY TRIGGERS: crewAI MCP, crewai mcp integration, remote MCP servers,
+  You.com with crewAI, MCPServerHTTP, MCPServerAdapter
+
+  - Use when: developer mentions crewAI MCP integration, needs remote MCP
+  servers, integrating You.com with crewAI
 license: MIT
-compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
+compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or
+  crewai-tools[mcp] (for MCPServerAdapter)
 allowed-tools: Read Write Edit Bash(pip:install) Bash(uv:add)
 metadata:
   author: youdotcom-oss
-  version: "1.2.0"
+  version: 1.2.1
   category: mcp-integration
   keywords: crewai,mcp,model-context-protocol,you.com,ydc-server,remote-mcp,web-search,ai-agent,content-extraction,http-transport
 ---
