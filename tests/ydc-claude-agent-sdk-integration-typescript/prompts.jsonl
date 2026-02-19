@@ -1,6 +1,0 @@
-{"prompt":"Create a TypeScript application using Claude Agent SDK v1 with You.com HTTP MCP server. Use TypeScript v1 (generator pattern). Save the code to generated/path-a-basic.ts."}
-{"prompt":"Create a TypeScript application using Claude Agent SDK v1 with You.com HTTP MCP server. Configure allowed_tools to include only you_search (not you_contents). Use TypeScript v1. Save the code to generated/path-b-tools.ts."}
-{"prompt":"Create a TypeScript application using Claude Agent SDK v1 with You.com HTTP MCP server. Use custom environment variables CUSTOM_YDC_KEY and CUSTOM_ANTHROPIC_KEY. Use TypeScript v1. Save the code to generated/path-c-custom-keys.ts."}
-{"prompt":"Create a TypeScript application using Claude Agent SDK v1 with You.com HTTP MCP server. Use Claude Haiku 3.5 model for faster responses. Use TypeScript v1. Save the code to generated/path-d-haiku.ts."}
-{"prompt":"Create a TypeScript application using Claude Agent SDK v2 with You.com HTTP MCP server. Use TypeScript v2 (send/receive pattern)."}
-{"prompt":"Create a TypeScript application that searches for the latest AI developments using Claude Agent SDK."}

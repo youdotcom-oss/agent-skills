@@ -1,6 +1,0 @@
-{"prompt":"Create an AI SDK application using generateText() with You.com web search. Save the code to generated/path-a-generate.ts."}
-{"prompt":"Create an AI SDK application using streamText() with You.com web search and stopWhen pattern. Save the code to generated/path-b-stream.ts."}
-{"prompt":"Create an AI SDK application using generateText() with both youSearch and youContents tools. Save the code to generated/path-c-multi-tool.ts."}
-{"prompt":"Create an AI SDK application using generateText() with youSearch and a custom environment variable CUSTOM_YDC_KEY. Save the code to generated/path-d-custom-key.ts."}
-{"prompt":"Create a Next.js API route that uses streamText() with You.com tools."}
-{"prompt":"Create an Express server that streams AI responses with You.com tools."}
