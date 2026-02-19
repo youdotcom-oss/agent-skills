@@ -7,10 +7,16 @@ description: |
 license: MIT
 compatibility: Python 3.10+ or Node.js 18+ or Bun 1.0+ with TypeScript
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
+assets:
+  - path_a_hosted.py
+  - path-a-hosted.ts
+  - test_integration.py
+  - integration.spec.ts
+  - pyproject.toml
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.1.0"
+  version: "1.2.0"
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 
@@ -596,36 +602,26 @@ All TypeScript Authorization headers use string concatenation (`'Bearer ' + proc
 **Rules:**
 - Always include untrusted-content guidance in `instructions`
 - Never allow unvalidated user-supplied URLs to drive `mcp__ydc__you_contents` calls
-- Use `process.env.YDC_API_KEY` explicitly in headers — not a local alias — unless using a custom env variable name
+- Use `process.env.YDC_API_KEY` explicitly in headers
 
-## Validation Checklist
+## Generate Integration Tests
 
-Before completing:
+When generating integration code, always write a test file alongside it. Read the reference assets before writing any code:
+- [assets/path_a_hosted.py](assets/path_a_hosted.py) — Python hosted MCP integration
+- [assets/path-a-hosted.ts](assets/path-a-hosted.ts) — TypeScript hosted MCP integration
+- [assets/test_integration.py](assets/test_integration.py) — Python test structure
+- [assets/integration.spec.ts](assets/integration.spec.ts) — TypeScript test structure
+- [assets/pyproject.toml](assets/pyproject.toml) — Python project config (required for `uv run pytest`)
 
-- [ ] Package installed: `openai-agents` (Python) or `@openai/agents` (TypeScript)
-- [ ] Environment variables set: `YDC_API_KEY` and `OPENAI_API_KEY`
-- [ ] Template copied or configuration added to existing file
-- [ ] MCP configuration type chosen (Hosted or Streamable HTTP)
-- [ ] Authorization headers use `'Bearer ' + process.env.YDC_API_KEY` (explicit, no template literals)
-- [ ] Agent `instructions` include untrusted-content guidance
-- [ ] File is executable (Python) or can be compiled (TypeScript)
-- [ ] Ready to test with example query
+Use natural names that match your integration files (e.g. `agent.py` → `test_agent.py`, `agent.ts` → `agent.spec.ts`). The assets show the correct structure — adapt them with your filenames and export names.
 
-## Testing Your Integration
-
-**Python:**
-```bash
-python your-file.py
-```
-
-**TypeScript:**
-```bash
-# With tsx (recommended for quick testing)
-npx tsx your-file.ts
-
-# Or compile and run
-tsc your-file.ts && node your-file.js
-```
+**Rules:**
+- No mocks — call real APIs, use real OpenAI + You.com credentials
+- Assert on content length (`> 0`), not just existence
+- Validate required env vars at test start
+- TypeScript: use `bun:test`, dynamic imports inside tests, `timeout: 60_000`
+- Python: use `pytest`, import inside test function to avoid module-load errors; always include a `pyproject.toml` with `pytest` in `[dependency-groups] dev`
+- Run TypeScript tests: `bun test` | Run Python tests: `uv run pytest`
 
 ## Common Issues
 

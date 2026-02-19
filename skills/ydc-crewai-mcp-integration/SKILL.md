@@ -7,9 +7,14 @@ description: |
 license: MIT
 compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or crewai-tools[mcp] (for MCPServerAdapter)
 allowed-tools: Read Write Edit Bash(pip:install) Bash(uv:add)
+assets:
+  - path_a_basic_dsl.py
+  - path_b_tool_filter.py
+  - test_integration.py
+  - pyproject.toml
 metadata:
   author: youdotcom-oss
-  version: "1.1.0"
+  version: "1.2.0"
   category: mcp-integration
   keywords: crewai,mcp,model-context-protocol,you.com,ydc-server,remote-mcp,web-search,ai-agent,content-extraction,http-transport
 ---
@@ -68,7 +73,6 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 
 **Options:**
 - **Environment variable** `YDC_API_KEY` (Recommended)
-- **Custom environment variable name** (specify your preference)
 - **Direct configuration** (not recommended for production)
 
 **Getting Your API Key:**
@@ -455,28 +459,25 @@ Extract full page content from one or more URLs in markdown or HTML format.
 - "Get the HTML of this landing page to analyze its structure"
 - "Convert these 3 blog posts to markdown for analysis"
 
-## Implementation Checklist
+## Generate Integration Tests
 
-### For DSL Structured Configuration:
-- [ ] Install `mcp` library: `uv add mcp` or `pip install mcp`
-- [ ] Import `MCPServerHTTP` from `crewai.mcp` and `create_static_tool_filter` from `crewai.mcp.filters`
-- [ ] Set `YDC_API_KEY` environment variable
-- [ ] Add `mcps=[]` field to agent with `MCPServerHTTP` object
-- [ ] Configure Bearer token in `headers` parameter
-- [ ] **Always** add `tool_filter=create_static_tool_filter(allowed_tool_names=["you-search"])` — DSL cannot use you-contents (crewAI schema conversion bug)
-- [ ] Add untrusted content trust boundary to `backstory` for all agents using MCP tools
-- [ ] Test agent to verify you-search tool is discovered and functional
+When generating integration code, always write a test file alongside it. Read the reference assets before writing any code:
+- [assets/path_a_basic_dsl.py](assets/path_a_basic_dsl.py) — DSL integration
+- [assets/path_b_tool_filter.py](assets/path_b_tool_filter.py) — tool filter integration
+- [assets/test_integration.py](assets/test_integration.py) — test file structure
+- [assets/pyproject.toml](assets/pyproject.toml) — project config with pytest dependency
 
-### For Advanced MCPServerAdapter:
-- [ ] Install `crewai-tools[mcp]`: `uv add crewai-tools[mcp]` or `pip install crewai-tools[mcp]`
-- [ ] Import `MCPServerAdapter` from `crewai_tools`
-- [ ] Set `YDC_API_KEY` environment variable (if using env var)
-- [ ] Configure `server_params` dict with URL, transport, and headers
-- [ ] Implement context manager or manual lifecycle management
-- [ ] Pass tools to agent explicitly in `tools` parameter
-- [ ] Add untrusted content trust boundary to `backstory` for all agents using MCP tools
-- [ ] Ensure connection is properly closed (if using manual lifecycle)
-- [ ] Test connection and tool discovery
+Use natural names that match your integration files (e.g. `researcher.py` → `test_researcher.py`). The asset shows the correct test structure — adapt it with your filenames.
+
+**Rules:**
+- No mocks — call real APIs, start real crewAI crews
+- Import integration modules inside test functions (not top-level) to avoid load-time errors
+- Assert on content length (`> 0`), not just existence
+- Validate `YDC_API_KEY` at test start — crewAI needs it for the MCP connection
+- Run tests with `uv run pytest` (not plain `pytest`)
+- **Use only MCPServerHTTP DSL in tests** — never MCPServerAdapter; tests must match production transport
+- **Never introspect available tools** — only assert on the final string response from `crew.kickoff()`
+- **Always add pytest to dependencies**: include `pytest` in `pyproject.toml` under `[project.optional-dependencies]` or `[dependency-groups]` so `uv run pytest` can find it
 
 ## Common Issues
 

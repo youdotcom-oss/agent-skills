@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "name": "claude-headless",
+  "command": ["claude"],
+  "sessionMode": "stream",
+  "prompt": {
+    "flag": "-p"
+  },
+  "output": {
+    "flag": "--output-format",
+    "value": "stream-json"
+  },
+  "autoApprove": ["--dangerously-skip-permissions", "--verbose"],
+  "resume": {
+    "flag": "--resume",
+    "sessionIdPath": "$.session_id"
+  },
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "assistant" },
+      "emitAs": "message",
+      "extract": { "content": "$.message.content[0].text" }
+    },
+    {
+      "match": { "path": "$.type", "value": "tool_use" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.name", "status": "'pending'" }
+    },
+    {
+      "match": { "path": "$.type", "value": "tool_result" },
+      "emitAs": "tool_call",
+      "extract": { "title": "$.name", "status": "'completed'" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "result",
+    "contentPath": "$.result"
+  }
+}

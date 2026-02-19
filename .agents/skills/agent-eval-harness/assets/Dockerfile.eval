@@ -1,0 +1,25 @@
+# Agent Eval Harness Docker Configuration
+#
+# Example Dockerfile for running agent evaluations in an isolated container.
+# Copy this to your project and customize as needed.
+#
+# Usage:
+#   docker build -f Dockerfile.eval -t agent-eval-harness .
+#   docker run --rm -e ANTHROPIC_API_KEY agent-eval-harness bunx @plaited/agent-eval-harness capture prompts.jsonl --schema ./claude.json
+
+FROM oven/bun:1.2.9
+
+# Install git (required for some agent operations)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package.json bun.lock* ./
+RUN bun install --frozen-lockfile
+
+# Copy source files
+COPY . .
+
+# Default command - override with your harness invocation
+CMD ["bun", "test"]

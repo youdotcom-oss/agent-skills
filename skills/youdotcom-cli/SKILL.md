@@ -9,7 +9,7 @@ compatibility: Requires Bun 1.3+ or Node.js 18+, and access to the internet
 allowed-tools: Bash(bunx:@youdotcom-oss/api) Bash(npx:@youdotcom-oss/api) Bash(bunx:ydc) Bash(npx:ydc) Bash(jq:*)
 metadata:
   author: youdotcom-oss
-  version: "2.0.5"
+  version: "2.0.6"
   category: web-search-tools
   keywords: you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,claude-code,codex,cursor
 ---

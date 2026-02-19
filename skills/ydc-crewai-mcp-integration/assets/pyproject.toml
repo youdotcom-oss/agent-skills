@@ -1,0 +1,13 @@
+[project]
+name = "ydc-crewai-integration"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "crewai>=0.100.0",
+    "mcp>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+]

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "name": "gemini-headless",
+  "command": ["gemini"],
+  "sessionMode": "iterative",
+  "prompt": {
+    "flag": ""
+  },
+  "output": {
+    "flag": "--output-format",
+    "value": "stream-json"
+  },
+  "autoApprove": ["--sandbox", "false"],
+  "outputEvents": [
+    {
+      "match": { "path": "$.type", "value": "message" },
+      "emitAs": "message",
+      "extract": { "content": "$.content" }
+    }
+  ],
+  "result": {
+    "matchPath": "$.type",
+    "matchValue": "result",
+    "contentPath": "$.content"
+  },
+  "historyTemplate": "User: {{input}}\nAssistant: {{output}}"
+}
