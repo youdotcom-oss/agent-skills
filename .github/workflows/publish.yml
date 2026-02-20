@@ -53,6 +53,16 @@ on:
           - patch
           - minor
           - major
+      ydc-langchain-integration:
+        description: "ydc-langchain-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
       youdotcom-cli:
         description: "youdotcom-cli"
         required: false
@@ -121,5 +131,14 @@ jobs:
     with:
       skill_name: "youdotcom-cli"
       bump_type: ${{ inputs['youdotcom-cli'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+  publish-ydc-langchain-integration:
+    needs: publish-youdotcom-cli
+    if: ${{ always() && inputs['ydc-langchain-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-langchain-integration"
+      bump_type: ${{ inputs['ydc-langchain-integration'] }}
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
