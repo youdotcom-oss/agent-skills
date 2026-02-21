@@ -114,7 +114,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        skill_id: ${{ needs.detect-skills.outputs.run_all == 'true' && fromJson('["teams-anthropic-integration","ydc-ai-sdk-integration","ydc-claude-agent-sdk-integration-python","ydc-claude-agent-sdk-integration-typescript","ydc-crewai-mcp-integration","ydc-openai-agent-sdk-integration-python","ydc-openai-agent-sdk-integration-typescript"]') || fromJson(needs.detect-skills.outputs.skill_ids) }}
+        skill_id: ${{ needs.detect-skills.outputs.run_all == 'true' && fromJson('["teams-anthropic-integration","ydc-ai-sdk-integration","ydc-claude-agent-sdk-integration-python","ydc-claude-agent-sdk-integration-typescript","ydc-crewai-mcp-integration","ydc-langchain-integration","ydc-openai-agent-sdk-integration-python","ydc-openai-agent-sdk-integration-typescript"]') || fromJson(needs.detect-skills.outputs.skill_ids) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

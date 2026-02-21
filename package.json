@@ -57,7 +57,11 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.45",
+    "@langchain/anthropic": "^1.3.19",
+    "@langchain/core": "^1.1.27",
     "@youdotcom-oss/ai-sdk-plugin": "^2.0.6",
-    "ai": "^6.0.91"
+    "@youdotcom-oss/api": "^0.3.3",
+    "ai": "^6.0.91",
+    "langchain": "^1.2.25"
   }
 }
