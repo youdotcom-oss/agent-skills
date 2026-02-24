@@ -48,9 +48,10 @@ code and integration tests.
 ### Step 1 (integration) — Invoke create-seed-skill
 
 Activate the `create-seed-skill` skill. It handles:
-- Collecting skill info (name, packages, language, paths A/B, env vars, test query)
+- Collecting skill info (name, packages, **language — TypeScript, Python, or both**, paths A/B, env vars, test query)
 - Generating `skills/<skill-name>/SKILL.md` and `assets/`
-- Appending to `data/prompts/prompts.jsonl`
+- Creating `tests/<skill-name>/` directories with `.gitkeep` files (one per language if both)
+- Appending one `prompts.jsonl` entry per language to `data/prompts/prompts.jsonl`
 
 Complete the `create-seed-skill` workflow fully before proceeding to Step 2.
 
