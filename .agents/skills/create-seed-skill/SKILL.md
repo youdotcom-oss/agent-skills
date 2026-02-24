@@ -6,7 +6,7 @@ description: |
   - Ask first: Is this an integration skill (code generation + tests) or a tool skill (CLI wrapper with no tests)? Only proceed with this skill for integration-type skills.
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 18+
-allowed-tools: Read Write Edit Bash(bun:add)
+allowed-tools: Read Write Edit Bash(bun:add) Bash(mkdir) Bash(touch) Bash(ln) Bash(bunx)
 assets:
   - example-SKILL.md
   - example-path-a.ts
