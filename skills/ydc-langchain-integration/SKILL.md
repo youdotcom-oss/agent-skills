@@ -77,9 +77,7 @@ import { youContents, youSearch } from '@youdotcom-oss/langchain'
 const apiKey = getEnvironmentVariable('YDC_API_KEY') ?? ''
 
 if (!apiKey) {
-  console.error('Error: YDC_API_KEY environment variable is required')
-  console.error('Get your API key at: https://you.com/platform/api-keys')
-  process.exit(1)
+  throw new Error('YDC_API_KEY environment variable is required')
 }
 
 // youSearch: web search with filtering (query, count, country, freshness, livecrawl)
@@ -221,7 +219,7 @@ Use natural names that match your integration files (e.g. `search.ts` -> `search
 - Dynamic imports inside tests (not top-level)
 - Assert on content length (`> 0` or `> 50`), not just `.toBeDefined()`
 - Validate required env vars at test start
-- Use `timeout: 60_000` for all API calls
+- Use `timeout: 60_000` for API calls; multi-tool tests may use `timeout: 120_000`
 - Run tests with `bun test`
 
 ## Common Issues

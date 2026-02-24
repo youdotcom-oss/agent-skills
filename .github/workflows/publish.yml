@@ -43,8 +43,8 @@ on:
           - patch
           - minor
           - major
-      ydc-openai-agent-sdk-integration:
-        description: "ydc-openai-agent-sdk-integration"
+      ydc-langchain-integration:
+        description: "ydc-langchain-integration"
         required: false
         type: choice
         default: skip
@@ -53,8 +53,8 @@ on:
           - patch
           - minor
           - major
-      ydc-langchain-integration:
-        description: "ydc-langchain-integration"
+      ydc-openai-agent-sdk-integration:
+        description: "ydc-openai-agent-sdk-integration"
         required: false
         type: choice
         default: skip
@@ -114,8 +114,18 @@ jobs:
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
-  publish-ydc-openai-agent-sdk-integration:
+  publish-ydc-langchain-integration:
     needs: publish-ydc-crewai-mcp-integration
+    if: ${{ always() && inputs['ydc-langchain-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-langchain-integration"
+      bump_type: ${{ inputs['ydc-langchain-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-ydc-openai-agent-sdk-integration:
+    needs: publish-ydc-langchain-integration
     if: ${{ always() && inputs['ydc-openai-agent-sdk-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
@@ -131,14 +141,5 @@ jobs:
     with:
       skill_name: "youdotcom-cli"
       bump_type: ${{ inputs['youdotcom-cli'] }}
-    secrets:
-      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-  publish-ydc-langchain-integration:
-    needs: publish-youdotcom-cli
-    if: ${{ always() && inputs['ydc-langchain-integration'] != 'skip' }}
-    uses: ./.github/workflows/_publish.yml
-    with:
-      skill_name: "ydc-langchain-integration"
-      bump_type: ${{ inputs['ydc-langchain-integration'] }}
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}

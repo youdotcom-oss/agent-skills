@@ -10,6 +10,7 @@
         "@langchain/core": "^1.1.27",
         "@youdotcom-oss/ai-sdk-plugin": "^2.0.6",
         "@youdotcom-oss/api": "^0.3.3",
+        "@youdotcom-oss/langchain": "^1.0.0",
         "ai": "^6.0.91",
         "langchain": "^1.2.25",
       },
@@ -226,6 +227,8 @@
     "@youdotcom-oss/ai-sdk-plugin": ["@youdotcom-oss/ai-sdk-plugin@2.0.6", "", { "dependencies": { "@youdotcom-oss/api": "0.3.3" }, "peerDependencies": { "ai": "^6.0.83" } }, "sha512-RGwC0mdLD939CvP3YgpuBAiRzWyzPFMCn0++98BpIQaX5iNkun5Re5o0o5HhMNU5VDC1gOF3yCXAbwB6EHlXRw=="],
 
     "@youdotcom-oss/api": ["@youdotcom-oss/api@0.3.3", "", { "dependencies": { "zod": "^4.3.6" }, "bin": { "ydc": "bin/cli.js" } }, "sha512-pxpO5c2Zf7lgCu4utHVuXSwuQzGKx74LVJQBguwbDImQOpc/8ciVIfSdnavt+EoVXbu50dVSyaBwHXqwKyiD5w=="],
+
+    "@youdotcom-oss/langchain": ["@youdotcom-oss/langchain@1.0.0", "", { "dependencies": { "@youdotcom-oss/api": "0.3.4" }, "peerDependencies": { "langchain": ">=1.0.0" } }, "sha512-TPZiCMberPW0Pmr5i6Pj64k5/xsuZfG9xjf3OR2dVX6KQegpQMplAlVqoGnsFU2DWSXjGPc4Dpt1rDREqrM8CQ=="],
 
     "@youdotcom-oss/teams-anthropic": ["@youdotcom-oss/teams-anthropic@1.1.0", "", { "dependencies": { "@anthropic-ai/sdk": "^0.74.0", "@microsoft/teams.ai": "^2.0.5", "@microsoft/teams.common": "^2.0.5" } }, "sha512-+IbvMfu2J3ce/Gn9vcT97ZhrSVD7H1riJhexkKdZ8bSkJ4eIX6irHShuCqe/LPmhxHPJMxwqQSZYcumpCyAMgg=="],
 
@@ -802,6 +805,8 @@
     "@modelcontextprotocol/sdk/jose": ["jose@6.1.3", "", {}, "sha512-0TpaTfihd4QMNwrz/ob2Bp7X04yuxJkjRGi4aKmOqwhov54i6u79oCv7T+C7lo70MKH6BesI3vscD1yb/yzKXQ=="],
 
     "@plaited/agent-eval-harness/@plaited/development-skills": ["@plaited/development-skills@0.8.0", "", { "peerDependencies": { "typescript-language-server": "^5.1.3" }, "bin": { "development-skills": "bin/cli.ts" } }, "sha512-1dXWKPco9fkFLJhFuuOJB1aktF1qY97v/evthfNsun11VG1gA8efD44s3txxUIPs4FcL5KSvcvvlaqbmHQk7ew=="],
+
+    "@youdotcom-oss/langchain/@youdotcom-oss/api": ["@youdotcom-oss/api@0.3.4", "", { "dependencies": { "zod": "^4.3.6" }, "bin": { "ydc": "bin/cli.js" } }, "sha512-gyVUT2mAKkDfquFtDwE/A6q8V5z5MRMNxzL+Bb58Lafu2xBpTGO+J5jjESh8PKnSfsvzAIgXywnKe5JBT79H1A=="],
 
     "@youdotcom-oss/teams-anthropic/@anthropic-ai/sdk": ["@anthropic-ai/sdk@0.74.0", "", { "dependencies": { "json-schema-to-ts": "^3.1.1" }, "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" }, "optionalPeers": ["zod"], "bin": { "anthropic-ai-sdk": "bin/cli" } }, "sha512-srbJV7JKsc5cQ6eVuFzjZO7UR3xEPJqPamHFIe29bs38Ij2IripoAhC0S5NslNbaFUYqBKypmmpzMTpqfHEUDw=="],
 

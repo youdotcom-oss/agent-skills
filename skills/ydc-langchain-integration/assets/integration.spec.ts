@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { ToolMessage } from '@langchain/core/messages'
 
 describe('LangChain agent with youSearch and youContents', () => {
   test(
@@ -13,7 +14,7 @@ describe('LangChain agent with youSearch and youContents', () => {
       expect(result.structuredResponse.key_points.length).toBeGreaterThan(0)
       expect(result.structuredResponse.urls.length).toBeGreaterThan(0)
 
-      const toolMessages = result.messages.filter((m: any) => m._getType() === 'tool')
+      const toolMessages = result.messages.filter((m: unknown) => m instanceof ToolMessage)
       expect(toolMessages.length).toBeGreaterThan(0)
     },
     { timeout: 120_000 },

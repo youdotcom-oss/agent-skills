@@ -61,6 +61,7 @@
     "@langchain/core": "^1.1.27",
     "@youdotcom-oss/ai-sdk-plugin": "^2.0.6",
     "@youdotcom-oss/api": "^0.3.3",
+    "@youdotcom-oss/langchain": "^1.0.0",
     "ai": "^6.0.91",
     "langchain": "^1.2.25"
   }
