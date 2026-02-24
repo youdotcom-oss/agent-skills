@@ -6,7 +6,7 @@ description: |
   - Ask first: Is this an integration skill (code generation + tests) or a tool skill (CLI wrapper with no tests)? Only proceed with this skill for integration-type skills.
 license: MIT
 compatibility: Requires Bun 1.3+ or Node.js 18+
-allowed-tools: Read Write Edit Bash(bun:add)
+allowed-tools: Read Write Edit Bash(bun:add) Bash(mkdir) Bash(touch) Bash(ln) Bash(bunx)
 assets:
   - example-SKILL.md
   - example-path-a.ts
@@ -55,12 +55,13 @@ Ask these questions **all at once** (do not ask one by one):
 
 1. **Skill name**: What should it be called? (lowercase, hyphens, e.g. `my-sdk-integration`)
 2. **Package(s)**: What npm/pip package(s) does it wrap? Include exact package names.
-3. **Language(s)**: TypeScript, Python, or both?
+3. **Language(s)**: TypeScript, Python, or **both**?
+   - **Both** means: separate asset files for each language, **two** `prompts.jsonl` entries (one `-typescript`, one `-python`), and **two** `tests/` directories (`tests/<skill-name>-typescript/` and `tests/<skill-name>-python/`), each with a `.gitkeep` file.
+   - **One language** means: one set of assets, one `prompts.jsonl` entry, one `tests/<skill-name>/` directory with a `.gitkeep` file.
 4. **Path A** (basic): What is the simplest working integration — one function, one API call?
 5. **Path B** (extended): What is the natural extension — MCP, streaming, tool filtering, etc.?
 6. **Required env vars**: Which API keys are required? (e.g. `MY_API_KEY`, `OPENAI_API_KEY`)
 7. **Test query**: What is a factual question with a deterministic, multi-keyword answer that the integration should be able to answer? (See [Choosing a Test Query](#choosing-a-test-query))
-8. **Eval entry ID**: What `id` should the `prompts.jsonl` entry use? (usually the skill name, with `-python`/`-typescript` suffix if needed)
 
 ### Step 2 — Read Reference Assets
 
@@ -91,23 +92,60 @@ skills/<skill-name>/
     ├── path_b_<variant>.py       # Path B integration (if applicable)
     ├── test_integration.py       # pytest file
     └── pyproject.toml            # Python project config (required for uv run pytest)
+
+# Also create (see below):
+tests/<skill-name>/               # single language
+└── .gitkeep
+# — or for both languages —
+tests/<skill-name>-typescript/
+└── .gitkeep
+tests/<skill-name>-python/
+└── .gitkeep
+```
+
+**Also create the `tests/` eval target directory (or directories) with a `.gitkeep` file** so the directory exists in git before agents write to it:
+
+- Single language: `tests/<skill-name>/.gitkeep`
+- Both languages: `tests/<skill-name>-typescript/.gitkeep` **and** `tests/<skill-name>-python/.gitkeep`
+
+```bash
+# Single language (adjust path as needed):
+mkdir -p tests/<skill-name> && touch tests/<skill-name>/.gitkeep
+
+# Both languages:
+mkdir -p tests/<skill-name>-typescript tests/<skill-name>-python
+touch tests/<skill-name>-typescript/.gitkeep tests/<skill-name>-python/.gitkeep
 ```
 
 ### Step 4 — Add prompts.jsonl Entry
 
-Append the new entry to `data/prompts/prompts.jsonl`.
+Append one entry per language to `data/prompts/prompts.jsonl`.
 
-**Template:**
+**Single language template** (pick one concrete example — do NOT leave `TypeScript` or `Python` as a placeholder):
+
+TypeScript:
 ```jsonl
-{"id":"<skill-name>[-python|-typescript]","input":["Using the <skill-name> skill, create a working <description of Path A> integration. Write flat minimal code with no comments or TSDoc. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or TSDoc. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"<typescript|python>"}}
+{"id":"<skill-name>","input":["Using the <skill-name> skill, create a working TypeScript <description of Path A> integration. Write flat minimal code with no comments or TSDoc. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or TSDoc. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"typescript"}}
+```
+
+Python:
+```jsonl
+{"id":"<skill-name>","input":["Using the <skill-name> skill, create a working Python <description of Path A> integration. Write flat minimal code with no comments or docstrings. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or docstrings. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"python"}}
+```
+
+**Both languages — append TWO entries:**
+```jsonl
+{"id":"<skill-name>-typescript","input":["Using the <skill-name> skill, create a working TypeScript <description of Path A> integration. Write flat minimal code with no comments or TSDoc. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name>-typescript directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or TSDoc. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>-typescript","language":"typescript"}}
+{"id":"<skill-name>-python","input":["Using the <skill-name> skill, create a working Python <description of Path A> integration. Write flat minimal code with no comments or docstrings. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name>-python directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or docstrings. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>-python","language":"python"}}
 ```
 
 **Rules for prompts:**
-- Exactly 2 turns
+- Exactly 2 turns per entry
+- **Name the language explicitly in Turn 1** ("TypeScript" or "Python") so the agent doesn't guess
 - Describe outcomes only — never mention class names, method names, or config keys
 - Turn 1: basic integration + tests
 - Turn 2: extension + update tests
-- `metadata.cwd` must match `tests/<skill-name>` (the grader reads files from here)
+- `metadata.cwd` must match the `tests/` directory created in Step 3 (the grader reads files from here)
 - `metadata.language` must be `typescript` or `python`
 
 ### Step 5 — Create Symlink
@@ -216,9 +254,17 @@ skills/ydc-httpx-integration/
     ├── path_a_basic.py
     ├── test_integration.py
     └── pyproject.toml
+
+tests/ydc-httpx-integration/
+└── .gitkeep
+```
+
+**Create the tests directory:**
+```bash
+mkdir -p tests/ydc-httpx-integration && touch tests/ydc-httpx-integration/.gitkeep
 ```
 
 **prompts.jsonl entry:**
 ```jsonl
-{"id":"ydc-httpx-integration","input":["Using the ydc-httpx-integration skill, create a Python application that calls the You.com search API directly with httpx and returns search results. Write integration tests that call the real API and verify the response contains expected keywords. Save everything to the tests/ydc-httpx-integration directory.","Extend the integration to also support content extraction from URLs. Update the integration tests to verify both search and content extraction work with live queries."],"metadata":{"cwd":"tests/ydc-httpx-integration","language":"python"}}
+{"id":"ydc-httpx-integration","input":["Using the ydc-httpx-integration skill, create a working Python application that calls the You.com search API directly with httpx and returns search results. Write integration tests that call the real API and verify the response contains expected keywords. Save everything to the tests/ydc-httpx-integration directory.","Extend the integration to also support content extraction from URLs. Update the integration tests to verify both search and content extraction work with live queries."],"metadata":{"cwd":"tests/ydc-httpx-integration","language":"python"}}
 ```
