@@ -62,7 +62,6 @@ Ask these questions **all at once** (do not ask one by one):
 5. **Path B** (extended): What is the natural extension — MCP, streaming, tool filtering, etc.?
 6. **Required env vars**: Which API keys are required? (e.g. `MY_API_KEY`, `OPENAI_API_KEY`)
 7. **Test query**: What is a factual question with a deterministic, multi-keyword answer that the integration should be able to answer? (See [Choosing a Test Query](#choosing-a-test-query))
-8. **Eval entry ID**: What `id` should the `prompts.jsonl` entry use? (usually the skill name, with `-python`/`-typescript` suffix if needed)
 
 ### Step 2 — Read Reference Assets
 
@@ -93,6 +92,15 @@ skills/<skill-name>/
     ├── path_b_<variant>.py       # Path B integration (if applicable)
     ├── test_integration.py       # pytest file
     └── pyproject.toml            # Python project config (required for uv run pytest)
+
+# Also create (see below):
+tests/<skill-name>/               # single language
+└── .gitkeep
+# — or for both languages —
+tests/<skill-name>-typescript/
+└── .gitkeep
+tests/<skill-name>-python/
+└── .gitkeep
 ```
 
 **Also create the `tests/` eval target directory (or directories) with a `.gitkeep` file** so the directory exists in git before agents write to it:
@@ -113,9 +121,16 @@ touch tests/<skill-name>-typescript/.gitkeep tests/<skill-name>-python/.gitkeep
 
 Append one entry per language to `data/prompts/prompts.jsonl`.
 
-**Single language template:**
+**Single language template** (pick one concrete example — do NOT leave `TypeScript` or `Python` as a placeholder):
+
+TypeScript:
 ```jsonl
-{"id":"<skill-name>","input":["Using the <skill-name> skill, create a working <TypeScript|Python> <description of Path A> integration. Write flat minimal code with no comments or TSDoc/docstrings. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or TSDoc/docstrings. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"<typescript|python>"}}
+{"id":"<skill-name>","input":["Using the <skill-name> skill, create a working TypeScript <description of Path A> integration. Write flat minimal code with no comments or TSDoc. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or TSDoc. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"typescript"}}
+```
+
+Python:
+```jsonl
+{"id":"<skill-name>","input":["Using the <skill-name> skill, create a working Python <description of Path A> integration. Write flat minimal code with no comments or docstrings. Write integration tests that call real APIs and assert on meaningful response content. Save everything to the tests/<skill-name> directory.","Extend the integration with <description of Path B>. Write flat minimal code with no comments or docstrings. Update the integration tests to verify the extended integration also works with a live query."],"metadata":{"cwd":"tests/<skill-name>","language":"python"}}
 ```
 
 **Both languages — append TWO entries:**
