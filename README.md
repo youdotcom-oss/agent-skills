@@ -74,6 +74,23 @@ Integrate You.com's remote MCP server with crewAI agents for web search, AI-powe
 
 ---
 
+### ydc-langchain-integration
+
+Integrate LangChain.js applications with You.com tools for web search and content extraction using `@youdotcom-oss/langchain`.
+
+**Use when:**
+- Building LangChain.js agents with `createAgent` and `initChatModel`
+- Adding web search or content extraction via `DynamicStructuredTool`
+- Integrating You.com tools into existing LangChain workflows
+
+**Features:**
+- Two tools: `youSearch` (web search with filtering) and `youContents` (content extraction)
+- Structured output support via Zod schemas
+- Prompt injection defense guidance (W011 trust boundary)
+- Direct invocation and agent-based usage patterns
+
+---
+
 ### teams-anthropic-integration
 
 Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
@@ -125,11 +142,12 @@ npx skills add youdotcom-oss/agent-skills
 bunx skills add youdotcom-oss/agent-skills
 ```
 
-This installs all 6 skills at once:
+This installs all 7 skills at once:
 - `ydc-ai-sdk-integration`
 - `ydc-claude-agent-sdk-integration`
 - `ydc-openai-agent-sdk-integration`
 - `ydc-crewai-mcp-integration`
+- `ydc-langchain-integration`
 - `teams-anthropic-integration`
 - `youdotcom-cli`
 
@@ -168,6 +186,7 @@ Once installed, your AI coding agent will automatically activate the relevant sk
 - "Add You.com to my Teams app with Anthropic"
 - "Configure OpenAI Agents SDK with You.com MCP"
 - "Integrate You.com MCP with my crewAI agents"
+- "Add You.com tools to my LangChain.js agent"
 - "Add You.com CLI tools to my bash agent"
 
 Each skill provides step-by-step instructions, code templates, and validation checklists.
