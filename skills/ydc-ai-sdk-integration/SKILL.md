@@ -522,4 +522,4 @@ description: 'Search the web'
 
 * Package README: https://github.com/youdotcom-oss/dx-toolkit/tree/main/packages/ai-sdk-plugin
 * Vercel AI SDK Docs: https://ai-sdk.dev/docs
-* You.com API Keys: https://you.com/platform/api-keys
+* You.com API: https://you.com/platform/api-keys
