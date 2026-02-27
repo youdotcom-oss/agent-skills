@@ -1,8 +1,8 @@
 import os
 
-from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
 from langchain_youdotcom import YouContentsTool, YouSearchTool
+from langgraph.prebuilt import create_react_agent
 
 if not os.getenv("YDC_API_KEY"):
     raise ValueError("YDC_API_KEY environment variable is required")
@@ -21,16 +21,20 @@ system_message = (
 
 model = ChatOpenAI(model="gpt-4o", temperature=0)
 
-agent = create_agent(
+agent = create_react_agent(
     model,
     [search_tool, contents_tool],
-    system_prompt=system_message,
+    prompt=system_message,
 )
 
-result = agent.invoke(
-    {"messages": [{"role": "user", "content": "What are the three branches of the US government?"}]},
-    {"recursion_limit": 10},
-)
 
-final_message = result["messages"][-1].content
-print(final_message)
+def main(query: str) -> str:
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": query}]},
+        {"recursion_limit": 10},
+    )
+    return result["messages"][-1].content
+
+
+if __name__ == "__main__":
+    print(main("What are the three branches of the US government?"))

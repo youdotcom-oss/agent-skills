@@ -7,10 +7,15 @@ if not os.getenv("YDC_API_KEY"):
 
 retriever = YouRetriever(k=5, livecrawl="web")
 
-docs = retriever.invoke("What are the three branches of the US government?")
 
-for doc in docs:
-    print(doc.metadata.get("title", ""))
-    print(doc.page_content[:200])
-    print(doc.metadata.get("url", ""))
-    print("---")
+def main(query: str) -> list:
+    return retriever.invoke(query)
+
+
+if __name__ == "__main__":
+    docs = main("What are the three branches of the US government?")
+    for doc in docs:
+        print(doc.metadata.get("title", ""))
+        print(doc.page_content[:200])
+        print(doc.metadata.get("url", ""))
+        print("---")
