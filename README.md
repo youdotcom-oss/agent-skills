@@ -76,18 +76,18 @@ Integrate You.com's remote MCP server with crewAI agents for web search, AI-powe
 
 ### ydc-langchain-integration
 
-Integrate LangChain.js applications with You.com tools for web search and content extraction using `@youdotcom-oss/langchain`.
+Integrate LangChain applications (TypeScript and Python) with You.com tools for web search, content extraction, and retrieval.
 
 **Use when:**
-- Building LangChain.js agents with `createAgent` and `initChatModel`
-- Adding web search or content extraction via `DynamicStructuredTool`
-- Integrating You.com tools into existing LangChain workflows
+- Building LangChain.js agents with `createAgent` and `initChatModel` (TypeScript)
+- Using `YouRetriever`, `YouSearchTool`, or `YouContentsTool` with LangChain (Python)
+- Adding web search or content extraction to existing LangChain workflows
 
 **Features:**
-- Two tools: `youSearch` (web search with filtering) and `youContents` (content extraction)
-- Structured output support via Zod schemas
+- TypeScript: `youSearch` and `youContents` via `@youdotcom-oss/langchain`, structured output with Zod
+- Python: `YouRetriever` for RAG chains, `YouSearchTool` + `YouContentsTool` for agents via `langchain-youdotcom`
 - Prompt injection defense guidance (W011 trust boundary)
-- Direct invocation and agent-based usage patterns
+- Direct invocation and agent-based usage patterns for both languages
 
 ---
 
