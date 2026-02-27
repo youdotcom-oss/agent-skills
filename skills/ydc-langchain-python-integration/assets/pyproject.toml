@@ -1,0 +1,15 @@
+[project]
+name = "ydc-langchain-python-integration"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain-youdotcom>=0.1.0",
+    "langchain-openai>=0.3.0",
+    "langgraph>=0.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
