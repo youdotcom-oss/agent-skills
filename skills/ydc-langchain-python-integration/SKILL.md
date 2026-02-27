@@ -139,10 +139,9 @@ result = chain.invoke("what happened in AI today?")
 ```python
 import os
 
-from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
-
-from langchain_youdotcom import YouSearchTool, YouContentsTool
+from langchain_openai import ChatOpenAI
+from langchain_youdotcom import YouContentsTool, YouSearchTool
 
 if not os.getenv("YDC_API_KEY"):
     raise ValueError("YDC_API_KEY environment variable is required")
