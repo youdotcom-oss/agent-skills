@@ -6,7 +6,7 @@ description: |
   langchain-youdotcom, YouRetriever, YouSearchTool, YouContentsTool, or You.com integration with LangChain.
 license: MIT
 compatibility: TypeScript (Bun 1.2+ or Node.js 18+) or Python 3.10+
-allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add) Bash(uv:sync) Bash(pip:install)
+allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add) Bash(uv:sync) Bash(pip:install) Bash(poetry:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
@@ -40,7 +40,7 @@ Interactive workflow to add You.com tools to your LangChain application using `@
      # Path A — retriever only
      pip install langchain-youdotcom
      # Path B — agent with tools (also needs langchain + model provider)
-     pip install langchain-youdotcom langchain langchain-openai
+     pip install langchain-youdotcom langchain langchain-openai langgraph
      ```
 
 4. **Ask: Environment Variable**
