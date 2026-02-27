@@ -53,16 +53,6 @@ on:
           - patch
           - minor
           - major
-      ydc-langchain-python-integration:
-        description: "ydc-langchain-python-integration"
-        required: false
-        type: choice
-        default: skip
-        options:
-          - skip
-          - patch
-          - minor
-          - major
       ydc-openai-agent-sdk-integration:
         description: "ydc-openai-agent-sdk-integration"
         required: false
@@ -134,18 +124,8 @@ jobs:
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
-  publish-ydc-langchain-python-integration:
-    needs: publish-ydc-langchain-integration
-    if: ${{ always() && inputs['ydc-langchain-python-integration'] != 'skip' }}
-    uses: ./.github/workflows/_publish.yml
-    with:
-      skill_name: "ydc-langchain-python-integration"
-      bump_type: ${{ inputs['ydc-langchain-python-integration'] }}
-    secrets:
-      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-
   publish-ydc-openai-agent-sdk-integration:
-    needs: publish-ydc-langchain-python-integration
+    needs: publish-ydc-langchain-integration
     if: ${{ always() && inputs['ydc-openai-agent-sdk-integration'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
