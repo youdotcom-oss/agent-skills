@@ -1,7 +1,7 @@
 import os
 
+from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
 
 from langchain_youdotcom import YouContentsTool, YouSearchTool
 
@@ -22,10 +22,10 @@ system_message = (
 
 model = ChatOpenAI(model="gpt-4o", temperature=0)
 
-agent = create_react_agent(
+agent = create_agent(
     model,
     [search_tool, contents_tool],
-    prompt=system_message,
+    system_prompt=system_message,
 )
 
 result = agent.invoke(
