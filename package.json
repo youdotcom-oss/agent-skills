@@ -15,6 +15,8 @@
     "check:write-js": "biome check --write",
     "check:write-package": "format-package --write",
     "check:write-py": "uv tool run ruff check --fix . && uv tool run ruff format .",
+    "copy:openclaw": "bun scripts/copy-openclaw.ts",
+    "generate:ydc-schemas": "bun scripts/generate-ydc-schemas.ts",
     "eval": "bun scripts/run.ts",
     "eval:summary": "bun scripts/run.ts --summary-only",
     "prepare": "git config core.hooksPath .hooks"
