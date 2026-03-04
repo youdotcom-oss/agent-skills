@@ -10,7 +10,7 @@ allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add) Bash(uv:sync) Bas
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.1.0"
+  version: "1.0.0"
   keywords: langchain,langchain-js,langchain-python,you.com,integration,web-search,content-extraction,livecrawl,agents,structured-output,retriever,rag
 ---
 

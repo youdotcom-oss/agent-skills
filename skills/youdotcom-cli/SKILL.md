@@ -14,7 +14,7 @@ compatibility: Requires curl, jq, and access to the internet
 allowed-tools: Bash(curl:*) Bash(jq:*)
 metadata:
   author: youdotcom-oss
-  version: 3.0.0
+  version: 2.0.7
   category: web-search-tools
   keywords: you.com,bash,cli,agents,web-search,content-extraction,livecrawl,research,citations
 ---

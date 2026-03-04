@@ -15,7 +15,7 @@ allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 1.2.2
+  version: 1.2.1
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 

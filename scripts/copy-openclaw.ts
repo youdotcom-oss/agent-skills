@@ -36,7 +36,7 @@ const OPENCLAW_METADATA = {
     },
   },
   author: 'youdotcom-oss',
-  version: '3.0.0',
+  version: '2.0.7',
   category: 'web-search-tools',
   keywords:
     'you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,openclaw',
