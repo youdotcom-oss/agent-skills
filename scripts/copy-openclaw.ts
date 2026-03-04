@@ -17,59 +17,66 @@
  * @public
  */
 
-import { join } from 'node:path'
+import { join } from "node:path";
 
-const ROOT = import.meta.dir.replace(/\/scripts$/, '')
-const SOURCE = join(ROOT, 'skills/youdotcom-cli/SKILL.md')
-const DEST_DIR = join(ROOT, 'skills/youdotcom-cli-openclaw')
-const DEST = join(DEST_DIR, 'SKILL.md')
+const ROOT = import.meta.dir.replace(/\/scripts$/, "");
+const SOURCE = join(ROOT, "skills/youdotcom-cli/SKILL.md");
+const DEST_DIR = join(ROOT, "skills/youdotcom-cli-openclaw");
+const DEST = join(DEST_DIR, "SKILL.md");
 
-const OPENCLAW_OVERRIDES = {
-  openclaw: {
-    emoji: '🔍',
-    primaryEnv: 'YDC_API_KEY',
-    requires: {
-      bins: ['curl', 'jq'],
-    },
+/** OpenClaw-specific fields nested under metadata.openclaw */
+const OPENCLAW_FIELDS = {
+  emoji: "🔍",
+  primaryEnv: "YDC_API_KEY",
+  requires: {
+    bins: ["curl", "jq"],
   },
-  keywords:
-    'you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,openclaw',
-}
+};
+
+const extractMetadataField = (frontmatter: string, field: string) => {
+  const match = frontmatter.match(new RegExp(`^\\s+${field}:\\s*(.+)$`, "m"));
+  return match?.[1]?.trim();
+};
 
 const transformSkillMd = (source: string): string => {
-  const match = source.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/)
-  if (!match) throw new Error('Invalid SKILL.md: no frontmatter found')
+  const match = source.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/);
+  if (!match) throw new Error("Invalid SKILL.md: no frontmatter found");
 
-  const [, frontmatterRaw, body] = match
+  const [, frontmatterRaw, body] = match;
 
-  // Extract source metadata values before stripping
-  const versionMatch = frontmatterRaw.match(/^\s+version:\s*(.+)$/m)
-  const authorMatch = frontmatterRaw.match(/^\s+author:\s*(.+)$/m)
-  const categoryMatch = frontmatterRaw.match(/^\s+category:\s*(.+)$/m)
+  // Pull standard metadata fields from source
+  const author = extractMetadataField(frontmatterRaw, "author");
+  const version = extractMetadataField(frontmatterRaw, "version");
+  const category = extractMetadataField(frontmatterRaw, "category");
+  const keywords = extractMetadataField(frontmatterRaw, "keywords");
 
   // Strip the trailing multi-line metadata: block — it is always the last key
-  const frontmatterWithoutMetadata = frontmatterRaw.replace(/\nmetadata:[\s\S]*$/, '')
+  const frontmatterWithoutMetadata = frontmatterRaw.replace(
+    /\nmetadata:[\s\S]*$/,
+    ""
+  );
 
   const metadata = {
-    ...OPENCLAW_OVERRIDES,
-    author: authorMatch?.[1]?.trim() ?? 'youdotcom-oss',
-    version: versionMatch?.[1]?.trim() ?? '0.0.0',
-    category: categoryMatch?.[1]?.trim() ?? 'web-search-tools',
-  }
+    openclaw: OPENCLAW_FIELDS,
+    author: author ?? "youdotcom-oss",
+    version: version ?? "0.0.0",
+    category: category ?? "web-search-tools",
+    keywords,
+  };
 
   const newFrontmatter = [
     frontmatterWithoutMetadata,
-    'user-invocable: true',
+    "user-invocable: true",
     `metadata: ${JSON.stringify(metadata)}`,
-  ].join('\n')
+  ].join("\n");
 
-  return `---\n${newFrontmatter}\n---\n${body}`
-}
+  return `---\n${newFrontmatter}\n---\n${body}`;
+};
 
-const source = await Bun.file(SOURCE).text()
-const transformed = transformSkillMd(source)
+const source = await Bun.file(SOURCE).text();
+const transformed = transformSkillMd(source);
 
-await Bun.$`mkdir -p ${DEST_DIR}`.quiet()
-await Bun.write(DEST, transformed)
+await Bun.$`mkdir -p ${DEST_DIR}`.quiet();
+await Bun.write(DEST, transformed);
 
-console.log(`✓ Written to ${DEST}`)
+console.log(`✓ Written to ${DEST}`);
