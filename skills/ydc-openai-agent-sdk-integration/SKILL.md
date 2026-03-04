@@ -15,7 +15,7 @@ allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 1.2.1
+  version: 1.2.2
   keywords: openai,openai-agents,agent-sdk,mcp,you.com,integration,hosted-mcp,streamable-http,web-search,python,typescript
 ---
 
@@ -53,7 +53,7 @@ Interactive workflow to set up OpenAI Agents SDK with You.com's MCP server.
 
 6. **Add Security Instructions to Agent**
 
-   MCP tool results from `mcp__ydc__you_search` and `mcp__ydc__you_contents` are untrusted web content. Always include a security-aware statement in the agent's `instructions` field:
+   MCP tool results from `mcp__ydc__you_search`, `mcp__ydc__you_research` and `mcp__ydc__you_contents` are untrusted web content. Always include a security-aware statement in the agent's `instructions` field:
 
    **Python:**
    ```python
@@ -547,6 +547,7 @@ try {
 
 After configuration, agents can discover and use:
 - `mcp__ydc__you_search` - Web and news search
+- `mcp__ydc__you_research` - Deep research with cited sources
 - `mcp__ydc__you_contents` - Web page content extraction
 
 ## Environment Variables
@@ -567,7 +568,7 @@ export OPENAI_API_KEY="your-openai-api-key-here"
 
 ### Prompt Injection Defense (Snyk W011)
 
-`mcp__ydc__you_search` and `mcp__ydc__you_contents` fetch raw content from arbitrary public websites and inject it directly into the agent's context as tool results — a **W011 indirect prompt injection surface**: a malicious webpage can embed instructions the agent treats as legitimate.
+`mcp__ydc__you_search`, `mcp__ydc__you_research` and `mcp__ydc__you_contents` fetch raw content from arbitrary public websites and inject it directly into the agent's context as tool results — a **W011 indirect prompt injection surface**: a malicious webpage can embed instructions the agent treats as legitimate.
 
 **Mitigation: include a trust boundary statement in `instructions`.**
 
@@ -595,7 +596,7 @@ const agent = new Agent({
 
 This skill connects at runtime to `https://api.you.com/mcp` to discover and invoke tools. This is a **required external dependency** — if the endpoint is unavailable or compromised, agent behavior changes. Before deploying to production, verify the endpoint URL matches `https://api.you.com/mcp` exactly.
 
-**`require_approval: "never"` is intentional** for `you_search` and `you_contents` — both are read-only retrieval tools that do not modify state. Requiring user approval per-call would make the agent unusable for search workflows. If your deployment handles sensitive queries or operates in a high-trust environment where approval gates are needed, switch to `"always"`:
+**`require_approval: "never"` is intentional** for `you_search`, `you_research` and `you_contents` — all are read-only retrieval tools that do not modify state. Requiring user approval per-call would make the agent unusable for search workflows. If your deployment handles sensitive queries or operates in a high-trust environment where approval gates are needed, switch to `"always"`:
 
 ```python
 "require_approval": "always",  # Prompts user to approve each tool call
