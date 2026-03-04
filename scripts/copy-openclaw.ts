@@ -4,10 +4,8 @@
  * @remarks
  * Resolves OpenClaw registry audit issues by declaring required prerequisites
  * that were missing from the original youdotcom-cli SKILL.md:
- * - `requires.anyBins` — Node.js or Bun runtime must be present
- * - `requires.bins` — ydc CLI must be installed
- * - `requires.env` — YDC_API_KEY must be set
- * - `install` spec — how to install @youdotcom-oss/api via npm
+ * - `requires.bins` — `curl` and `jq` must be installed as system binaries
+ * - `primaryEnv` — `YDC_API_KEY` is the optional auth env var (required for Research/Contents)
  *
  * Also reformats `metadata` from a YAML mapping to a single-line JSON string
  * as required by OpenClaw's frontmatter parser, and adds `user-invocable: true`.
