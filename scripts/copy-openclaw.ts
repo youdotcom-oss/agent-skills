@@ -32,22 +32,11 @@ const OPENCLAW_METADATA = {
     emoji: '🔍',
     primaryEnv: 'YDC_API_KEY',
     requires: {
-      anyBins: ['node', 'bun'],
-      bins: ['ydc'],
-      env: ['YDC_API_KEY'],
+      bins: ['curl', 'jq'],
     },
-    install: [
-      {
-        id: 'npm-global',
-        kind: 'node',
-        package: '@youdotcom-oss/api',
-        bins: ['ydc'],
-        label: 'Install @youdotcom-oss/api globally via npm',
-      },
-    ],
   },
   author: 'youdotcom-oss',
-  version: '2.0.7',
+  version: '3.0.0',
   category: 'web-search-tools',
   keywords:
     'you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,openclaw',
