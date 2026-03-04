@@ -24,7 +24,7 @@ const SOURCE = join(ROOT, 'skills/youdotcom-cli/SKILL.md')
 const DEST_DIR = join(ROOT, 'skills/youdotcom-cli-openclaw')
 const DEST = join(DEST_DIR, 'SKILL.md')
 
-const OPENCLAW_METADATA = {
+const OPENCLAW_OVERRIDES = {
   openclaw: {
     emoji: '🔍',
     primaryEnv: 'YDC_API_KEY',
@@ -32,9 +32,6 @@ const OPENCLAW_METADATA = {
       bins: ['curl', 'jq'],
     },
   },
-  author: 'youdotcom-oss',
-  version: '2.0.7',
-  category: 'web-search-tools',
   keywords:
     'you.com,bash,cli,ai-agents,web-search,content-extraction,livecrawl,openclaw',
 }
@@ -45,13 +42,25 @@ const transformSkillMd = (source: string): string => {
 
   const [, frontmatterRaw, body] = match
 
+  // Extract source metadata values before stripping
+  const versionMatch = frontmatterRaw.match(/^\s+version:\s*(.+)$/m)
+  const authorMatch = frontmatterRaw.match(/^\s+author:\s*(.+)$/m)
+  const categoryMatch = frontmatterRaw.match(/^\s+category:\s*(.+)$/m)
+
   // Strip the trailing multi-line metadata: block — it is always the last key
   const frontmatterWithoutMetadata = frontmatterRaw.replace(/\nmetadata:[\s\S]*$/, '')
+
+  const metadata = {
+    ...OPENCLAW_OVERRIDES,
+    author: authorMatch?.[1]?.trim() ?? 'youdotcom-oss',
+    version: versionMatch?.[1]?.trim() ?? '0.0.0',
+    category: categoryMatch?.[1]?.trim() ?? 'web-search-tools',
+  }
 
   const newFrontmatter = [
     frontmatterWithoutMetadata,
     'user-invocable: true',
-    `metadata: ${JSON.stringify(OPENCLAW_METADATA)}`,
+    `metadata: ${JSON.stringify(metadata)}`,
   ].join('\n')
 
   return `---\n${newFrontmatter}\n---\n${body}`
