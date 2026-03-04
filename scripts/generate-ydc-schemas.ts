@@ -23,9 +23,17 @@ await Bun.$`mkdir -p ${ASSETS}`.quiet()
 for (const cmd of COMMANDS) {
   for (const dir of DIRECTIONS) {
     const result = await Bun.$`bun ${CLI} ${cmd} --schema ${dir}`.quiet()
-    const json = result.text()
-    // Pretty-print for readability
-    const formatted = JSON.stringify(JSON.parse(json), null, 2)
+    const schema = JSON.parse(result.text())
+    // Zod v4's toJSONSchema marks .default() fields as required even when
+    // .optional() — strip them from required since defaults make them optional
+    if (dir === 'input' && schema.required && schema.properties) {
+      schema.required = schema.required.filter((field: string) => {
+        const prop = schema.properties[field]
+        return prop?.default === undefined
+      })
+      if (schema.required.length === 0) delete schema.required
+    }
+    const formatted = JSON.stringify(schema, null, 2)
     const outPath = join(ASSETS, `${cmd}.${dir}.schema.json`)
     await Bun.write(outPath, `${formatted}\n`)
     console.log(`  ${cmd}.${dir}.schema.json`)
