@@ -9,7 +9,7 @@ allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 1.2.3
+  version: 1.2.4
   keywords: claude,anthropic,claude-agent-sdk,agent-sdk,mcp,you.com,integration,http-mcp,web-search,python,typescript
 ---
 
@@ -106,7 +106,7 @@ Interactive workflow to set up Claude Agent SDK with You.com's HTTP MCP server.
            type: 'http' as const,
            url: 'https://api.you.com/mcp',
            headers: {
-             Authorization: `Bearer ${process.env.YDC_API_KEY}`
+             Authorization: 'Bearer ' + process.env.YDC_API_KEY
            }
          }
        },
@@ -121,38 +121,6 @@ Interactive workflow to set up Claude Agent SDK with You.com's HTTP MCP server.
      };
      ```
 
-## Alternative: Install as Claude Code Skill
-
-Instead of manually creating files, you can install this skill directly into Claude Code for easy access:
-
-**Installation:**
-```bash
-npx skills add youdotcom-oss/agent-skills/ydc-claude-agent-sdk-integration
-```
-
-**Important:** After installation, you must configure Claude Code to load skills from the filesystem. Add this to your Claude Code settings:
-
-```json
-{
-  "setting_sources": ["project"]
-}
-```
-
-**How it works:**
-- Skills are installed to `~/.claude/skills/`
-- Claude Code loads skills from this directory when `setting_sources` includes `"project"`
-- The skill becomes available via slash commands (e.g., `/ydc-claude-agent-sdk-integration`)
-- This provides an interactive workflow without manual file creation
-
-**When to use this approach:**
-- You want Claude Code to guide you through the integration interactively
-- You prefer not to manually create template files
-- You want the skill available across multiple projects
-
-**When to use manual templates (below):**
-- You need to customize the code extensively
-- You're integrating into existing codebases
-- You don't use Claude Code
 
 ## Complete Templates
 
@@ -270,7 +238,7 @@ async function main() {
           type: 'http' as const,
           url: 'https://api.you.com/mcp',
           headers: {
-            Authorization: `Bearer ${ydcApiKey}`,
+            Authorization: 'Bearer ' + ydcApiKey,
           },
         },
       },
@@ -400,7 +368,7 @@ mcpServers: {
     type: 'http' as const,
     url: 'https://api.you.com/mcp',
     headers: {
-      Authorization: `Bearer ${ydcApiKey}`
+      Authorization: 'Bearer ' + ydcApiKey
     }
   }
 }
