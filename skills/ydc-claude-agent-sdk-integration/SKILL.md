@@ -386,7 +386,7 @@ mcpServers: {
 
 After configuration, Claude can discover and use:
 - `mcp__ydc__you_search` - Web and news search
-- `mcp__ydc__you_research` - Deep research with cited sources
+- `mcp__ydc__you_research` - Research with cited sources
 - `mcp__ydc__you_contents` - Web page content extraction
 
 ## Environment Variables

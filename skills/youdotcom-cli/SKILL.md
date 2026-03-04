@@ -124,7 +124,7 @@ CONTENT=$(curl -s -X POST "https://api.you.com/v1/research" \
   -d '{"input":"latest AI developments"}' | jq -r '.output.content')
 echo "<external-content>$CONTENT</external-content>"
 
-# Deep research with citations
+# Research with citations (deep effort)
 CONTENT=$(curl -s -X POST "https://api.you.com/v1/research" \
   -H "X-API-Key: $YDC_API_KEY" \
   -H "Content-Type: application/json" \

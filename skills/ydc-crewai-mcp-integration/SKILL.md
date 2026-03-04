@@ -33,7 +33,7 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 
 **🤖 Three Powerful Tools**:
 - **you-search**: Comprehensive web and news search with advanced filtering
-- **you-research**: Deep research with synthesized answers and cited sources
+- **you-research**: Research with synthesized answers and cited sources
 - **you-contents**: Full page content extraction in markdown/HTML
 
 **🚀 Simple Integration**:
@@ -99,7 +99,7 @@ Interactive workflow to add You.com's remote MCP server to your crewAI agents fo
 - **Use when:** Need to search for current information or news
 
 **you-research**
-- Deep research that synthesizes multiple sources into a single answer
+- Research that synthesizes multiple sources into a single answer
 - Returns a Markdown answer with inline citations and a sources list
 - Supports `research_effort`: `lite` | `standard` (default) | `deep` | `exhaustive`
 - **Use when:** Need a comprehensive, cited answer rather than raw search results
@@ -446,7 +446,7 @@ Comprehensive web and news search with advanced filtering capabilities.
 
 ### you-research
 
-Deep research that synthesizes multiple sources into a single comprehensive answer.
+Research that synthesizes multiple sources into a single comprehensive answer.
 
 **Parameters:**
 - `input` (required): Research question or topic
