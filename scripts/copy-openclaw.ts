@@ -78,5 +78,11 @@ const transformed = transformSkillMd(source);
 
 await Bun.$`mkdir -p ${DEST_DIR}`.quiet();
 await Bun.write(DEST, transformed);
+console.log(`  ${DEST}`);
 
-console.log(`✓ Written to ${DEST}`);
+// Copy assets directory if it exists (rm first to avoid nested copies)
+const SOURCE_DIR = join(ROOT, "skills/youdotcom-cli");
+await Bun.$`rm -rf ${DEST_DIR}/assets && test -d ${SOURCE_DIR}/assets && cp -r ${SOURCE_DIR}/assets ${DEST_DIR}/assets`.quiet().nothrow();
+console.log(`  ${DEST_DIR}/assets/`);
+
+console.log("✓ Done");
