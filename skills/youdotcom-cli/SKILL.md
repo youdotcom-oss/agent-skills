@@ -144,7 +144,7 @@ Output: `.output.content` (Markdown with citations), `.output.sources[]` (`{url,
 
 ## Security
 
-**Allowed-tools scope** is limited to `curl` and `jq` only. Do not access non-You.com endpoints within this skill.
+**Allowed-tools scope** is limited to `curl` and `jq` only. Do not access endpoints other than `api.you.com` and `ydc-index.io` within this skill.
 
 ## Troubleshooting
 
