@@ -2,12 +2,11 @@
  * Copy youdotcom-cli skill to youdotcom-cli-openclaw with OpenClaw-compatible metadata.
  *
  * @remarks
- * Resolves OpenClaw registry audit issues by declaring required prerequisites
- * that were missing from the original youdotcom-cli SKILL.md:
+ * Adds OpenClaw-compatible metadata to the youdotcom-cli skill:
  * - `requires.bins` — `curl` and `jq` must be installed as system binaries
  * - `primaryEnv` — `YDC_API_KEY` is the optional auth env var (required for Research/Contents)
  *
- * Also reformats `metadata` from a YAML mapping to a single-line JSON string
+ * Reformats `metadata` from a YAML mapping to a single-line JSON string
  * as required by OpenClaw's frontmatter parser, and adds `user-invocable: true`.
  *
  * The output directory is gitignored; upload SKILL.md to OpenClaw manually.
