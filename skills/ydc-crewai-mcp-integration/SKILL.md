@@ -15,7 +15,7 @@ compatibility: Requires Python 3.10+, crewai, mcp library (for DSL) or
 allowed-tools: Read Write Edit Bash(pip:install) Bash(uv:add)
 metadata:
   author: youdotcom-oss
-  version: 1.2.1
+  version: 1.3.0
   category: mcp-integration
   keywords: crewai,mcp,model-context-protocol,you.com,ydc-server,remote-mcp,web-search,ai-agent,content-extraction,http-transport
 ---
