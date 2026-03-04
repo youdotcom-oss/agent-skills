@@ -1,16 +1,22 @@
 ---
 name: ydc-langchain-integration
-description: |
-  Integrate LangChain applications with You.com tools (web search, content extraction, retrieval) in TypeScript or Python.
-  Use when developer mentions LangChain, LangChain.js, LangChain Python, createAgent, initChatModel, DynamicStructuredTool,
-  langchain-youdotcom, YouRetriever, YouSearchTool, YouContentsTool, or You.com integration with LangChain.
+description: >
+  Integrate LangChain applications with You.com tools (web search, content
+  extraction, retrieval) in TypeScript or Python.
+
+  Use when developer mentions LangChain, LangChain.js, LangChain Python,
+  createAgent, initChatModel, DynamicStructuredTool,
+
+  langchain-youdotcom, YouRetriever, YouSearchTool, YouContentsTool, or You.com
+  integration with LangChain.
 license: MIT
 compatibility: TypeScript (Bun 1.2+ or Node.js 18+) or Python 3.10+
-allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add) Bash(uv:sync) Bash(pip:install) Bash(poetry:add)
+allowed-tools: Read Write Edit Bash(npm:install) Bash(bun:add) Bash(uv:sync)
+  Bash(pip:install) Bash(poetry:add)
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: 1.1.0
   keywords: langchain,langchain-js,langchain-python,you.com,integration,web-search,content-extraction,livecrawl,agents,structured-output,retriever,rag
 ---
 
