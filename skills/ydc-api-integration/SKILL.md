@@ -535,5 +535,6 @@ Use natural names that match your integration files. The assets show the correct
 - Assert on keywords from a deterministic query, not just `length > 0`
 - Validate required env vars at test start (inside the test function, not at module scope)
 - TypeScript: use `bun:test`, dynamic imports inside tests, `timeout: 60_000`
-- Python: use `pytest`, import inside test function; always include `pyproject.toml` with `pytest` in `[dependency-groups] dev`
+- Python: use `pytest` with `pytest-timeout`; import inside test function; always include `pyproject.toml` with both in `[dependency-groups] dev`
+- Python: use `@pytest.mark.timeout(120)` for Research API tests, `@pytest.mark.timeout(60)` for Search/Contents tests
 - Run TypeScript tests: `bun test` | Run Python tests: `uv run pytest`

@@ -9,4 +9,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
+    "pytest-timeout>=2.3.0",
 ]
+
+[tool.pytest.ini_options]
+timeout = 120
