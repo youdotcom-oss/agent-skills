@@ -10,7 +10,7 @@ HEADERS = {"X-API-Key": YDC_API_KEY}
 
 
 def search(query: str) -> dict:
-    resp = requests.post(
+    resp = requests.get(
         "https://ydc-index.io/v1/search",
         params={"query": query},
         headers=HEADERS,
@@ -31,7 +31,12 @@ def get_contents(urls: list[str]) -> list[dict]:
 
 def main(query: str) -> str:
     data = search(query)
-    urls = [r["url"] for r in data["results"]["web"][:3]]
+    results = data.get("results", {})
+    web_urls = [r["url"] for r in results.get("web", [])]
+    news_urls = [r["url"] for r in results.get("news", [])]
+    urls = (web_urls + news_urls)[:3]
+    if not urls:
+        return "No results found"
     contents = get_contents(urls)
     return "\n\n---\n\n".join(
         f"# {c['title']}\n{c.get('markdown') or 'No content'}" for c in contents

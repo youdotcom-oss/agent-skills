@@ -41,7 +41,7 @@ You.com provides three APIs that serve different needs:
 
 **Ask: Do you need a ready-to-use answer with citations, or raw search results you'll process yourself?**
 
-- **Synthesized answer** → Path A (recommended for most use cases)
+- **Synthesized answer** → Path A (recommended for most use cases, and easier to use)
 - **Raw results / custom processing** → Path B
 
 **Also ask:**
@@ -54,7 +54,7 @@ You.com provides three APIs that serve different needs:
 
 ## API Reference
 
-All APIs use the same authentication: `X-API-Key` header with your YDC API key.
+All APIs use the same authentication: `X-API-Key` header with the You.com API key. Users can get one for free at https://you.com/platform.
 
 ### Research API
 
@@ -109,7 +109,7 @@ The `content` field contains Markdown with inline citation numbers (e.g. `[1]`, 
 ### Search API
 
 **Base URL:** `https://ydc-index.io`
-**Endpoint:** `POST /v1/search`
+**Endpoint:** `GET /v1/search`
 
 Returns raw web and news results for a query. Use this when you need full control over result processing — feeding results into your own LLM, building custom UIs, or applying your own ranking/filtering.
 
@@ -117,12 +117,12 @@ Returns raw web and news results for a query. Use this when you need full contro
 
 | Parameter | Required | Type | Description |
 |-----------|----------|------|-------------|
-| query | Yes | string | Search terms; supports search operators |
+| query | Yes | string | Search terms; supports [search operators](https://docs.you.com/search/search-operators) |
 | count | No | integer | Results per section (1-100, default: 10) |
 | freshness | No | string | `day`, `week`, `month`, `year`, or `YYYY-MM-DDtoYYYY-MM-DD` |
-| offset | No | integer | Pagination (0-9) |
+| offset | No | integer | Pagination (0-9). Calculated in multiples of `count` |
 | country | No | string | Country code (e.g. `US`, `GB`, `DE`) |
-| language | No | string | BCP 47 language code |
+| language | No | string | BCP 47 language code (default: `EN`) |
 | safesearch | No | string | `off`, `moderate`, `strict` |
 | livecrawl | No | string | `web`, `news`, `all` — enables full content retrieval inline |
 | livecrawl_formats | No | string | `html` or `markdown` (requires livecrawl) |
@@ -140,7 +140,9 @@ Returns raw web and news results for a query. Use this when you need full contro
         "description": "Snippet text",
         "snippets": ["..."],
         "thumbnail_url": "https://...",
-        "page_age": "2024-01-15",
+        "page_age": "2025-06-25T11:41:00",
+        "authors": ["John Doe"],
+        "favicon_url": "https://example.com/favicon.ico",
         "contents": { "html": "...", "markdown": "..." }
       }
     ],
@@ -149,13 +151,14 @@ Returns raw web and news results for a query. Use this when you need full contro
         "title": "News Title",
         "description": "...",
         "url": "https://...",
-        "page_age": "2024-01-15",
-        "thumbnail_url": "https://..."
+        "page_age": "2025-06-25T11:41:00",
+        "thumbnail_url": "https://...",
+        "contents": { "html": "...", "markdown": "..." }
       }
     ]
   },
   "metadata": {
-    "search_uuid": "...",
+    "search_uuid": "942ccbdd-7705-4d9c-9d37-4ef386658e90",
     "query": "...",
     "latency": 0.123
   }
@@ -228,7 +231,7 @@ pip install requests
 export YDC_API_KEY="your-key-here"
 ```
 
-Get your key at: https://you.com/api
+Get your key at: https://you.com/platform
 
 ### TypeScript
 
@@ -321,10 +324,25 @@ type WebResult = {
   title: string
   description: string
   snippets: string[]
+  thumbnail_url?: string
+  page_age?: string
+  authors?: string[]
+  favicon_url?: string
+  contents?: { html?: string; markdown?: string }
+}
+
+type NewsResult = {
+  url: string
+  title: string
+  description: string
+  thumbnail_url?: string
+  page_age?: string
+  contents?: { html?: string; markdown?: string }
 }
 
 type SearchResponse = {
-  results: { web: WebResult[] }
+  results: { web?: WebResult[]; news?: NewsResult[] }
+  metadata: { search_uuid: string; query: string; latency: number }
 }
 
 type ContentsResult = {
@@ -337,7 +355,6 @@ const search = async (query: string): Promise<SearchResponse> => {
   const url = new URL('https://ydc-index.io/v1/search')
   url.searchParams.set('query', query)
   const resp = await fetch(url, {
-    method: 'POST',
     headers: { 'X-API-Key': YDC_API_KEY },
   })
   if (!resp.ok) throw new Error(`Search API error: ${resp.status}`)
@@ -359,7 +376,10 @@ const getContents = async (urls: string[]): Promise<ContentsResult[]> => {
 
 export const run = async (prompt: string): Promise<string> => {
   const searchData = await search(prompt)
-  const urls = searchData.results.web.slice(0, 3).map((r) => r.url)
+  const webUrls = (searchData.results.web ?? []).map((r) => r.url)
+  const newsUrls = (searchData.results.news ?? []).map((r) => r.url)
+  const urls = [...webUrls, ...newsUrls].slice(0, 3)
+  if (urls.length === 0) return 'No results found'
   const contents = await getContents(urls)
   return contents
     .map((c) => `# ${c.title}\n${c.markdown ?? 'No content'}`)
@@ -386,7 +406,7 @@ HEADERS = {"X-API-Key": YDC_API_KEY}
 
 
 def search(query: str) -> dict:
-    resp = requests.post(
+    resp = requests.get(
         "https://ydc-index.io/v1/search",
         params={"query": query},
         headers=HEADERS,
@@ -407,7 +427,12 @@ def get_contents(urls: list[str]) -> list[dict]:
 
 def main(query: str) -> str:
     data = search(query)
-    urls = [r["url"] for r in data["results"]["web"][:3]]
+    results = data.get("results", {})
+    web_urls = [r["url"] for r in results.get("web", [])]
+    news_urls = [r["url"] for r in results.get("news", [])]
+    urls = (web_urls + news_urls)[:3]
+    if not urls:
+        return "No results found"
     contents = get_contents(urls)
     return "\n\n---\n\n".join(
         f"# {c['title']}\n{c.get('markdown') or 'No content'}" for c in contents
