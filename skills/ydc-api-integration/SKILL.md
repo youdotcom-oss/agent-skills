@@ -262,7 +262,10 @@ const research = async (input: string, effort = 'standard'): Promise<ResearchRes
     },
     body: JSON.stringify({ input, research_effort: effort }),
   })
-  if (!resp.ok) throw new Error(`Research API error: ${resp.status}`)
+  if (!resp.ok) {
+    const body = await resp.text()
+    throw new Error(`Research API error ${resp.status}: ${body}`)
+  }
   return resp.json() as Promise<ResearchResponse>
 }
 
@@ -294,7 +297,8 @@ def research(query: str, effort: str = "standard") -> dict:
         headers={"X-API-Key": YDC_API_KEY, "Content-Type": "application/json"},
         json={"input": query, "research_effort": effort},
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Research API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
@@ -357,7 +361,10 @@ const search = async (query: string): Promise<SearchResponse> => {
   const resp = await fetch(url, {
     headers: { 'X-API-Key': YDC_API_KEY },
   })
-  if (!resp.ok) throw new Error(`Search API error: ${resp.status}`)
+  if (!resp.ok) {
+    const body = await resp.text()
+    throw new Error(`Search API error ${resp.status}: ${body}`)
+  }
   return resp.json() as Promise<SearchResponse>
 }
 
@@ -370,7 +377,10 @@ const getContents = async (urls: string[]): Promise<ContentsResult[]> => {
     },
     body: JSON.stringify({ urls, formats: ['markdown'] }),
   })
-  if (!resp.ok) throw new Error(`Contents API error: ${resp.status}`)
+  if (!resp.ok) {
+    const body = await resp.text()
+    throw new Error(`Contents API error ${resp.status}: ${body}`)
+  }
   return resp.json() as Promise<ContentsResult[]>
 }
 
@@ -411,7 +421,8 @@ def search(query: str) -> dict:
         params={"query": query},
         headers=HEADERS,
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Search API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
@@ -421,7 +432,8 @@ def get_contents(urls: list[str]) -> list[dict]:
         headers={**HEADERS, "Content-Type": "application/json"},
         json={"urls": urls, "formats": ["markdown"]},
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Contents API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 

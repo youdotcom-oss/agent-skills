@@ -15,7 +15,8 @@ def search(query: str) -> dict:
         params={"query": query},
         headers=HEADERS,
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Search API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
@@ -25,7 +26,8 @@ def get_contents(urls: list[str]) -> list[dict]:
         headers={**HEADERS, "Content-Type": "application/json"},
         json={"urls": urls, "formats": ["markdown"]},
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Contents API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 

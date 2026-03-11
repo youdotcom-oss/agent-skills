@@ -24,7 +24,10 @@ const research = async (input: string, effort = 'standard'): Promise<ResearchRes
     },
     body: JSON.stringify({ input, research_effort: effort }),
   })
-  if (!resp.ok) throw new Error(`Research API error: ${resp.status}`)
+  if (!resp.ok) {
+    const body = await resp.text()
+    throw new Error(`Research API error ${resp.status}: ${body}`)
+  }
   return resp.json() as Promise<ResearchResponse>
 }
 

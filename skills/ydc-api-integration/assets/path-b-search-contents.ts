@@ -40,7 +40,10 @@ const search = async (query: string): Promise<SearchResponse> => {
   const resp = await fetch(url, {
     headers: { "X-API-Key": YDC_API_KEY },
   });
-  if (!resp.ok) throw new Error(`Search API error: ${resp.status}`);
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`Search API error ${resp.status}: ${body}`);
+  }
   return resp.json() as Promise<SearchResponse>;
 };
 
@@ -53,7 +56,10 @@ const getContents = async (urls: string[]): Promise<ContentsResult[]> => {
     },
     body: JSON.stringify({ urls, formats: ["markdown"] }),
   });
-  if (!resp.ok) throw new Error(`Contents API error: ${resp.status}`);
+  if (!resp.ok) {
+    const body = await resp.text();
+    throw new Error(`Contents API error ${resp.status}: ${body}`);
+  }
   return resp.json() as Promise<ContentsResult[]>;
 };
 

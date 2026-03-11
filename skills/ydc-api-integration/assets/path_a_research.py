@@ -13,7 +13,8 @@ def research(query: str, effort: str = "standard") -> dict:
         headers={"X-API-Key": YDC_API_KEY, "Content-Type": "application/json"},
         json={"input": query, "research_effort": effort},
     )
-    resp.raise_for_status()
+    if not resp.ok:
+        raise RuntimeError(f"Research API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
