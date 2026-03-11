@@ -6,6 +6,25 @@ These skills provide interactive workflows that guide your AI agent through sett
 
 ## Available Skills
 
+### ydc-api-integration
+
+Integrate You.com APIs (Research, Search, Contents) into any language using direct HTTP calls — no SDK required.
+
+**Use when:**
+- Calling You.com APIs directly without an SDK wrapper
+- Need synthesized, cited answers via the Research API
+- Building custom search pipelines with raw Search + Contents data
+- Working in a language without a dedicated You.com SDK
+
+**Features:**
+- Research API: one call for multi-step reasoning with cited Markdown answers
+- Search API: raw web and news results with filtering, pagination, and livecrawl
+- Contents API: full page extraction (HTML, Markdown, metadata) from any URL
+- Language-agnostic — works with any HTTP client (fetch, requests, httpx, curl)
+- TypeScript and Python reference implementations included
+
+---
+
 ### ydc-ai-sdk-integration
 
 Integrate Vercel AI SDK applications with You.com tools for real-time web search, AI-powered answers, and content extraction.
@@ -142,7 +161,8 @@ npx skills add youdotcom-oss/agent-skills
 bunx skills add youdotcom-oss/agent-skills
 ```
 
-This installs all 7 skills at once:
+This installs all 8 skills at once:
+- `ydc-api-integration`
 - `ydc-ai-sdk-integration`
 - `ydc-claude-agent-sdk-integration`
 - `ydc-openai-agent-sdk-integration`
@@ -181,6 +201,8 @@ Before using any skill, you'll need a You.com API key:
 
 Once installed, your AI coding agent will automatically activate the relevant skill when you request integration. For example:
 
+- "Integrate You.com Research API into my Python app"
+- "Call You.com Search and Contents APIs directly with fetch"
 - "Integrate Vercel AI SDK with You.com tools"
 - "Set up Claude Agent SDK with You.com MCP"
 - "Add You.com to my Teams app with Anthropic"
@@ -305,6 +327,8 @@ scripts/
 - `ydc-claude-agent-sdk-integration-typescript` → `tests/ydc-claude-agent-sdk-integration-typescript/`
 - `ydc-openai-agent-sdk-integration-python` → `tests/ydc-openai-agent-sdk-integration-python/`
 - `ydc-openai-agent-sdk-integration-typescript` → `tests/ydc-openai-agent-sdk-integration-typescript/`
+- `ydc-api-integration-python` → `tests/ydc-api-integration-python/`
+- `ydc-api-integration-typescript` → `tests/ydc-api-integration-typescript/`
 - Single-variant skills (e.g., `ydc-crewai-mcp-integration`) use a single test directory
 
 **Workflow:**
