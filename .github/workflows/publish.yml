@@ -63,6 +63,16 @@ on:
           - patch
           - minor
           - major
+      ydc-api-integration:
+        description: "ydc-api-integration"
+        required: false
+        type: choice
+        default: skip
+        options:
+          - skip
+          - patch
+          - minor
+          - major
       youdotcom-cli:
         description: "youdotcom-cli"
         required: false
@@ -134,8 +144,18 @@ jobs:
     secrets:
       PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
-  publish-youdotcom-cli:
+  publish-ydc-api-integration:
     needs: publish-ydc-openai-agent-sdk-integration
+    if: ${{ always() && inputs['ydc-api-integration'] != 'skip' }}
+    uses: ./.github/workflows/_publish.yml
+    with:
+      skill_name: "ydc-api-integration"
+      bump_type: ${{ inputs['ydc-api-integration'] }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+
+  publish-youdotcom-cli:
+    needs: publish-ydc-api-integration
     if: ${{ always() && inputs['youdotcom-cli'] != 'skip' }}
     uses: ./.github/workflows/_publish.yml
     with:
