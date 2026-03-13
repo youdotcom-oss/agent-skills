@@ -30,7 +30,7 @@ type SearchResponse = {
 
 type ContentsResult = {
   url: string;
-  title: string;
+  title: string | null;
   markdown: string | null;
 };
 
@@ -71,7 +71,7 @@ export const run = async (prompt: string): Promise<string> => {
   if (urls.length === 0) return "No results found";
   const contents = await getContents(urls);
   return contents
-    .map((c) => `# ${c.title}\n${c.markdown ?? "No content"}`)
+    .map((c) => `# ${c.title ?? "Untitled"}\n${c.markdown ?? "No content"}`)
     .join("\n\n---\n\n");
 };
 
