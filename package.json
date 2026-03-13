@@ -50,6 +50,7 @@
     "@commitlint/config-conventional": "^20.4.4",
     "@plaited/agent-eval-harness": "^0.13.0",
     "@plaited/development-skills": "^0.8.1",
+    "@playwright/cli": "0.1.1",
     "@types/bun": "latest",
     "format-package": "^7.0.0",
     "lint-staged": "^16.3.3",
