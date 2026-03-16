@@ -98,7 +98,9 @@ for (const skill of SKILLS) {
     .quiet()
     .nothrow()
 
-  const hasAssets = await Bun.file(join(sourceDir, 'assets')).exists().catch(() => false)
+  const hasAssets = await Bun.file(join(sourceDir, 'assets'))
+    .exists()
+    .catch(() => false)
   if (hasAssets) console.log(`  ${destDir}/assets/`)
 }
 
