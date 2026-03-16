@@ -12,7 +12,7 @@ assets:
   - path-b-search-contents.ts
   - path_a_research.py
   - path_b_search_contents.py
-  - integration.docker.ts
+  - integration.spec.ts
   - test_integration.py
   - pyproject.toml
   - search.input.schema.json
@@ -550,7 +550,7 @@ When generating integration code, always write a test file alongside it. Read th
 - [assets/path-b-search-contents.ts](assets/path-b-search-contents.ts) — TypeScript Search + Contents integration
 - [assets/path_a_research.py](assets/path_a_research.py) — Python Research API integration
 - [assets/path_b_search_contents.py](assets/path_b_search_contents.py) — Python Search + Contents integration
-- [assets/integration.docker.ts](assets/integration.docker.ts) — TypeScript test structure
+- [assets/integration.spec.ts](assets/integration.spec.ts) — TypeScript test structure
 - [assets/test_integration.py](assets/test_integration.py) — Python test structure
 - [assets/pyproject.toml](assets/pyproject.toml) — Python project config (required for `uv run pytest`)
 
