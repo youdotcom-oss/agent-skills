@@ -1,15 +1,13 @@
 /**
- * Copy youdotcom-cli skill to youdotcom-cli-openclaw with OpenClaw-compatible metadata.
+ * Copy You.com skills to OpenClaw-compatible variants with modified metadata.
  *
  * @remarks
- * Adds OpenClaw-compatible metadata to the youdotcom-cli skill:
- * - `requires.bins` — `curl` and `jq` must be installed as system binaries
- * - `primaryEnv` — `YDC_API_KEY` is the optional auth env var (required for Research/Contents)
+ * Produces `-openclaw` variants of each skill with:
+ * - `user-invocable: true`
+ * - `metadata` reformatted as single-line JSON (OpenClaw frontmatter parser requirement)
+ * - `metadata.openclaw` block with emoji, primaryEnv, and optional requires
  *
- * Reformats `metadata` from a YAML mapping to a single-line JSON string
- * as required by OpenClaw's frontmatter parser, and adds `user-invocable: true`.
- *
- * The output directory is gitignored; upload SKILL.md to OpenClaw manually.
+ * Output directories are gitignored; upload SKILL.md files to OpenClaw manually.
  *
  * Usage:
  *   bun scripts/copy-openclaw.ts
@@ -17,72 +15,94 @@
  * @public
  */
 
-import { join } from "node:path";
+import { join } from 'node:path'
 
-const ROOT = import.meta.dir.replace(/\/scripts$/, "");
-const SOURCE = join(ROOT, "skills/youdotcom-cli/SKILL.md");
-const DEST_DIR = join(ROOT, "skills/youdotcom-cli-openclaw");
-const DEST = join(DEST_DIR, "SKILL.md");
+const ROOT = import.meta.dir.replace(/\/scripts$/, '')
 
-/** OpenClaw-specific fields nested under metadata.openclaw */
-const OPENCLAW_FIELDS = {
-  emoji: "🔍",
-  primaryEnv: "YDC_API_KEY",
-  requires: {
-    bins: ["curl", "jq"],
+type SkillConfig = {
+  name: string
+  openclaw: {
+    emoji: string
+    primaryEnv: string
+    requires?: { bins: string[] }
+  }
+}
+
+const SKILLS: SkillConfig[] = [
+  {
+    name: 'youdotcom-cli',
+    openclaw: {
+      emoji: '🔍',
+      primaryEnv: 'YDC_API_KEY',
+      requires: { bins: ['curl', 'jq'] },
+    },
   },
-};
+  {
+    name: 'youdotcom-api',
+    openclaw: {
+      emoji: '🌐',
+      primaryEnv: 'YDC_API_KEY',
+    },
+  },
+]
 
 const extractMetadataField = (frontmatter: string, field: string) => {
-  const match = frontmatter.match(new RegExp(`^\\s+${field}:\\s*(.+)$`, "m"));
-  return match?.[1]?.trim();
-};
+  const match = frontmatter.match(new RegExp(`^\\s+${field}:\\s*(.+)$`, 'm'))
+  return match?.[1]?.trim()
+}
 
-const transformSkillMd = (source: string): string => {
-  const match = source.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/);
-  if (!match) throw new Error("Invalid SKILL.md: no frontmatter found");
+const transformSkillMd = (source: string, openclaw: SkillConfig['openclaw']): string => {
+  const match = source.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/)
+  if (!match?.[1]) throw new Error('Invalid SKILL.md: no frontmatter found')
 
-  const [, frontmatterRaw, body] = match;
+  const frontmatterRaw = match[1]
+  const body = match[2] ?? ''
 
-  // Pull standard metadata fields from source
-  const author = extractMetadataField(frontmatterRaw, "author");
-  const version = extractMetadataField(frontmatterRaw, "version");
-  const category = extractMetadataField(frontmatterRaw, "category");
-  const keywords = extractMetadataField(frontmatterRaw, "keywords");
+  const author = extractMetadataField(frontmatterRaw, 'author')
+  const version = extractMetadataField(frontmatterRaw, 'version')
+  const category = extractMetadataField(frontmatterRaw, 'category')
+  const keywords = extractMetadataField(frontmatterRaw, 'keywords')
 
-  // Strip the trailing multi-line metadata: block — it is always the last key
-  const frontmatterWithoutMetadata = frontmatterRaw.replace(
-    /\nmetadata:[\s\S]*$/,
-    ""
-  );
+  const frontmatterWithoutMetadata = frontmatterRaw.replace(/\nmetadata:[\s\S]*$/, '')
 
   const metadata = {
-    openclaw: OPENCLAW_FIELDS,
-    author: author ?? "youdotcom-oss",
-    version: version ?? "0.0.0",
-    category: category ?? "web-search-tools",
+    openclaw,
+    author: author ?? 'youdotcom-oss',
+    version: version ?? '0.0.0',
+    category: category ?? 'sdk-integration',
     keywords,
-  };
+  }
 
   const newFrontmatter = [
     frontmatterWithoutMetadata,
-    "user-invocable: true",
+    'user-invocable: true',
     `metadata: ${JSON.stringify(metadata)}`,
-  ].join("\n");
+  ].join('\n')
 
-  return `---\n${newFrontmatter}\n---\n${body}`;
-};
+  return `---\n${newFrontmatter}\n---\n${body}`
+}
 
-const source = await Bun.file(SOURCE).text();
-const transformed = transformSkillMd(source);
+for (const skill of SKILLS) {
+  const sourceDir = join(ROOT, `skills/${skill.name}`)
+  const sourcePath = join(sourceDir, 'SKILL.md')
+  const destDir = join(ROOT, `skills/${skill.name}-openclaw`)
+  const destPath = join(destDir, 'SKILL.md')
 
-await Bun.$`mkdir -p ${DEST_DIR}`.quiet();
-await Bun.write(DEST, transformed);
-console.log(`  ${DEST}`);
+  const source = await Bun.file(sourcePath).text()
+  const transformed = transformSkillMd(source, skill.openclaw)
 
-// Copy assets directory if it exists (rm first to avoid nested copies)
-const SOURCE_DIR = join(ROOT, "skills/youdotcom-cli");
-await Bun.$`rm -rf ${DEST_DIR}/assets && test -d ${SOURCE_DIR}/assets && cp -r ${SOURCE_DIR}/assets ${DEST_DIR}/assets`.quiet().nothrow();
-console.log(`  ${DEST_DIR}/assets/`);
+  await Bun.$`mkdir -p ${destDir}`.quiet()
+  await Bun.write(destPath, transformed)
+  console.log(`  ${destPath}`)
 
-console.log("✓ Done");
+  await Bun.$`rm -rf ${destDir}/assets && test -d ${sourceDir}/assets && cp -r ${sourceDir}/assets ${destDir}/assets`
+    .quiet()
+    .nothrow()
+
+  const hasAssets = await Bun.file(join(sourceDir, 'assets'))
+    .exists()
+    .catch(() => false)
+  if (hasAssets) console.log(`  ${destDir}/assets/`)
+}
+
+console.log(`\n✓ Generated ${SKILLS.length} OpenClaw variants`)
