@@ -4,7 +4,7 @@
  * @remarks
  * Shells out to the installed `ydc` binary from @youdotcom-oss/api to extract
  * Zod v4 JSON Schemas for each command's input and output shapes.
- * Writes 6 files to `skills/youdotcom-cli/assets/`.
+ * Writes 6 files to `skills/youdotcom-api/assets/`.
  *
  * @public
  */
@@ -17,7 +17,7 @@ if (!YDC) {
   process.exit(1)
 }
 const ROOT = import.meta.dir.replace(/\/scripts$/, '')
-const ASSETS = join(ROOT, 'skills/youdotcom-cli/assets')
+const ASSETS = join(ROOT, 'skills/youdotcom-api/assets')
 
 const COMMANDS = ['search', 'research', 'contents'] as const
 const DIRECTIONS = ['input', 'output'] as const

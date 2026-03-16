@@ -50,14 +50,6 @@ Get an API key from https://you.com/platform/api-keys to unlock higher rate limi
 
 Auth header: `X-API-Key: $YDC_API_KEY`
 
-JSON Schemas for parameters and responses:
-
-| Endpoint | Input Schema | Output Schema |
-|----------|-------------|---------------|
-| Search | [search.input.schema.json](assets/search.input.schema.json) | [search.output.schema.json](assets/search.output.schema.json) |
-| Research | [research.input.schema.json](assets/research.input.schema.json) | [research.output.schema.json](assets/research.output.schema.json) |
-| Contents | [contents.input.schema.json](assets/contents.input.schema.json) | [contents.output.schema.json](assets/contents.output.schema.json) |
-
 ## Workflow
 
 ### 1. Verify API Key

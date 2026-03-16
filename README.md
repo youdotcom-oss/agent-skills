@@ -108,22 +108,40 @@ Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet,
 
 ---
 
+### youdotcom-api
+
+Integrate You.com APIs (Research, Search, Contents) into any language using direct HTTP calls — no SDK required.
+
+**Use when:**
+- Calling You.com APIs directly without an SDK wrapper
+- Need synthesized, cited answers via the Research API
+- Building custom search pipelines with raw Search + Contents data
+- Working in a language without a dedicated You.com SDK
+
+**Features:**
+- Research API: one call for multi-step reasoning with cited Markdown answers
+- Search API: raw web and news results with filtering, pagination, and livecrawl
+- Contents API: full page extraction (HTML, Markdown, metadata) from any URL
+- Language-agnostic — works with any HTTP client (fetch, requests, httpx, curl)
+- TypeScript and Python reference implementations included
+- JSON Schemas for all request/response shapes
+
+---
+
 ### youdotcom-cli
 
-Integrate You.com's web search, AI answers, and content extraction with bash-based AI agents using a universal CLI tool.
+Web search, research with citations, and content extraction for bash agents using curl and You.com's REST API.
 
 **Use when:**
 - Working with bash-capable AI agents (Claude Code, Cursor, Codex, etc.)
 - Need fast web search with verifiable citations
 - Want simultaneous search + content extraction (livecrawl)
-- Building agent workflows with JSON CLI tools
+- Building bash agent workflows with curl and jq
 
 **Features:**
-- Schema-driven JSON input via `--json` flag
-- Schema discovery with `--schema` flag
+- Search works without an API key (free tier)
 - Livecrawl: search + extract content in one API call
-- Client tracking with `--client` flag
-- Works with bunx/npx (no installation needed)
+- Research with citations at multiple effort levels
 - Compatible with any bash-based agent
 
 ---
@@ -142,13 +160,14 @@ npx skills add youdotcom-oss/agent-skills
 bunx skills add youdotcom-oss/agent-skills
 ```
 
-This installs all 7 skills at once:
+This installs all 8 skills at once:
 - `ydc-ai-sdk-integration`
 - `ydc-claude-agent-sdk-integration`
 - `ydc-openai-agent-sdk-integration`
 - `ydc-crewai-mcp-integration`
 - `ydc-langchain-integration`
 - `teams-anthropic-integration`
+- `youdotcom-api`
 - `youdotcom-cli`
 
 **Install Individual Skills**:
@@ -187,6 +206,8 @@ Once installed, your AI coding agent will automatically activate the relevant sk
 - "Configure OpenAI Agents SDK with You.com MCP"
 - "Integrate You.com MCP with my crewAI agents"
 - "Add You.com tools to my LangChain.js agent"
+- "Integrate You.com Research API into my Python app"
+- "Call You.com Search and Contents APIs directly with fetch"
 - "Add You.com CLI tools to my bash agent"
 
 Each skill provides step-by-step instructions, code templates, and validation checklists.
@@ -305,6 +326,8 @@ scripts/
 - `ydc-claude-agent-sdk-integration-typescript` → `tests/ydc-claude-agent-sdk-integration-typescript/`
 - `ydc-openai-agent-sdk-integration-python` → `tests/ydc-openai-agent-sdk-integration-python/`
 - `ydc-openai-agent-sdk-integration-typescript` → `tests/ydc-openai-agent-sdk-integration-typescript/`
+- `youdotcom-api-python` → `tests/youdotcom-api-python/`
+- `youdotcom-api-typescript` → `tests/youdotcom-api-typescript/`
 - Single-variant skills (e.g., `ydc-crewai-mcp-integration`) use a single test directory
 
 **Workflow:**
