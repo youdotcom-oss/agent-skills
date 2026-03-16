@@ -328,6 +328,7 @@ scripts/
 - `ydc-openai-agent-sdk-integration-typescript` → `tests/ydc-openai-agent-sdk-integration-typescript/`
 - `youdotcom-api-python` → `tests/youdotcom-api-python/`
 - `youdotcom-api-typescript` → `tests/youdotcom-api-typescript/`
+- `youdotcom-cli` → `tests/youdotcom-cli/`
 - Single-variant skills (e.g., `ydc-crewai-mcp-integration`) use a single test directory
 
 **Workflow:**
