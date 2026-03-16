@@ -53,9 +53,10 @@ const extractMetadataField = (frontmatter: string, field: string) => {
 
 const transformSkillMd = (source: string, openclaw: SkillConfig['openclaw']): string => {
   const match = source.match(/^---\n([\s\S]+?)\n---\n([\s\S]*)$/)
-  if (!match) throw new Error('Invalid SKILL.md: no frontmatter found')
+  if (!match?.[1]) throw new Error('Invalid SKILL.md: no frontmatter found')
 
-  const [, frontmatterRaw, body] = match
+  const frontmatterRaw = match[1]
+  const body = match[2] ?? ''
 
   const author = extractMetadataField(frontmatterRaw, 'author')
   const version = extractMetadataField(frontmatterRaw, 'version')
