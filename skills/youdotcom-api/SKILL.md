@@ -22,7 +22,7 @@ assets:
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 1.0.1
+  version: 2.0.0
   keywords: you.com,ydc,api,research,search,contents,http,rest,integration,no-sdk,citations
 ---
 
