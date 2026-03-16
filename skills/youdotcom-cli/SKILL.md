@@ -50,6 +50,28 @@ Get an API key from https://you.com/platform/api-keys to unlock higher rate limi
 
 Auth header: `X-API-Key: $YDC_API_KEY`
 
+### Search Query Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| query | Yes | Search terms; supports operators: `site:`, `filetype:`, `+term`, `-term`, `AND`/`OR`/`NOT`, `lang:en` |
+| count | No | Results per section (1-100, default: 10) |
+| freshness | No | `day`, `week`, `month`, `year`, or `YYYY-MM-DDtoYYYY-MM-DD` |
+| offset | No | Pagination (0-9), in multiples of `count` |
+| country | No | Country code (e.g. `US`, `GB`, `DE`) |
+| safesearch | No | `off`, `moderate`, `strict` |
+| livecrawl | No | `web`, `news`, `all` — retrieves full page content inline |
+| livecrawl_formats | No | `html` or `markdown` (requires livecrawl) |
+
+### Response Shapes
+
+| Endpoint | Key jq paths |
+|----------|-------------|
+| Search | `.results.web[].{url,title,description,snippets}`, `.results.news[].{url,title,description}`, `.metadata.{query,latency}` |
+| Search (livecrawl) | `.results.web[].contents.markdown` or `.contents.html` |
+| Research | `.output.content` (Markdown with `[1][2]` citations), `.output.sources[].{url,title,snippets}` |
+| Contents | `.[].{url,title,markdown}`, `.[].metadata.{site_name,favicon_url}` |
+
 ## Workflow
 
 ### 1. Verify API Key
