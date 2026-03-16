@@ -1,9 +1,14 @@
 ---
 name: youdotcom-api
-description: |
-  Integrate You.com APIs (Research, Search, Contents) into any language using direct HTTP calls — no SDK required.
-  - MANDATORY TRIGGERS: YDC API, You.com API integration, ydc-api, direct API integration, no SDK, Research API, youdotcom API, you.com REST API
-  - Use when: developer wants to call You.com APIs directly without an SDK wrapper
+description: >
+  Integrate You.com APIs (Research, Search, Contents) into any language using
+  direct HTTP calls — no SDK required.
+
+  - MANDATORY TRIGGERS: YDC API, You.com API integration, ydc-api, direct API
+  integration, no SDK, Research API, youdotcom API, you.com REST API
+
+  - Use when: developer wants to call You.com APIs directly without an SDK
+  wrapper
 license: MIT
 compatibility: Any language with HTTP client support (curl, fetch, requests, httpx, etc.)
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
@@ -17,7 +22,7 @@ assets:
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: "1.0.0"
+  version: 1.0.1
   keywords: you.com,ydc,api,research,search,contents,http,rest,integration,no-sdk,citations
 ---
 
