@@ -41,7 +41,7 @@ def main(query: str) -> str:
         return "No results found"
     contents = get_contents(urls)
     return "\n\n---\n\n".join(
-        f"# {c['title']}\n{c.get('markdown') or 'No content'}" for c in contents
+        f"# {c.get('title') or 'Untitled'}\n{c.get('markdown') or 'No content'}" for c in contents
     )
 
 
