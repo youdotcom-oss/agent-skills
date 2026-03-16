@@ -56,9 +56,7 @@
                 "description": "Favicon URL"
               }
             },
-            "required": [
-              "favicon_url"
-            ],
+            "required": ["favicon_url"],
             "additionalProperties": false
           },
           {
@@ -67,9 +65,7 @@
         ]
       }
     },
-    "required": [
-      "url"
-    ],
+    "required": ["url"],
     "additionalProperties": false
   }
 }

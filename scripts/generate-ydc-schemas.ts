@@ -1,8 +1,8 @@
 /**
- * Generate JSON Schema files from dx-toolkit's ydc CLI.
+ * Generate JSON Schema files from the @youdotcom-oss/api ydc CLI.
  *
  * @remarks
- * Shells out to the locally-checked-out dx-toolkit CLI to extract
+ * Shells out to the installed `ydc` binary from @youdotcom-oss/api to extract
  * Zod v4 JSON Schemas for each command's input and output shapes.
  * Writes 6 files to `skills/youdotcom-cli/assets/`.
  *
@@ -11,8 +11,12 @@
 
 import { join } from 'node:path'
 
+const YDC = Bun.which('ydc')
+if (!YDC) {
+  console.error('ydc binary not found — install @youdotcom-oss/api first')
+  process.exit(1)
+}
 const ROOT = import.meta.dir.replace(/\/scripts$/, '')
-const CLI = join(ROOT, '../dx-toolkit/packages/api/src/cli.ts')
 const ASSETS = join(ROOT, 'skills/youdotcom-cli/assets')
 
 const COMMANDS = ['search', 'research', 'contents'] as const
@@ -24,7 +28,7 @@ for (const cmd of COMMANDS) {
   for (const dir of DIRECTIONS) {
     let schema: Record<string, unknown>
     try {
-      const result = await Bun.$`bun ${CLI} ${cmd} --schema ${dir}`.quiet()
+      const result = await Bun.$`${YDC} ${cmd} --schema ${dir}`.quiet()
       schema = JSON.parse(result.text())
     } catch (e) {
       console.error(`  Failed ${cmd}.${dir}: ${e}`)
