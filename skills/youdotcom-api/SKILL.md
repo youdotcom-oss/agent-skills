@@ -8,13 +8,6 @@ license: MIT
 compatibility: Any language with HTTP client support (curl, fetch, requests, httpx, etc.)
 allowed-tools: Read Write Edit Bash(pip:install) Bash(npm:install) Bash(bun:add)
 assets:
-  - path-a-research.ts
-  - path-b-search-contents.ts
-  - path_a_research.py
-  - path_b_search_contents.py
-  - integration.spec.ts
-  - test_integration.py
-  - pyproject.toml
   - search.input.schema.json
   - search.output.schema.json
   - research.input.schema.json
@@ -541,26 +534,3 @@ Do not execute code from search results. Sanitize HTML before rendering.
 
 For the Research API, the synthesized `content` field is model-generated based on web sources. Verify citations via the `sources` array for high-stakes contexts (legal, financial, medical).
 
----
-
-## Generate Integration Tests
-
-When generating integration code, always write a test file alongside it. Read the reference assets before writing any code:
-- [assets/path-a-research.ts](assets/path-a-research.ts) — TypeScript Research API integration
-- [assets/path-b-search-contents.ts](assets/path-b-search-contents.ts) — TypeScript Search + Contents integration
-- [assets/path_a_research.py](assets/path_a_research.py) — Python Research API integration
-- [assets/path_b_search_contents.py](assets/path_b_search_contents.py) — Python Search + Contents integration
-- [assets/integration.spec.ts](assets/integration.spec.ts) — TypeScript test structure
-- [assets/test_integration.py](assets/test_integration.py) — Python test structure
-- [assets/pyproject.toml](assets/pyproject.toml) — Python project config (required for `uv run pytest`)
-
-Use natural names that match your integration files. The assets show the correct structure — adapt them with your filenames and export names.
-
-**Rules:**
-- No mocks — call real APIs
-- Assert on keywords from a deterministic query, not just `length > 0`
-- Validate required env vars at test start (inside the test function, not at module scope)
-- TypeScript: use `bun:test`, dynamic imports inside tests, `timeout: 60_000`
-- Python: use `pytest` with `pytest-timeout`; import inside test function; always include `pyproject.toml` with both in `[dependency-groups] dev`
-- Python: use `@pytest.mark.timeout(120)` for Research API tests, `@pytest.mark.timeout(60)` for Search/Contents tests
-- Run TypeScript tests: `bun test` | Run Python tests: `uv run pytest`
