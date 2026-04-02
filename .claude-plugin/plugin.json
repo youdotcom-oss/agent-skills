@@ -1,0 +1,26 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "description": "You.com agent skills for web search, research with citations, and content extraction. Guided integrations for Vercel AI SDK, Claude Agent SDK, OpenAI Agents SDK, crewAI, LangChain, Microsoft Teams.ai, direct REST API, and bash CLI.",
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "keywords": [
+    "you.com",
+    "web-search",
+    "research",
+    "content-extraction",
+    "mcp",
+    "ai-sdk",
+    "claude-agent-sdk",
+    "openai",
+    "crewai",
+    "langchain",
+    "teams-ai"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/youdotcom-oss/agent-skills",
+  "homepage": "https://you.com"
+}
