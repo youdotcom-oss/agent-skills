@@ -6,6 +6,8 @@
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { ContentsQuerySchema, ResearchQuerySchema, SearchQuerySchema } from '@youdotcom-oss/api'
+import { wrapExternalContent } from 'openclaw/plugin-sdk/provider-web-fetch'
+import { wrapWebContent } from 'openclaw/plugin-sdk/provider-web-search'
 import { z } from 'zod'
 import pluginEntry, { formatToolError, resolveApiKey } from './index.ts'
 
@@ -207,5 +209,39 @@ describe('plugin entry contract', () => {
     }
     pluginEntry.register(mockApi as never)
     expect(provider.requiresCredential).toBe(true)
+  })
+})
+
+// --- Content security wrapping ---
+
+describe('wrapWebContent', () => {
+  test('wraps search content with security markers', () => {
+    const content = 'AI breakthrough announced at conference'
+    const wrapped = wrapWebContent(content, 'web_search')
+    expect(wrapped).toContain(content)
+    expect(wrapped).not.toBe(content)
+  })
+
+  test('wraps research content with security markers', () => {
+    const content = 'Quantum computing advances [1][2]'
+    const wrapped = wrapWebContent(content, 'web_search')
+    expect(wrapped).toContain(content)
+    expect(wrapped).not.toBe(content)
+  })
+})
+
+describe('wrapExternalContent', () => {
+  test('wraps fetch content with security markers', () => {
+    const content = '<h1>Page Title</h1>'
+    const wrapped = wrapExternalContent(content, { source: 'web_fetch' })
+    expect(wrapped).toContain(content)
+    expect(wrapped).not.toBe(content)
+  })
+
+  test('wraps markdown content from contents API', () => {
+    const content = '# Extracted Article\n\nSome body text'
+    const wrapped = wrapExternalContent(content, { source: 'web_fetch' })
+    expect(wrapped).toContain(content)
+    expect(wrapped).not.toBe(content)
   })
 })

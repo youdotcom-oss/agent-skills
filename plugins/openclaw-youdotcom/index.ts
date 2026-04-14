@@ -23,7 +23,9 @@ import {
 } from '@youdotcom-oss/api'
 import { definePluginEntry } from 'openclaw/plugin-sdk/plugin-entry'
 import type { WebFetchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-fetch'
+import { wrapExternalContent } from 'openclaw/plugin-sdk/provider-web-fetch'
 import type { WebSearchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-search'
+import { wrapWebContent } from 'openclaw/plugin-sdk/provider-web-search'
 import { createWebSearchProviderContractFields } from 'openclaw/plugin-sdk/provider-web-search-contract'
 import { z } from 'zod'
 
@@ -124,7 +126,7 @@ export default definePluginEntry({
                   description: r.description,
                   ...(r.page_age && { published: r.page_age }),
                   ...(r.snippets?.length && { snippets: r.snippets }),
-                  ...(r.contents?.markdown && { markdown: r.contents.markdown }),
+                  ...(r.contents?.markdown && { markdown: wrapWebContent(r.contents.markdown, 'web_search') }),
                 })),
               }
               return payload as Record<string, unknown>
@@ -210,7 +212,12 @@ export default definePluginEntry({
                 YDC_API_KEY: apiKey,
                 getUserAgent: PLUGIN_UA,
               })
-              return results as unknown as Record<string, unknown>
+              const safeResults = results.map((item) => ({
+                ...item,
+                ...(item.markdown && { markdown: wrapExternalContent(item.markdown, { source: 'web_fetch' }) }),
+                ...(item.html && { html: wrapExternalContent(item.html, { source: 'web_fetch' }) }),
+              }))
+              return safeResults as unknown as Record<string, unknown>
             } catch {
               return { error: 'fetch_failed', message: 'Content extraction failed. Try again or check the URL.' }
             }
@@ -245,8 +252,15 @@ export default definePluginEntry({
               YDC_API_KEY: key,
               getUserAgent: PLUGIN_UA,
             })
+            const safeOutput = {
+              ...results,
+              output: {
+                ...results.output,
+                content: wrapWebContent(results.output.content, 'web_search'),
+              },
+            }
             return {
-              content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
+              content: [{ type: 'text', text: JSON.stringify(safeOutput, null, 2) }],
               details: { tool: 'web_research', input: params.input },
             }
           } catch (error) {
@@ -280,8 +294,13 @@ export default definePluginEntry({
               YDC_API_KEY: key,
               getUserAgent: PLUGIN_UA,
             })
+            const safeResults = results.map((item) => ({
+              ...item,
+              ...(item.markdown && { markdown: wrapExternalContent(item.markdown, { source: 'web_fetch' }) }),
+              ...(item.html && { html: wrapExternalContent(item.html, { source: 'web_fetch' }) }),
+            }))
             return {
-              content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
+              content: [{ type: 'text', text: JSON.stringify(safeResults, null, 2) }],
               details: { tool: 'web_contents', urlCount: params.urls.length },
             }
           } catch (error) {
