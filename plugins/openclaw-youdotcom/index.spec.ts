@@ -152,22 +152,27 @@ describe('plugin entry contract', () => {
     expect(typeof pluginEntry.register).toBe('function')
   })
 
-  test('register calls api.registerWebSearchProvider and api.registerTool', () => {
-    const registeredProviders: string[] = []
+  test('register calls api.registerWebSearchProvider, api.registerWebFetchProvider, and api.registerTool', () => {
+    const registeredSearchProviders: string[] = []
+    const registeredFetchProviders: string[] = []
     const registeredTools: string[] = []
     const mockApi = {
       id: 'youdotcom',
       name: 'You.com',
       pluginConfig: {},
       registerWebSearchProvider: (provider: { id: string }) => {
-        registeredProviders.push(provider.id)
+        registeredSearchProviders.push(provider.id)
+      },
+      registerWebFetchProvider: (provider: { id: string }) => {
+        registeredFetchProviders.push(provider.id)
       },
       registerTool: (tool: { name: string }, _opts?: unknown) => {
         registeredTools.push(tool.name)
       },
     }
     pluginEntry.register(mockApi as never)
-    expect(registeredProviders).toContain('youdotcom')
+    expect(registeredSearchProviders).toContain('youdotcom')
+    expect(registeredFetchProviders).toContain('youdotcom')
     expect(registeredTools).toContain('web_research')
     expect(registeredTools).toContain('web_contents')
   })
@@ -181,9 +186,26 @@ describe('plugin entry contract', () => {
       registerWebSearchProvider: (p: { requiresCredential?: boolean }) => {
         provider = p
       },
+      registerWebFetchProvider: () => {},
       registerTool: () => {},
     }
     pluginEntry.register(mockApi as never)
     expect(provider.requiresCredential).toBe(false)
+  })
+
+  test('web fetch provider has requiresCredential true', () => {
+    let provider: { requiresCredential?: boolean } = {} as never
+    const mockApi = {
+      id: 'youdotcom',
+      name: 'You.com',
+      pluginConfig: {},
+      registerWebSearchProvider: () => {},
+      registerWebFetchProvider: (p: { requiresCredential?: boolean }) => {
+        provider = p
+      },
+      registerTool: () => {},
+    }
+    pluginEntry.register(mockApi as never)
+    expect(provider.requiresCredential).toBe(true)
   })
 })

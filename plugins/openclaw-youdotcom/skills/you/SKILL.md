@@ -36,6 +36,7 @@ Get an API key from https://you.com/platform/api-keys to unlock higher rate limi
 | Tool | Auth | Description |
 |------|------|-------------|
 | `web_search` (You.com provider) | Optional | Web search with snippets, freshness, country, safesearch filters |
+| `web_fetch` (You.com provider) | Required | Extract full page content from URLs |
 | `web_research` | Required | Deep research with cited Markdown answers |
 | `web_contents` | Required | Extract full page content from URLs |
 
@@ -49,7 +50,7 @@ Get an API key from https://you.com/platform/api-keys to unlock higher rate limi
 
 ### 2. Tool Selection
 
-**IF** user provides URLs → **web_contents**
+**IF** user provides URLs → **web_fetch** (You.com provider) or **web_contents**
 **ELSE IF** user needs synthesized answer with citations → **web_research**
 **ELSE IF** user needs search + full content → **web_search** with `livecrawl=web`
 **ELSE** → **web_search** (You.com provider)

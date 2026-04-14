@@ -22,6 +22,7 @@ import {
   SearchQuerySchema,
 } from '@youdotcom-oss/api'
 import { definePluginEntry } from 'openclaw/plugin-sdk/plugin-entry'
+import type { WebFetchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-fetch'
 import type { WebSearchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-search'
 import { createWebSearchProviderContractFields } from 'openclaw/plugin-sdk/provider-web-search-contract'
 import { z } from 'zod'
@@ -136,6 +137,89 @@ export default definePluginEntry({
     }
 
     api.registerWebSearchProvider(webSearchProvider)
+
+    // --- Web fetch provider (powers built-in web_fetch tool) ---
+    // Contents API requires YDC_API_KEY.
+    const webFetchProvider: WebFetchProviderPlugin = {
+      id: 'youdotcom',
+      label: 'You.com Fetch',
+      hint: 'Extract full page content from URLs · $100 credit on signup',
+      requiresCredential: true,
+      credentialLabel: 'You.com API key',
+      envVars: ['YDC_API_KEY'],
+      placeholder: 'ydc-...',
+      signupUrl: 'https://you.com/platform',
+      docsUrl: 'https://docs.you.com',
+      autoDetectOrder: 80,
+      credentialPath: CREDENTIAL_PATH,
+      inactiveSecretPaths: [CREDENTIAL_PATH],
+      getCredentialValue: (fetchConfig) => {
+        const ws = (fetchConfig as Record<string, unknown> | undefined)?.webSearch as
+          | Record<string, unknown>
+          | undefined
+        return ws?.apiKey ?? (fetchConfig as Record<string, unknown> | undefined)?.apiKey
+      },
+      setCredentialValue: (fetchConfigTarget, value) => {
+        const target = fetchConfigTarget as Record<string, unknown>
+        const ws = target.webSearch as Record<string, unknown> | undefined
+        if (ws) {
+          ws.apiKey = value
+        } else {
+          target.apiKey = value
+        }
+      },
+      getConfiguredCredentialValue: (config) =>
+        (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.webSearch
+          ? (
+              (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown>).webSearch as Record<
+                string,
+                unknown
+              >
+            )?.apiKey
+          : (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.apiKey,
+      setConfiguredCredentialValue: (configTarget, value) => {
+        const entry = configTarget.plugins?.entries?.youdotcom
+        if (entry) {
+          const cfg = entry.config as Record<string, unknown>
+          const ws = (cfg.webSearch as Record<string, unknown> | undefined) ?? {}
+          cfg.webSearch = { ...ws, apiKey: value }
+        }
+      },
+      createTool: (ctx) => {
+        const apiKey = ctx.runtimeMetadata?.selectedProvider
+          ? resolveApiKey(ctx.fetchConfig as Record<string, unknown> | undefined) || process.env.YDC_API_KEY || ''
+          : getKey()
+
+        if (!apiKey) return null
+
+        return {
+          description:
+            'Extract full page content from URLs using You.com. Returns Markdown, HTML, and/or metadata for each URL.',
+          parameters: z.toJSONSchema(ContentsToolSchema) as Record<string, unknown>,
+          execute: async (args: Record<string, unknown>) => {
+            const urls = args.urls as string[]
+            const formats = args.formats as ('markdown' | 'html' | 'metadata')[] | undefined
+            const crawl_timeout = args.crawl_timeout as number | undefined
+            try {
+              const results = await fetchContents({
+                contentsQuery: {
+                  urls,
+                  ...(formats && { formats }),
+                  ...(crawl_timeout && { crawl_timeout }),
+                },
+                YDC_API_KEY: apiKey,
+                getUserAgent: PLUGIN_UA,
+              })
+              return results as unknown as Record<string, unknown>
+            } catch {
+              return { error: 'fetch_failed', message: 'Content extraction failed. Try again or check the URL.' }
+            }
+          },
+        }
+      },
+    }
+
+    api.registerWebFetchProvider(webFetchProvider)
 
     // --- web_research tool (deep research with cited answers) ---
     api.registerTool(

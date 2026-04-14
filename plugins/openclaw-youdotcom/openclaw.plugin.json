@@ -9,6 +9,7 @@
   },
   "contracts": {
     "webSearchProviders": ["youdotcom"],
+    "webFetchProviders": ["youdotcom"],
     "tools": ["web_research", "web_contents"]
   },
   "uiHints": {
