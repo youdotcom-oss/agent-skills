@@ -14,9 +14,14 @@ describe('resolveApiKey', () => {
     delete process.env.YDC_API_KEY
   })
 
-  test('returns apiKey from plugin config when set', () => {
-    const key = resolveApiKey({ apiKey: 'config-key-123' })
+  test('returns apiKey from webSearch.apiKey in plugin config', () => {
+    const key = resolveApiKey({ webSearch: { apiKey: 'config-key-123' } })
     expect(key).toBe('config-key-123')
+  })
+
+  test('falls back to top-level apiKey when webSearch is absent', () => {
+    const key = resolveApiKey({ apiKey: 'top-level-key' })
+    expect(key).toBe('top-level-key')
   })
 
   test('falls back to YDC_API_KEY env var when config is empty', () => {
@@ -26,9 +31,9 @@ describe('resolveApiKey', () => {
     delete process.env.YDC_API_KEY
   })
 
-  test('prefers config key over env var', () => {
+  test('prefers webSearch.apiKey over env var', () => {
     process.env.YDC_API_KEY = 'env-key'
-    const key = resolveApiKey({ apiKey: 'config-key' })
+    const key = resolveApiKey({ webSearch: { apiKey: 'config-key' } })
     expect(key).toBe('config-key')
     delete process.env.YDC_API_KEY
   })
@@ -39,13 +44,13 @@ describe('resolveApiKey', () => {
   })
 
   test('ignores non-string apiKey values', () => {
-    const key = resolveApiKey({ apiKey: 123 })
+    const key = resolveApiKey({ webSearch: { apiKey: 123 } })
     expect(key).toBe('')
   })
 
   test('ignores empty string apiKey', () => {
     process.env.YDC_API_KEY = 'env-fallback'
-    const key = resolveApiKey({ apiKey: '' })
+    const key = resolveApiKey({ webSearch: { apiKey: '' } })
     expect(key).toBe('env-fallback')
     delete process.env.YDC_API_KEY
   })

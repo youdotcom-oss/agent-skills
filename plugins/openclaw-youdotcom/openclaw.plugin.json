@@ -11,19 +11,26 @@
     "tools": ["ydc_search", "ydc_research", "ydc_contents"]
   },
   "uiHints": {
-    "apiKey": {
-      "label": "You.com API key",
-      "placeholder": "ydc-...",
-      "sensitive": true
+    "webSearch.apiKey": {
+      "label": "You.com API Key",
+      "help": "You.com API key for web search and research (optional for search; required for research/contents).",
+      "sensitive": true,
+      "placeholder": "ydc-..."
     }
   },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "apiKey": {
-        "type": "string",
-        "description": "You.com API key. Falls back to YDC_API_KEY env var if not set."
+      "webSearch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "apiKey": {
+            "type": ["string", "object"],
+            "description": "You.com API key. Optional for search (free tier); required for research and contents. Falls back to YDC_API_KEY env var."
+          }
+        }
       }
     }
   }
