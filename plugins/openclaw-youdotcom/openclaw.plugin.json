@@ -1,0 +1,30 @@
+{
+  "id": "youdotcom",
+  "name": "You.com",
+  "description": "Web search, deep research, and content extraction via You.com APIs",
+  "version": "1.0.0",
+  "providerAuthEnvVars": {
+    "youdotcom": ["YDC_API_KEY"]
+  },
+  "contracts": {
+    "webSearchProviders": ["youdotcom"],
+    "tools": ["ydc_search", "ydc_research", "ydc_contents"]
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "You.com API key",
+      "placeholder": "ydc-...",
+      "sensitive": true
+    }
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "You.com API key. Falls back to YDC_API_KEY env var if not set."
+      }
+    }
+  }
+}
