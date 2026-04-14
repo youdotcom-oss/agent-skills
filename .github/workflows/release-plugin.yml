@@ -1,0 +1,127 @@
+name: Release Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: "Dry run (skip actual publish)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    name: Release openclaw-youdotcom
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        token: ${{ secrets.PUBLISH_TOKEN }}
+        fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install plugin dependencies
+        run: bun install
+        working-directory: plugins/openclaw-youdotcom
+
+      - name: Typecheck
+        run: bun tsc --noEmit
+        working-directory: plugins/openclaw-youdotcom
+
+      - name: Lint
+        run: bun biome check plugins/openclaw-youdotcom/index.ts plugins/openclaw-youdotcom/index.spec.ts
+
+      - name: Test
+        run: bun test
+        working-directory: plugins/openclaw-youdotcom
+
+      - name: Bump version
+        id: bump-version
+        run: |
+          CURRENT=$(jq -r '.version' package.json)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case "${{ inputs.bump_type }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Bumping ${CURRENT} → ${NEW_VERSION}"
+
+          # Update package.json
+          jq --arg v "$NEW_VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
+
+          # Update manifest
+          jq --arg v "$NEW_VERSION" '.version = $v' openclaw.plugin.json > openclaw.plugin.json.tmp && mv openclaw.plugin.json.tmp openclaw.plugin.json
+        working-directory: plugins/openclaw-youdotcom
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit version bump
+        env:
+          VERSION: ${{ steps.bump-version.outputs.version }}
+          BUMP_TYPE: ${{ inputs.bump_type }}
+        run: |
+          git add "plugins/openclaw-youdotcom/package.json" "plugins/openclaw-youdotcom/openclaw.plugin.json"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(openclaw-youdotcom): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
+            git pull origin "${{ github.ref_name }}" --rebase
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        env:
+          VERSION: ${{ steps.bump-version.outputs.version }}
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+        run: |
+          gh release create "openclaw-youdotcom@${VERSION}" \
+            --target "${{ github.ref_name }}" \
+            --title "openclaw-youdotcom@${VERSION}" \
+            --notes "Release \`@youdotcom-oss/openclaw-youdotcom@${VERSION}\`
+
+            ## Changes
+            See commit history for details.
+
+            ## Install
+            \`\`\`bash
+            openclaw plugins install clawhub:@youdotcom-oss/openclaw-youdotcom
+            \`\`\`"
+
+      - name: Publish to ClawHub
+        if: ${{ !inputs.dry_run }}
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: |
+          npx clawhub package publish "plugins/openclaw-youdotcom" \
+            --token "${CLAWHUB_TOKEN}" \
+            --version "${{ steps.bump-version.outputs.version }}"
+
+      - name: Dry run summary
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "### 🏗️ Dry Run Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Version:** ${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Bump type:** ${{ inputs.bump_type }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would create release:** openclaw-youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would publish to ClawHub:** @youdotcom-oss/openclaw-youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
