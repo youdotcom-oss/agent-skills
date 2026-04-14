@@ -1,7 +1,7 @@
 /**
  * You.com OpenClaw Plugin
  *
- * Exposes You.com Search, Deep Search (Research), and Contents APIs
+ * Exposes You.com Search, Research, and Contents APIs
  * as OpenClaw agent tools plus a web search provider.
  *
  * Search works without an API key (free tier, rate-limited).
@@ -14,9 +14,10 @@
 
 import { Type } from '@sinclair/typebox'
 import type { GetUserAgent } from '@youdotcom-oss/api'
-import { callDeepSearch, fetchContents, fetchSearchResults } from '@youdotcom-oss/api'
+import { callResearch, fetchContents, fetchSearchResults } from '@youdotcom-oss/api'
 import { definePluginEntry } from 'openclaw/plugin-sdk/plugin-entry'
 import type { WebSearchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-search'
+import { createWebSearchProviderContractFields } from 'openclaw/plugin-sdk/provider-web-search-contract'
 
 const PLUGIN_UA: GetUserAgent = () => 'OpenClaw-YDC-Plugin/1.0.0 (You.com)'
 
@@ -34,10 +35,19 @@ export const formatToolError = (error: unknown, context: string) => ({
   details: { error: true, context },
 })
 
+const CREDENTIAL_PATH = 'plugins.entries.youdotcom.config.webSearch.apiKey'
+
+const contractFields = createWebSearchProviderContractFields({
+  credentialPath: CREDENTIAL_PATH,
+  inactiveSecretPaths: [CREDENTIAL_PATH],
+  searchCredential: { type: 'scoped', scopeId: 'webSearch' },
+  configuredCredential: { pluginId: 'youdotcom', field: 'webSearch.apiKey' },
+})
+
 export default definePluginEntry({
   id: 'youdotcom',
   name: 'You.com',
-  description: 'Web search, deep research, and content extraction via You.com APIs',
+  description: 'Web search, research, and content extraction via You.com APIs',
   register(api) {
     const getKey = () => resolveApiKey(api.pluginConfig)
 
@@ -55,40 +65,8 @@ export default definePluginEntry({
       docsUrl: 'https://docs.you.com',
       onboardingScopes: ['text-inference'],
       autoDetectOrder: 80,
-      credentialPath: 'plugins.entries.youdotcom.config.webSearch.apiKey',
-      inactiveSecretPaths: ['plugins.entries.youdotcom.config.webSearch.apiKey'],
-      getCredentialValue: (searchConfig) => {
-        const ws = (searchConfig as Record<string, unknown> | undefined)?.webSearch as
-          | Record<string, unknown>
-          | undefined
-        return ws?.apiKey ?? (searchConfig as Record<string, unknown> | undefined)?.apiKey
-      },
-      setCredentialValue: (searchConfigTarget, value) => {
-        const target = searchConfigTarget as Record<string, unknown>
-        const ws = target.webSearch as Record<string, unknown> | undefined
-        if (ws) {
-          ws.apiKey = value
-        } else {
-          target.apiKey = value
-        }
-      },
-      getConfiguredCredentialValue: (config) =>
-        (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.webSearch
-          ? (
-              (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown>).webSearch as Record<
-                string,
-                unknown
-              >
-            )?.apiKey
-          : (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.apiKey,
-      setConfiguredCredentialValue: (configTarget, value) => {
-        const entry = configTarget.plugins?.entries?.youdotcom
-        if (entry) {
-          const cfg = entry.config as Record<string, unknown>
-          const ws = (cfg.webSearch as Record<string, unknown> | undefined) ?? {}
-          cfg.webSearch = { ...ws, apiKey: value }
-        }
-      },
+      credentialPath: CREDENTIAL_PATH,
+      ...contractFields,
       createTool: (ctx) => {
         const apiKey = ctx.runtimeMetadata?.selectedProvider
           ? resolveApiKey(ctx.searchConfig as Record<string, unknown> | undefined) || process.env.YDC_API_KEY || ''
@@ -158,64 +136,19 @@ export default definePluginEntry({
 
     api.registerWebSearchProvider(webSearchProvider)
 
-    // --- ydc_search tool (full-featured web search) ---
-    api.registerTool(
-      {
-        label: 'You.com Search',
-        name: 'ydc_search',
-        description:
-          'Search the web using You.com. Returns titles, URLs, descriptions, and optional live-crawled content. Supports freshness, country, safesearch, and livecrawl filters.',
-        parameters: Type.Object({
-          query: Type.String({ description: 'Search query string' }),
-          count: Type.Optional(Type.Number({ description: 'Number of results (1-100)', minimum: 1, maximum: 100 })),
-          freshness: Type.Optional(
-            Type.String({ description: 'Filter: day, week, month, year, or YYYY-MM-DDtoYYYY-MM-DD' }),
-          ),
-          country: Type.Optional(Type.String({ description: 'Country code (e.g. US, GB, DE)' })),
-          safesearch: Type.Optional(Type.String({ description: 'Filter level: off, moderate, strict' })),
-          livecrawl: Type.Optional(Type.String({ description: 'Live-crawl sections: web, news, all' })),
-          livecrawl_formats: Type.Optional(Type.String({ description: 'Livecrawl format: html or markdown' })),
-        }),
-        async execute(_id, params) {
-          try {
-            const results = await fetchSearchResults({
-              searchQuery: {
-                query: params.query,
-                ...(params.count && { count: params.count }),
-                ...(params.freshness && { freshness: params.freshness }),
-                ...(params.country && { country: params.country }),
-                ...(params.safesearch && { safesearch: params.safesearch }),
-                ...(params.livecrawl && { livecrawl: params.livecrawl }),
-                ...(params.livecrawl_formats && { livecrawl_formats: params.livecrawl_formats }),
-              },
-              YDC_API_KEY: getKey(),
-              getUserAgent: PLUGIN_UA,
-            })
-            return {
-              content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
-              details: { tool: 'ydc_search', query: params.query },
-            }
-          } catch (error) {
-            return formatToolError(error, 'Search')
-          }
-        },
-      },
-      { optional: true },
-    )
-
-    // --- ydc_research tool (deep research with cited answers) ---
+    // --- web_research tool (deep research with cited answers) ---
     api.registerTool(
       {
         label: 'You.com Research',
-        name: 'ydc_research',
+        name: 'web_research',
         description:
-          'Perform deep research using You.com. Returns a comprehensive, cited Markdown answer with inline references. Requires YDC_API_KEY. Supports effort levels: low (<30s), medium (<60s), high (<300s).',
+          'Perform deep research using You.com. Returns a comprehensive, cited Markdown answer with inline references. Requires YDC_API_KEY. Supports effort levels: lite (<30s), standard (<60s), deep (<300s), exhaustive (<600s).',
         parameters: Type.Object({
-          query: Type.String({
+          input: Type.String({
             description: 'Research question requiring in-depth investigation',
           }),
-          search_effort: Type.Optional(
-            Type.String({ description: 'Effort level: low, medium, high. Default: medium' }),
+          research_effort: Type.Optional(
+            Type.String({ description: 'Effort level: lite, standard, deep, exhaustive. Default: standard' }),
           ),
         }),
         async execute(_id, params) {
@@ -224,17 +157,19 @@ export default definePluginEntry({
             if (!key) {
               return formatToolError(new Error('YDC_API_KEY is required for research'), 'Research')
             }
-            const results = await callDeepSearch({
-              deepSearchQuery: {
-                query: params.query,
-                ...(params.search_effort && { search_effort: params.search_effort }),
+            const results = await callResearch({
+              researchQuery: {
+                input: params.input,
+                ...(params.research_effort && {
+                  research_effort: params.research_effort as 'lite' | 'standard' | 'deep' | 'exhaustive',
+                }),
               },
               YDC_API_KEY: key,
               getUserAgent: PLUGIN_UA,
             })
             return {
               content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
-              details: { tool: 'ydc_research', query: params.query },
+              details: { tool: 'web_research', input: params.input },
             }
           } catch (error) {
             return formatToolError(error, 'Research')
@@ -244,11 +179,11 @@ export default definePluginEntry({
       { optional: true },
     )
 
-    // --- ydc_contents tool (extract content from URLs) ---
+    // --- web_contents tool (extract content from URLs) ---
     api.registerTool(
       {
         label: 'You.com Contents',
-        name: 'ydc_contents',
+        name: 'web_contents',
         description:
           'Extract full page content from URLs using You.com Contents API. Requires YDC_API_KEY. Returns Markdown, HTML, and/or metadata for each URL.',
         parameters: Type.Object({
@@ -273,7 +208,7 @@ export default definePluginEntry({
             const results = await fetchContents({
               contentsQuery: {
                 urls: params.urls,
-                ...(params.formats && { formats: params.formats }),
+                ...(params.formats && { formats: params.formats as ('markdown' | 'html' | 'metadata')[] }),
                 ...(params.crawl_timeout && { crawl_timeout: params.crawl_timeout }),
               },
               YDC_API_KEY: key,
@@ -281,7 +216,7 @@ export default definePluginEntry({
             })
             return {
               content: [{ type: 'text', text: JSON.stringify(results, null, 2) }],
-              details: { tool: 'ydc_contents', urlCount: params.urls.length },
+              details: { tool: 'web_contents', urlCount: params.urls.length },
             }
           } catch (error) {
             return formatToolError(error, 'Contents')

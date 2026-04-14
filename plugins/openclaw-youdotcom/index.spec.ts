@@ -5,7 +5,7 @@
  */
 
 import { beforeEach, describe, expect, test } from 'bun:test'
-import { formatToolError, resolveApiKey } from './plugin.ts'
+import { formatToolError, resolveApiKey } from './index.ts'
 
 describe('resolveApiKey', () => {
   const originalEnv = process.env.YDC_API_KEY

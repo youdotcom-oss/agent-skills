@@ -1,12 +1,12 @@
 {
   "name": "@youdotcom-oss/openclaw-youdotcom",
   "version": "1.0.0",
-  "description": "You.com OpenClaw plugin — web search, deep research, and content extraction via You.com APIs",
+  "description": "You.com OpenClaw plugin — web search, research, and content extraction via You.com APIs",
   "license": "MIT",
   "type": "module",
-  "main": "./plugin.ts",
+  "main": "./index.ts",
   "exports": {
-    ".": "./plugin.ts"
+    ".": "./index.ts"
   },
   "keywords": [
     "you.com",
@@ -36,7 +36,7 @@
   },
   "openclaw": {
     "extensions": [
-      "./plugin.ts"
+      "./index.ts"
     ],
     "compat": {
       "pluginApi": ">=2026.3.24-beta.2",
