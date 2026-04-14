@@ -12,12 +12,19 @@
  * @public
  */
 
-import { Type } from '@sinclair/typebox'
 import type { GetUserAgent } from '@youdotcom-oss/api'
-import { callResearch, fetchContents, fetchSearchResults } from '@youdotcom-oss/api'
+import {
+  ContentsQuerySchema,
+  callResearch,
+  fetchContents,
+  fetchSearchResults,
+  ResearchQuerySchema,
+  SearchQuerySchema,
+} from '@youdotcom-oss/api'
 import { definePluginEntry } from 'openclaw/plugin-sdk/plugin-entry'
 import type { WebSearchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-search'
 import { createWebSearchProviderContractFields } from 'openclaw/plugin-sdk/provider-web-search-contract'
+import { z } from 'zod'
 
 const PLUGIN_UA: GetUserAgent = () => 'OpenClaw-YDC-Plugin/1.0.0 (You.com)'
 
@@ -33,6 +40,20 @@ export const formatToolError = (error: unknown, context: string) => ({
     { type: 'text' as const, text: `${context} failed: ${error instanceof Error ? error.message : 'Unknown error'}` },
   ],
   details: { error: true, context },
+})
+
+const WebSearchToolSchema = SearchQuerySchema.pick({
+  query: true,
+  count: true,
+  freshness: true,
+  country: true,
+  safesearch: true,
+})
+
+const ContentsToolSchema = ContentsQuerySchema.pick({
+  urls: true,
+  formats: true,
+  crawl_timeout: true,
 })
 
 const CREDENTIAL_PATH = 'plugins.entries.youdotcom.config.webSearch.apiKey'
@@ -75,27 +96,7 @@ export default definePluginEntry({
         return {
           description:
             'Search the web using You.com. Returns structured results with snippets. Supports freshness, country, and safesearch filters. Use web_research for deep research with citations.',
-          parameters: Type.Object({
-            query: Type.String({ description: 'Search query string' }),
-            count: Type.Optional(
-              Type.Number({
-                description: 'Number of results to return (1-100, default: 10)',
-                minimum: 1,
-                maximum: 100,
-              }),
-            ),
-            freshness: Type.Optional(
-              Type.String({
-                description: 'Filter by recency: "day", "week", "month", "year", or "YYYY-MM-DDtoYYYY-MM-DD"',
-              }),
-            ),
-            country: Type.Optional(
-              Type.String({ description: 'Two-letter country code (e.g. US, GB, DE) to bias results' }),
-            ),
-            safesearch: Type.Optional(
-              Type.String({ description: 'Safe search filter: "off", "moderate", or "strict"' }),
-            ),
-          }).valueOf() as Record<string, unknown>,
+          parameters: z.toJSONSchema(WebSearchToolSchema) as Record<string, unknown>,
           execute: async (args: Record<string, unknown>) => {
             const query = args.query as string
             const count = args.count as number | undefined
@@ -143,14 +144,7 @@ export default definePluginEntry({
         name: 'web_research',
         description:
           'Perform deep research using You.com. Returns a comprehensive, cited Markdown answer with inline references. Requires YDC_API_KEY. Supports effort levels: lite (<30s), standard (<60s), deep (<300s), exhaustive (<600s).',
-        parameters: Type.Object({
-          input: Type.String({
-            description: 'Research question requiring in-depth investigation',
-          }),
-          research_effort: Type.Optional(
-            Type.String({ description: 'Effort level: lite, standard, deep, exhaustive. Default: standard' }),
-          ),
-        }),
+        parameters: z.toJSONSchema(ResearchQuerySchema) as Record<string, unknown>,
         async execute(_id, params) {
           try {
             const key = getKey()
@@ -186,19 +180,7 @@ export default definePluginEntry({
         name: 'web_contents',
         description:
           'Extract full page content from URLs using You.com Contents API. Requires YDC_API_KEY. Returns Markdown, HTML, and/or metadata for each URL.',
-        parameters: Type.Object({
-          urls: Type.Array(Type.String(), {
-            description: 'Array of URLs to extract content from',
-          }),
-          formats: Type.Optional(
-            Type.Array(Type.String(), {
-              description: 'Output formats: "markdown", "html", "metadata"',
-            }),
-          ),
-          crawl_timeout: Type.Optional(
-            Type.Number({ description: 'Timeout in seconds (1-60)', minimum: 1, maximum: 60 }),
-          ),
-        }),
+        parameters: z.toJSONSchema(ContentsToolSchema) as Record<string, unknown>,
         async execute(_id, params) {
           try {
             const key = getKey()
