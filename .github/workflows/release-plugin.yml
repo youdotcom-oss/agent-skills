@@ -128,10 +128,14 @@ jobs:
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
           VERSION: ${{ steps.bump-version.outputs.version }}
+          SOURCE_REPO: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
         run: |
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
           bunx clawhub package publish plugins/openclaw-youdotcom \
-            --version "${VERSION}"
+            --version "${VERSION}" \
+            --source-repo "${SOURCE_REPO}" \
+            --source-commit "${SOURCE_COMMIT}"
 
       - name: Dry run summary
         if: ${{ inputs.dry_run }}
