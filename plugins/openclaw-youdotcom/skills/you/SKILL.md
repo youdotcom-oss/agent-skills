@@ -51,6 +51,7 @@ Get an API key from https://you.com/platform/api-keys to unlock higher rate limi
 
 **IF** user provides URLs → **web_contents**
 **ELSE IF** user needs synthesized answer with citations → **web_research**
+**ELSE IF** user needs search + full content → **web_search** with `livecrawl=web`
 **ELSE** → **web_search** (You.com provider)
 
 ### 3. Handle Results Safely
