@@ -37,10 +37,9 @@
       },
     },
     "plugins/openclaw-youdotcom": {
-      "name": "@youdotcom-oss/openclaw-youdotcom",
+      "name": "@youdotcom-oss/youdotcom",
       "version": "1.0.0",
       "dependencies": {
-        "@sinclair/typebox": "^0.34.0",
         "@youdotcom-oss/api": "^0.5.1",
       },
       "peerDependencies": {
@@ -745,9 +744,9 @@
 
     "@youdotcom-oss/langchain": ["@youdotcom-oss/langchain@1.2.1", "", { "dependencies": { "@youdotcom-oss/api": "0.5.1" }, "peerDependencies": { "langchain": ">=1.0.0" } }, "sha512-a6H2Zo9RSNdZ2e5BrzRlniYtnZZQtMcRWn/ktCE0gwi1INm1s9CBVSpYqkVOXKBrjk7ZpCe/szi5TjB3b0D05g=="],
 
-    "@youdotcom-oss/openclaw-youdotcom": ["@youdotcom-oss/openclaw-youdotcom@workspace:plugins/openclaw-youdotcom"],
-
     "@youdotcom-oss/teams-anthropic": ["@youdotcom-oss/teams-anthropic@1.1.0", "", { "dependencies": { "@anthropic-ai/sdk": "^0.74.0", "@microsoft/teams.ai": "^2.0.5", "@microsoft/teams.common": "^2.0.5" } }, "sha512-+IbvMfu2J3ce/Gn9vcT97ZhrSVD7H1riJhexkKdZ8bSkJ4eIX6irHShuCqe/LPmhxHPJMxwqQSZYcumpCyAMgg=="],
+
+    "@youdotcom-oss/youdotcom": ["@youdotcom-oss/youdotcom@workspace:plugins/openclaw-youdotcom"],
 
     "abbrev": ["abbrev@1.1.1", "", {}, "sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q=="],
 
