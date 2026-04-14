@@ -44,7 +44,7 @@ jobs:
         working-directory: plugins/openclaw-youdotcom
 
       - name: Lint
-        run: bunx biome check plugins/openclaw-youdotcom/index.ts plugins/openclaw-youdotcom/index.spec.ts
+        run: bunx biome check "plugins/openclaw-youdotcom/*.ts"
 
       - name: Test
         run: bun test
@@ -116,7 +116,7 @@ jobs:
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
         run: |
-          npx clawhub package publish "youdotcom-oss/agent-skills@${{ github.ref_name }}" \
+          bunx clawhub package publish "youdotcom-oss/agent-skills@${{ github.ref_name }}" \
             --token "${CLAWHUB_TOKEN}"
 
       - name: Dry run summary

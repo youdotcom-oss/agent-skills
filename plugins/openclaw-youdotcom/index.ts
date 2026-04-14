@@ -45,7 +45,7 @@ export const formatToolError = (error: unknown, context: string) => ({
   details: { error: true, context },
 })
 
-const WebSearchToolSchema = SearchQuerySchema.pick({
+export const WebSearchToolSchema = SearchQuerySchema.pick({
   query: true,
   count: true,
   freshness: true,
@@ -53,7 +53,7 @@ const WebSearchToolSchema = SearchQuerySchema.pick({
   safesearch: true,
 })
 
-const ContentsToolSchema = ContentsQuerySchema.pick({
+export const ContentsToolSchema = ContentsQuerySchema.pick({
   urls: true,
   formats: true,
   crawl_timeout: true,
@@ -67,6 +67,13 @@ const contractFields = createWebSearchProviderContractFields({
   searchCredential: { type: 'scoped', scopeId: 'webSearch' },
   configuredCredential: { pluginId: 'youdotcom', field: 'webSearch.apiKey' },
 })
+
+const secureContentResults = <T extends { markdown?: string | null; html?: string | null }>(results: T[]) =>
+  results.map((item) => ({
+    ...item,
+    ...(item.markdown && { markdown: wrapExternalContent(item.markdown, { source: 'web_fetch' }) }),
+    ...(item.html && { html: wrapExternalContent(item.html, { source: 'web_fetch' }) }),
+  }))
 
 export default definePluginEntry({
   id: 'youdotcom',
@@ -93,7 +100,7 @@ export default definePluginEntry({
       ...contractFields,
       createTool: (ctx) => {
         const apiKey = ctx.runtimeMetadata?.selectedProvider
-          ? resolveApiKey(ctx.searchConfig as Record<string, unknown> | undefined) || process.env.YDC_API_KEY || ''
+          ? resolveApiKey(ctx.searchConfig as Record<string, unknown> | undefined)
           : getKey()
 
         return {
@@ -101,25 +108,21 @@ export default definePluginEntry({
             'Search the web using You.com. Returns structured results with snippets. Supports freshness, country, and safesearch filters. Use web_research for deep research with citations.',
           parameters: z.toJSONSchema(WebSearchToolSchema) as Record<string, unknown>,
           execute: async (args: Record<string, unknown>) => {
-            const query = args.query as string
-            const count = args.count as number | undefined
-            const freshness = args.freshness as string | undefined
-            const country = args.country as string | undefined
-            const safesearch = args.safesearch as string | undefined
+            const parsed = WebSearchToolSchema.parse(args)
             try {
               const results = await fetchSearchResults({
                 searchQuery: {
-                  query,
-                  ...(count && { count }),
-                  ...(freshness && { freshness }),
-                  ...(country && { country: country as 'US' }),
-                  ...(safesearch && { safesearch: safesearch as 'off' }),
+                  query: parsed.query,
+                  ...(parsed.count !== undefined && { count: parsed.count }),
+                  ...(parsed.freshness !== undefined && { freshness: parsed.freshness }),
+                  ...(parsed.country !== undefined && { country: parsed.country }),
+                  ...(parsed.safesearch !== undefined && { safesearch: parsed.safesearch }),
                 },
                 YDC_API_KEY: apiKey,
                 getUserAgent: PLUGIN_UA,
               })
               const payload = {
-                query,
+                query: parsed.query,
                 results: results.results.web?.map((r) => ({
                   title: r.title,
                   url: r.url,
@@ -189,7 +192,7 @@ export default definePluginEntry({
       },
       createTool: (ctx) => {
         const apiKey = ctx.runtimeMetadata?.selectedProvider
-          ? resolveApiKey(ctx.fetchConfig as Record<string, unknown> | undefined) || process.env.YDC_API_KEY || ''
+          ? resolveApiKey(ctx.fetchConfig as Record<string, unknown> | undefined)
           : getKey()
 
         if (!apiKey) return null
@@ -199,25 +202,18 @@ export default definePluginEntry({
             'Extract full page content from URLs using You.com. Returns Markdown, HTML, and/or metadata for each URL.',
           parameters: z.toJSONSchema(ContentsToolSchema) as Record<string, unknown>,
           execute: async (args: Record<string, unknown>) => {
-            const urls = args.urls as string[]
-            const formats = args.formats as ('markdown' | 'html' | 'metadata')[] | undefined
-            const crawl_timeout = args.crawl_timeout as number | undefined
+            const parsed = ContentsToolSchema.parse(args)
             try {
               const results = await fetchContents({
                 contentsQuery: {
-                  urls,
-                  ...(formats && { formats }),
-                  ...(crawl_timeout && { crawl_timeout }),
+                  urls: parsed.urls,
+                  ...(parsed.formats !== undefined && { formats: parsed.formats }),
+                  ...(parsed.crawl_timeout !== undefined && { crawl_timeout: parsed.crawl_timeout }),
                 },
                 YDC_API_KEY: apiKey,
                 getUserAgent: PLUGIN_UA,
               })
-              const safeResults = results.map((item) => ({
-                ...item,
-                ...(item.markdown && { markdown: wrapExternalContent(item.markdown, { source: 'web_fetch' }) }),
-                ...(item.html && { html: wrapExternalContent(item.html, { source: 'web_fetch' }) }),
-              }))
-              return safeResults as unknown as Record<string, unknown>
+              return secureContentResults(results) as unknown as Record<string, unknown>
             } catch {
               return { error: 'fetch_failed', message: 'Content extraction failed. Try again or check the URL.' }
             }
@@ -237,6 +233,7 @@ export default definePluginEntry({
           'Perform deep research using You.com. Returns a comprehensive, cited Markdown answer with inline references. Requires YDC_API_KEY. Supports effort levels: lite (<30s), standard (<60s), deep (<300s), exhaustive (<600s).',
         parameters: z.toJSONSchema(ResearchQuerySchema) as Record<string, unknown>,
         async execute(_id, params) {
+          const parsed = ResearchQuerySchema.parse(params)
           try {
             const key = getKey()
             if (!key) {
@@ -244,10 +241,8 @@ export default definePluginEntry({
             }
             const results = await callResearch({
               researchQuery: {
-                input: params.input,
-                ...(params.research_effort && {
-                  research_effort: params.research_effort as 'lite' | 'standard' | 'deep' | 'exhaustive',
-                }),
+                input: parsed.input,
+                research_effort: parsed.research_effort ?? 'standard',
               },
               YDC_API_KEY: key,
               getUserAgent: PLUGIN_UA,
@@ -261,7 +256,7 @@ export default definePluginEntry({
             }
             return {
               content: [{ type: 'text', text: JSON.stringify(safeOutput, null, 2) }],
-              details: { tool: 'web_research', input: params.input },
+              details: { tool: 'web_research', input: parsed.input },
             }
           } catch (error) {
             return formatToolError(error, 'Research')
@@ -280,6 +275,7 @@ export default definePluginEntry({
           'Extract full page content from URLs using You.com Contents API. Requires YDC_API_KEY. Returns Markdown, HTML, and/or metadata for each URL.',
         parameters: z.toJSONSchema(ContentsToolSchema) as Record<string, unknown>,
         async execute(_id, params) {
+          const parsed = ContentsToolSchema.parse(params)
           try {
             const key = getKey()
             if (!key) {
@@ -287,21 +283,16 @@ export default definePluginEntry({
             }
             const results = await fetchContents({
               contentsQuery: {
-                urls: params.urls,
-                ...(params.formats && { formats: params.formats as ('markdown' | 'html' | 'metadata')[] }),
-                ...(params.crawl_timeout && { crawl_timeout: params.crawl_timeout }),
+                urls: parsed.urls,
+                ...(parsed.formats !== undefined && { formats: parsed.formats }),
+                ...(parsed.crawl_timeout !== undefined && { crawl_timeout: parsed.crawl_timeout }),
               },
               YDC_API_KEY: key,
               getUserAgent: PLUGIN_UA,
             })
-            const safeResults = results.map((item) => ({
-              ...item,
-              ...(item.markdown && { markdown: wrapExternalContent(item.markdown, { source: 'web_fetch' }) }),
-              ...(item.html && { html: wrapExternalContent(item.html, { source: 'web_fetch' }) }),
-            }))
             return {
-              content: [{ type: 'text', text: JSON.stringify(safeResults, null, 2) }],
-              details: { tool: 'web_contents', urlCount: params.urls.length },
+              content: [{ type: 'text', text: JSON.stringify(secureContentResults(results), null, 2) }],
+              details: { tool: 'web_contents', urlCount: parsed.urls.length },
             }
           } catch (error) {
             return formatToolError(error, 'Contents')

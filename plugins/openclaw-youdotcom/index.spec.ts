@@ -5,11 +5,11 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { ContentsQuerySchema, ResearchQuerySchema, SearchQuerySchema } from '@youdotcom-oss/api'
+import { ResearchQuerySchema } from '@youdotcom-oss/api'
 import { wrapExternalContent } from 'openclaw/plugin-sdk/provider-web-fetch'
 import { wrapWebContent } from 'openclaw/plugin-sdk/provider-web-search'
 import { z } from 'zod'
-import pluginEntry, { formatToolError, resolveApiKey } from './index.ts'
+import pluginEntry, { ContentsToolSchema, formatToolError, resolveApiKey, WebSearchToolSchema } from './index.ts'
 
 const originalEnv = process.env.YDC_API_KEY
 
@@ -103,20 +103,6 @@ describe('formatToolError', () => {
 // --- Schema serialization ---
 
 describe('schema JSON Schema output', () => {
-  const WebSearchToolSchema = SearchQuerySchema.pick({
-    query: true,
-    count: true,
-    freshness: true,
-    country: true,
-    safesearch: true,
-  })
-
-  const ContentsToolSchema = ContentsQuerySchema.pick({
-    urls: true,
-    formats: true,
-    crawl_timeout: true,
-  })
-
   test('WebSearchToolSchema produces valid JSON Schema with required query', () => {
     const schema = z.toJSONSchema(WebSearchToolSchema) as Record<string, unknown>
     expect(schema.type).toBe('object')
