@@ -52,11 +52,13 @@ jobs:
 
       - name: Bump version
         id: bump-version
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type }}
         run: |
           CURRENT=$(jq -r '.version' package.json)
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
-          case "${{ inputs.bump_type }}" in
+          case "$BUMP_TYPE" in
             major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
             minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
             patch) PATCH=$((PATCH + 1)) ;;
@@ -82,24 +84,26 @@ jobs:
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
           BUMP_TYPE: ${{ inputs.bump_type }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           git add "plugins/openclaw-youdotcom/package.json" "plugins/openclaw-youdotcom/openclaw.plugin.json"
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "chore(youdotcom): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
-            git pull origin "${{ github.ref_name }}" --rebase
-            git push origin "HEAD:${{ github.ref_name }}"
+            git pull origin "$BRANCH" --rebase
+            git push origin "HEAD:$BRANCH"
           fi
 
       - name: Create GitHub Release
         if: ${{ !inputs.dry_run }}
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
+          BRANCH: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
           gh release create "youdotcom@${VERSION}" \
-            --target "${{ github.ref_name }}" \
+            --target "$BRANCH" \
             --title "youdotcom@${VERSION}" \
             --notes "Release \`@youdotcom-oss/youdotcom@${VERSION}\`
 
@@ -115,15 +119,19 @@ jobs:
         if: ${{ !inputs.dry_run }}
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          BRANCH: ${{ github.ref_name }}
         run: |
-          bunx clawhub package publish "youdotcom-oss/agent-skills@${{ github.ref_name }}" \
+          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
             --token "${CLAWHUB_TOKEN}"
 
       - name: Dry run summary
         if: ${{ inputs.dry_run }}
+        env:
+          VERSION: ${{ steps.bump-version.outputs.version }}
+          BUMP_TYPE: ${{ inputs.bump_type }}
         run: |
           echo "### 🏗️ Dry Run Summary" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Version:** ${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Bump type:** ${{ inputs.bump_type }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Would create release:** youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Would publish to ClawHub:** @youdotcom-oss/youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Version:** ${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Bump type:** ${BUMP_TYPE}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would create release:** youdotcom@${VERSION}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would publish to ClawHub:** @youdotcom-oss/youdotcom@${VERSION}" >> "$GITHUB_STEP_SUMMARY"
