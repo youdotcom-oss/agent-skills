@@ -113,9 +113,8 @@ jobs:
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
         run: |
-          npx clawhub package publish "plugins/openclaw-youdotcom" \
-            --token "${CLAWHUB_TOKEN}" \
-            --version "${{ steps.bump-version.outputs.version }}"
+          npx clawhub package publish "youdotcom-oss/agent-skills@${{ github.ref_name }}" \
+            --token "${CLAWHUB_TOKEN}"
 
       - name: Dry run summary
         if: ${{ inputs.dry_run }}
