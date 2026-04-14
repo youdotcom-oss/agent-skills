@@ -124,8 +124,9 @@ jobs:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
           BRANCH: ${{ github.ref_name }}
         run: |
+          bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
           bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
-            --token "${CLAWHUB_TOKEN}"
+            --source-path plugins/openclaw-youdotcom
 
       - name: Dry run summary
         if: ${{ inputs.dry_run }}
