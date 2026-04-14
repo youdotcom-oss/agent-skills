@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { ResearchQuerySchema } from '@youdotcom-oss/api'
 import { wrapExternalContent } from 'openclaw/plugin-sdk/provider-web-fetch'
 import { wrapWebContent } from 'openclaw/plugin-sdk/provider-web-search'
-import { z } from 'zod'
+import * as z from 'zod'
 import pluginEntry, { ContentsToolSchema, formatToolError, resolveApiKey, WebSearchToolSchema } from './index.ts'
 
 const originalEnv = process.env.YDC_API_KEY

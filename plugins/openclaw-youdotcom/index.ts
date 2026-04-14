@@ -27,7 +27,7 @@ import { wrapExternalContent } from 'openclaw/plugin-sdk/provider-web-fetch'
 import type { WebSearchProviderPlugin } from 'openclaw/plugin-sdk/provider-web-search'
 import { wrapWebContent } from 'openclaw/plugin-sdk/provider-web-search'
 import { createWebSearchProviderContractFields } from 'openclaw/plugin-sdk/provider-web-search-contract'
-import { z } from 'zod'
+import * as z from 'zod'
 
 const PLUGIN_UA: GetUserAgent = () => 'OpenClaw-YDC-Plugin/1.0.0 (You.com)'
 
