@@ -127,11 +127,11 @@ jobs:
         if: ${{ !inputs.dry_run }}
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
-          BRANCH: ${{ github.ref_name }}
+          VERSION: ${{ steps.bump-version.outputs.version }}
         run: |
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
-          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
-            --source-path plugins/openclaw-youdotcom
+          bunx clawhub package publish plugins/openclaw-youdotcom \
+            --version "${VERSION}"
 
       - name: Dry run summary
         if: ${{ inputs.dry_run }}
