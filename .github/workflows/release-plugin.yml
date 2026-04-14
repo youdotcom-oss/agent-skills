@@ -76,11 +76,13 @@ jobs:
         working-directory: plugins/openclaw-youdotcom
 
       - name: Configure git
+        if: ${{ !inputs.dry_run }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit version bump
+        if: ${{ !inputs.dry_run }}
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
           BUMP_TYPE: ${{ inputs.bump_type }}
