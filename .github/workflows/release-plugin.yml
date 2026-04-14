@@ -81,6 +81,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Commit version bump
+        if: ${{ !inputs.dry_run }}
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
           BUMP_TYPE: ${{ inputs.bump_type }}
