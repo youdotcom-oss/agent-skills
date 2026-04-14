@@ -45,7 +45,7 @@ jobs:
         working-directory: plugins/openclaw-youdotcom
 
       - name: Lint
-        run: bunx biome check "plugins/openclaw-youdotcom/*.ts"
+        run: bunx biome check plugins/openclaw-youdotcom/*.ts
 
       - name: Test
         run: bun test
