@@ -1,5 +1,5 @@
 {
-  "name": "@youdotcom-oss/openclaw-youdotcom",
+  "name": "@youdotcom-oss/youdotcom",
   "version": "1.0.0",
   "description": "You.com OpenClaw plugin — web search, research, and content extraction via You.com APIs",
   "license": "MIT",

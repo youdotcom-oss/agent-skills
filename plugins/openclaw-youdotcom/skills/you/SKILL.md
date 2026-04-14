@@ -22,7 +22,7 @@ metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"author":"youd
 The You.com plugin must be installed in OpenClaw:
 
 ```
-openclaw plugins install clawhub:@youdotcom-oss/openclaw-youdotcom
+openclaw plugins install clawhub:@youdotcom-oss/youdotcom
 ```
 
 ### API Key (optional for Search)

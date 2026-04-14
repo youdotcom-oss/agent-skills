@@ -95,17 +95,17 @@ jobs:
           VERSION: ${{ steps.bump-version.outputs.version }}
           GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
-          gh release create "openclaw-youdotcom@${VERSION}" \
+          gh release create "youdotcom@${VERSION}" \
             --target "${{ github.ref_name }}" \
-            --title "openclaw-youdotcom@${VERSION}" \
-            --notes "Release \`@youdotcom-oss/openclaw-youdotcom@${VERSION}\`
+            --title "youdotcom@${VERSION}" \
+            --notes "Release \`@youdotcom-oss/youdotcom@${VERSION}\`
 
             ## Changes
             See commit history for details.
 
             ## Install
             \`\`\`bash
-            openclaw plugins install clawhub:@youdotcom-oss/openclaw-youdotcom
+            openclaw plugins install clawhub:@youdotcom-oss/youdotcom
             \`\`\`"
 
       - name: Publish to ClawHub
@@ -122,5 +122,5 @@ jobs:
           echo "### 🏗️ Dry Run Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Version:** ${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Bump type:** ${{ inputs.bump_type }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Would create release:** openclaw-youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Would publish to ClawHub:** @youdotcom-oss/openclaw-youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would create release:** youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Would publish to ClawHub:** @youdotcom-oss/youdotcom@${{ steps.bump-version.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
