@@ -79,7 +79,8 @@ gh api repos/<owner>/<repo>/pulls/<n>/comments
 # Module Organization
 
 **No index.ts** - Never use index files, they create implicit magic  
-*Verify:* `find . -name 'index.ts'`  
+*Exception:* Plugin entry points under `plugins/` where the SDK requires `index.ts` as the entry file  
+*Verify:* `find . -name 'index.ts' -not -path 'plugins/*/index.ts'`  
 *Fix:* Rename to feature name: `feature/index.ts` → `feature.ts` at parent level
 
 **Explicit .ts extensions** - `import { x } from './file.ts'` not `'./file'`  

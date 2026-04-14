@@ -1,0 +1,49 @@
+{
+  "name": "@youdotcom-oss/youdotcom",
+  "version": "0.0.0",
+  "description": "You.com OpenClaw plugin — web search, research, and content extraction via You.com APIs",
+  "license": "MIT",
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "keywords": [
+    "you.com",
+    "openclaw",
+    "openclaw-plugin",
+    "web-search",
+    "research",
+    "content-extraction",
+    "clawhub"
+  ],
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "plugins/openclaw-youdotcom"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.24-beta.2"
+  },
+  "dependencies": {
+    "@youdotcom-oss/api": "^0.5.1"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  }
+}

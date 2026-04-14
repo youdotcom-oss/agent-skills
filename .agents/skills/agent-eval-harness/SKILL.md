@@ -803,7 +803,7 @@ import { CaptureResultSchema, TrialResultSchema } from '@plaited/agent-eval-harn
 const result = CaptureResultSchema.parse(jsonData)
 
 // Generate JSON Schema (Zod 4 native)
-import { z } from 'zod'
+import * as z from 'zod'
 const jsonSchema = z.toJSONSchema(CaptureResultSchema)
 ```
 
@@ -812,7 +812,7 @@ const jsonSchema = z.toJSONSchema(CaptureResultSchema)
 Reliability metrics include a `type` discriminator for type-safe parsing:
 
 ```typescript
-import { z } from 'zod'
+import * as z from 'zod'
 import {
   ReliabilityMetricsSchema,       // type: 'run'
   TrialsReliabilityMetricsSchema  // type: 'trial'
