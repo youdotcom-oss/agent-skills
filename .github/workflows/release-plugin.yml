@@ -19,7 +19,7 @@ on:
 
 jobs:
   release:
-    name: Release openclaw-youdotcom
+    name: Release youdotcom
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,16 +32,19 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install dependencies
+        run: bun install
+
       - name: Install plugin dependencies
         run: bun install
         working-directory: plugins/openclaw-youdotcom
 
       - name: Typecheck
-        run: bun tsc --noEmit
+        run: bunx tsc --noEmit
         working-directory: plugins/openclaw-youdotcom
 
       - name: Lint
-        run: bun biome check plugins/openclaw-youdotcom/index.ts plugins/openclaw-youdotcom/index.spec.ts
+        run: bunx biome check plugins/openclaw-youdotcom/index.ts plugins/openclaw-youdotcom/index.spec.ts
 
       - name: Test
         run: bun test
@@ -84,7 +87,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore(openclaw-youdotcom): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
+            git commit -m "chore(youdotcom): ${BUMP_TYPE} version bump to ${VERSION} [skip ci]"
             git pull origin "${{ github.ref_name }}" --rebase
             git push origin "HEAD:${{ github.ref_name }}"
           fi
