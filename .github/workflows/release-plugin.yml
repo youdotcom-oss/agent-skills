@@ -24,8 +24,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        token: ${{ secrets.PUBLISH_TOKEN }}
-        fetch-depth: 0
+        with:
+          token: ${{ secrets.PUBLISH_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
