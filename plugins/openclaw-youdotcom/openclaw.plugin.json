@@ -29,7 +29,7 @@
         "additionalProperties": false,
         "properties": {
           "apiKey": {
-            "type": ["string", "object"],
+            "type": "string",
             "description": "You.com API key. Optional for search (free tier); required for research and contents. Falls back to YDC_API_KEY env var."
           }
         }
