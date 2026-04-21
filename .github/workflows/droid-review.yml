@@ -28,8 +28,7 @@ jobs:
         id: check_internal
         if: github.event_name == 'pull_request'
         run: |
-          RESPONSE=$(gh api repos/\${{ github.repository }}/collaborators/\${{ github.event.pull_request.user.login }}/permission 2>/dev/null || echo '{"permission":"none"}')
-          PERMISSION=$(echo "\$RESPONSE" | jq -r '.permission')
+          PERMISSION=$(gh api repos/\${{ github.repository }}/collaborators/\${{ github.event.pull_request.user.login }}/permission --jq .permission 2>/dev/null || echo "none")
           echo "Author permission: \$PERMISSION"
 
           if [[ "\$PERMISSION" != "admin" && "\$PERMISSION" != "maintain" && "\$PERMISSION" != "write" ]]; then
