@@ -11,7 +11,7 @@ on:
         type: number
 
 concurrency:
-  group: \${{ github.workflow }}-\${{ github.event.pull_request.number || inputs.pr_number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
 
 jobs:
@@ -28,21 +28,21 @@ jobs:
         id: check_internal
         if: github.event_name == 'pull_request'
         run: |
-          RESPONSE=$(gh api repos/\${{ github.repository }}/collaborators/\${{ github.event.pull_request.user.login }}/permission 2>/dev/null || echo '{"permission":"none"}')
-          PERMISSION=$(echo "\$RESPONSE" | jq -r '.permission')
-          echo "Author permission: \$PERMISSION"
+          RESPONSE=$(gh api repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}/permission 2>/dev/null || echo '{"permission":"none"}')
+          PERMISSION=$(echo "$RESPONSE" | jq -r '.permission')
+          echo "Author permission: $PERMISSION"
 
-          if [[ "\$PERMISSION" != "admin" && "\$PERMISSION" != "maintain" && "\$PERMISSION" != "write" ]]; then
-            echo "Skipping auto-review for external contributor (permission: \$PERMISSION)"
+          if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
+            echo "Skipping auto-review for external contributor (permission: $PERMISSION)"
             echo "Use 'Actions > Droid Auto Review > Run workflow' to manually trigger review"
-            echo "is_internal=false" >> \$GITHUB_OUTPUT
+            echo "is_internal=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "Author is internal contributor, proceeding with review"
-          echo "is_internal=true" >> \$GITHUB_OUTPUT
+          echo "is_internal=true" >> $GITHUB_OUTPUT
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -53,27 +53,31 @@ jobs:
         if: github.event_name == 'pull_request' && steps.check_internal.outputs.is_internal == 'true'
         uses: Factory-AI/droid-action@v5
         with:
-          factory_api_key: \${{ secrets.FACTORY_API_KEY }}
+          factory_api_key: ${{ secrets.FACTORY_API_KEY }}
           automatic_review: true
           automatic_security_review: true
-          review_model: GLM-5.1
+          review_model: glm-5.1
+          allowed_bots: "claude[bot],github-advanced-security[bot],semgrep-dotnet[bot]"
 
       - name: Checkout PR branch
         if: github.event_name == 'workflow_dispatch'
-        run: gh pr checkout \${{ inputs.pr_number }}
+        run: gh pr checkout "$PR_NUMBER"
         env:
-          GH_TOKEN: \${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install Droid CLI
         if: github.event_name == 'workflow_dispatch'
         run: |
           curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://app.factory.ai/cli | sh
-          echo "\$HOME/.local/bin" >> "\$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run Droid Review (external)
         if: github.event_name == 'workflow_dispatch'
         run: |
-          droid exec --auto high "/review \${{ github.repository }}/pull/\${{ inputs.pr_number }}"
+          droid exec --auto high "/review $GITHUB_REPOSITORY/pull/$PR_NUMBER"
         env:
-          FACTORY_API_KEY: \${{ secrets.FACTORY_API_KEY }}
-          GITHUB_TOKEN: \${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}

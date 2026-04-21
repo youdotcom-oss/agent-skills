@@ -68,19 +68,114 @@
     "safesearch": {
       "description": "Filter level",
       "type": "string",
-      "enum": ["off", "moderate", "strict"]
+      "enum": [
+        "off",
+        "moderate",
+        "strict"
+      ]
     },
     "livecrawl": {
       "description": "Live-crawl sections for full content",
       "type": "string",
-      "enum": ["web", "news", "all"]
+      "enum": [
+        "web",
+        "news",
+        "all"
+      ]
     },
     "livecrawl_formats": {
-      "description": "Format for crawled content",
+      "description": "Formats for crawled content",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "html",
+          "markdown"
+        ]
+      }
+    },
+    "language": {
+      "description": "Language code (BCP 47 format)",
       "type": "string",
-      "enum": ["html", "markdown"]
+      "enum": [
+        "AR",
+        "EU",
+        "BN",
+        "BG",
+        "CA",
+        "ZH-HANS",
+        "ZH-HANT",
+        "HR",
+        "CS",
+        "DA",
+        "NL",
+        "EN",
+        "EN-GB",
+        "ET",
+        "FI",
+        "FR",
+        "GL",
+        "DE",
+        "EL",
+        "GU",
+        "HE",
+        "HI",
+        "HU",
+        "IS",
+        "IT",
+        "JP",
+        "KN",
+        "KO",
+        "LV",
+        "LT",
+        "MS",
+        "ML",
+        "MR",
+        "NB",
+        "PL",
+        "PT-BR",
+        "PT-PT",
+        "PA",
+        "RO",
+        "RU",
+        "SR",
+        "SK",
+        "SL",
+        "ES",
+        "SV",
+        "TA",
+        "TE",
+        "TH",
+        "TR",
+        "UK",
+        "VI"
+      ]
+    },
+    "include_domains": {
+      "description": "Domains to include in results (up to 500)",
+      "maxItems": 500,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude_domains": {
+      "description": "Domains to exclude from results (up to 500)",
+      "maxItems": 500,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "crawl_timeout": {
+      "description": "Crawl timeout in seconds (1-60)",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60
     }
   },
-  "required": ["query"],
+  "required": [
+    "query"
+  ],
   "additionalProperties": false
 }
