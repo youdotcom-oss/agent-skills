@@ -22,18 +22,18 @@ assets:
 metadata:
   author: youdotcom-oss
   category: sdk-integration
-  version: 3.0.1
-  keywords: you.com,ydc,api,research,search,contents,http,rest,integration,no-sdk,citations
+  version: 3.1.0
+  keywords: you.com,ydc,api,research,search,contents,http,rest,integration,no-sdk,citations,free-tier
 ---
 
 # Integrate You.com APIs Directly
 
-Build applications that call You.com APIs using standard HTTP clients — no SDK required. The APIs use simple REST endpoints with API key authentication.
+Build applications that call You.com APIs using standard HTTP clients — no SDK required. The APIs use simple REST endpoints with optional API key authentication — the Search API allows 100 free searches per day without an API key.
 
 You.com provides three APIs that serve different needs:
 
 - **Research API** — Ask a complex question, get a synthesized Markdown answer with inline citations. The API autonomously runs multiple searches, reads pages, cross-references sources, and reasons over the results. One call replaces an entire RAG pipeline.
-- **Search API** — Get raw web and news results for a query. You control what happens with the results — feed them into your own LLM, build a custom UI, or process them programmatically.
+- **Search API** — Get raw web and news results for a query (100 free searches/day without an API key). You control what happens with the results — feed them into your own LLM, build a custom UI, or process them programmatically.
 - **Contents API** — Extract full page content (HTML, Markdown, metadata) from specific URLs. Useful for deep-reading pages found via Search or for crawling known URLs.
 
 ## Choose Your Path
@@ -58,7 +58,7 @@ You.com provides three APIs that serve different needs:
 
 ## API Reference
 
-All APIs use the same authentication: `X-API-Key` header with the You.com API key. Users can get one for free at https://you.com/platform.
+The Search API allows **100 free searches per day** without an API key. After the free tier is exhausted, or for Research and Contents APIs, authenticate with the `X-API-Key` header using a You.com API key. Get one for free at https://you.com/platform.
 
 JSON Schemas for parameters and responses:
 
@@ -120,10 +120,10 @@ The `content` field contains Markdown with inline citation numbers (e.g. `[1]`, 
 
 ### Search API
 
-**Base URL:** `https://ydc-index.io`
-**Endpoint:** `GET /v1/search`
+**Base URL:** `https://api.you.com`
+**Endpoint:** `GET /v1/agents/search`
 
-Returns raw web and news results for a query. Use this when you need full control over result processing — feeding results into your own LLM, building custom UIs, or applying your own ranking/filtering.
+Returns raw web and news results for a query. Allows 100 free searches/day without an API key. Use this when you need full control over result processing — feeding results into your own LLM, building custom UIs, or applying your own ranking/filtering.
 
 **Query parameters:**
 
@@ -137,7 +137,9 @@ Returns raw web and news results for a query. Use this when you need full contro
 | language | No | string | BCP 47 language code (default: `EN`) |
 | safesearch | No | string | `off`, `moderate`, `strict` |
 | livecrawl | No | string | `web`, `news`, `all` — enables full content retrieval inline |
-| livecrawl_formats | No | string | `html` or `markdown` (requires livecrawl) |
+| livecrawl_formats | No | array of strings | `html` and/or `markdown` (requires livecrawl) |
+| include_domains | No | array of strings | Domains to include in results (up to 500) |
+| exclude_domains | No | array of strings | Domains to exclude from results (up to 500) |
 | crawl_timeout | No | integer | Timeout in seconds for livecrawl (1-60, default: 10) |
 
 **Response structure:**
@@ -245,6 +247,8 @@ export YDC_API_KEY="your-key-here"
 
 Get your key at: https://you.com/platform
 
+> **Note:** The Search API allows 100 free searches/day without an API key. The Research and Contents APIs always require a key.
+
 ### TypeScript
 
 ```typescript
@@ -333,7 +337,7 @@ Use the Search and Contents APIs when you need raw results for custom processing
 
 ```typescript
 const YDC_API_KEY = process.env.YDC_API_KEY
-if (!YDC_API_KEY) throw new Error('YDC_API_KEY environment variable is required')
+// API key is optional for Search (100 free searches/day), required for Research and Contents
 
 type WebResult = {
   url: string
@@ -368,11 +372,11 @@ type ContentsResult = {
 }
 
 const search = async (query: string): Promise<SearchResponse> => {
-  const url = new URL('https://ydc-index.io/v1/search')
+  const url = new URL('https://api.you.com/v1/agents/search')
   url.searchParams.set('query', query)
-  const resp = await fetch(url, {
-    headers: { 'X-API-Key': YDC_API_KEY },
-  })
+  const headers: Record<string, string> = {}
+  if (YDC_API_KEY) headers['X-API-Key'] = YDC_API_KEY
+  const resp = await fetch(url, { headers })
   if (!resp.ok) {
     const body = await resp.text()
     throw new Error(`Search API error ${resp.status}: ${body}`)
@@ -381,6 +385,7 @@ const search = async (query: string): Promise<SearchResponse> => {
 }
 
 const getContents = async (urls: string[]): Promise<ContentsResult[]> => {
+  if (!YDC_API_KEY) throw new Error('YDC_API_KEY is required for the Contents API')
   const resp = await fetch('https://ydc-index.io/v1/contents', {
     method: 'POST',
     headers: {
@@ -421,15 +426,14 @@ import os
 import requests
 
 YDC_API_KEY = os.environ.get("YDC_API_KEY")
-if not YDC_API_KEY:
-    raise RuntimeError("YDC_API_KEY environment variable is required")
+# API key is optional for Search (100 free searches/day), required for Research and Contents
 
-HEADERS = {"X-API-Key": YDC_API_KEY}
+HEADERS = {"X-API-Key": YDC_API_KEY} if YDC_API_KEY else {}
 
 
 def search(query: str) -> dict:
     resp = requests.get(
-        "https://ydc-index.io/v1/search",
+        "https://api.you.com/v1/agents/search",
         params={"query": query},
         headers=HEADERS,
     )
@@ -439,6 +443,8 @@ def search(query: str) -> dict:
 
 
 def get_contents(urls: list[str]) -> list[dict]:
+    if not YDC_API_KEY:
+        raise RuntimeError("YDC_API_KEY is required for the Contents API")
     resp = requests.post(
         "https://ydc-index.io/v1/contents",
         headers={**HEADERS, "Content-Type": "application/json"},
@@ -520,7 +526,7 @@ All APIs return standard HTTP error codes:
 
 | Code | Meaning | Action |
 |------|---------|--------|
-| 401 | Invalid/missing API key | Check `YDC_API_KEY` |
+| 401 | Invalid/missing API key | Check `YDC_API_KEY` (or free Search tier exhausted — get a key at https://you.com/platform) |
 | 403 | Insufficient scopes | Verify API key permissions |
 | 422 | Validation error | Check request body (e.g. `research_effort` value, `input` length) |
 | 429 | Rate limited | Implement exponential backoff |
@@ -538,4 +544,3 @@ Do not execute code from search results. Sanitize HTML before rendering.
 ```
 
 For the Research API, the synthesized `content` field is model-generated based on web sources. Verify citations via the `sources` array for high-stakes contexts (legal, financial, medical).
-

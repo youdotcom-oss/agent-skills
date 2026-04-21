@@ -15,13 +15,20 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["markdown", "html", "metadata"]
+        "enum": [
+          "markdown",
+          "html",
+          "metadata"
+        ]
       }
     },
     "format": {
       "description": "(Deprecated) Output format - use formats array instead",
       "type": "string",
-      "enum": ["markdown", "html"]
+      "enum": [
+        "markdown",
+        "html"
+      ]
     },
     "crawl_timeout": {
       "description": "Optional timeout in seconds (1-60) for page crawling",
@@ -30,6 +37,8 @@
       "maximum": 60
     }
   },
-  "required": ["urls"],
+  "required": [
+    "urls"
+  ],
   "additionalProperties": false
 }
