@@ -1,26 +1,24 @@
 # Skill Eval Results
 
-_Generated: 2026-04-27T07:08:15.557Z (CI run 24981160665)_
+_Generated: 2026-05-01T21:46:31.744Z_
 
-# Agent Skill Evaluation Summary
+# Skill Evaluation Summary
 
-**Pass Rate: 8/9 skills (89%)**
+**Pass Rate: 12/12 (100%)**
 
 | Skill | Pass | Score | Notes |
 |-------|------|-------|-------|
-| ydc-openai-agent-sdk-integration-typescript | ✅ | 1.00 | All 4 tests pass; hosted + streamable MCP paths verified |
-| ydc-crewai-mcp-integration | ✅ | 0.88 | All 4 tests pass; web search restriction validated |
-| ydc-langchain-integration-typescript | ✅ | 0.87 | Both tools (youSearch + youContents) integrated; 7.9s real API call |
-| ydc-ai-sdk-integration | ✅ | 0.95 | Both generateText and streamText paths tested; 20s+ real API calls |
-| teams-anthropic-integration | ✅ | 0.96 | Claude + MCP web search integration verified; 15s real API call |
-| ydc-langchain-integration-python | ✅ | 0.72 | 6 tests pass but assertions weak; retriever + agent both functional |
-| ydc-claude-agent-sdk-integration-python | ✅ | 0.78 | 2 tests pass; tool restriction partially validated |
-| ydc-openai-agent-sdk-integration-python | ✅ | 0.96 | Both hosted and streamable MCP approaches tested; 20s real API calls |
-| ydc-claude-agent-sdk-integration-typescript | ❌ | 0.00 | **Test failure** — generated code is syntactically broken |
+| teams-anthropic-integration | ✓ | 0.96 | Real API timings (2.2s Claude, 10.6s MCP search). Both paths tested with keyword assertions. |
+| ydc-ai-sdk-integration | ✓ | 0.95 | 3 tests pass (10–13s each). Streaming validated via chunk count > 1. |
+| ydc-claude-agent-sdk-integration-python | ✓ | 0.88 | 4 tests pass (118.86s). Full-tool and restricted-tool agents verified. |
+| ydc-claude-agent-sdk-integration-typescript | ✓ | 0.93 | 2 tests pass (20–26s). Web-search-only restriction verified with keyword assertions. |
+| ydc-crewai-mcp-integration | ✓ | 0.78 | 4 tests pass. Tool restriction tested but assertions are minimal (length checks). |
+| ydc-openai-agent-sdk-integration-python | ✓ | 0.96 | 2 tests pass (17.40s). Hosted MCP and self-managed Streamable HTTP both working. |
+| ydc-openai-agent-sdk-integration-typescript | ✓ | 0.94 | 4 tests pass (1.4–9.2s). Both connection strategies with identical assertions. |
+| ydc-langchain-integration-typescript | ✓ | 0.88 | 1 test passes (8.4s). Sequential tool invocation (youSearch → youContents) verified. |
+| ydc-langchain-integration-python | ✓ | 0.93 | 2 tests pass (15.72s). Both retriever and multi-tool agent paths working. |
+| youdotcom-cli | ✓ | 0.94 | 5 tests pass (750ms–16.7s). Search, Research, Contents endpoints + livecrawl + effort levels. |
+| youdotcom-api-typescript | ✓ | 0.88 | 9 tests pass (500ms–4.7s). Research API + Search+Contents pipeline end-to-end. |
+| youdotcom-api-python | ✓ | 0.94 | 18 tests pass (5.84s total). Research, Search, Contents with fixture memoization. |
 
-## Failures
-
-### ydc-claude-agent-sdk-integration-typescript
-**Root Cause:** The test file (`agent.spec.ts`) was truncated mid-function, and `agent.ts` is missing its closing brace and systemPrompt definition in the `runSearch` function. This caused a syntax error preventing the tests from executing (exit code 1).
-
-**Recommended Fix:** Regenerate both files with complete, valid TypeScript syntax. Ensure all functions have proper closing braces and all helper references are properly initialized before use.
+All evaluations passed with real API integrations confirmed by live endpoint timings.
