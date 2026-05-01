@@ -40,34 +40,34 @@
     ]
   },
   "devDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.116",
+    "@anthropic-ai/claude-agent-sdk": "^0.2.126",
     "@openai/agents": "^0.8.5",
-    "@anthropic-ai/sdk": "^0.90.0",
-    "@microsoft/teams.ai": "^2.0.8",
-    "@microsoft/teams.common": "^2.0.8",
-    "@microsoft/teams.apps": "^2.0.8",
-    "@microsoft/teams.mcpclient": "^2.0.8",
+    "@anthropic-ai/sdk": "^0.92.0",
+    "@microsoft/teams.ai": "^2.0.9",
+    "@microsoft/teams.common": "^2.0.9",
+    "@microsoft/teams.apps": "^2.0.9",
+    "@microsoft/teams.mcpclient": "^2.0.9",
     "@youdotcom-oss/teams-anthropic": "^1.1.1",
-    "@biomejs/biome": "2.4.12",
-    "@commitlint/cli": "^20.5.0",
-    "@commitlint/config-conventional": "^20.5.0",
+    "@biomejs/biome": "2.4.14",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
     "@plaited/agent-eval-harness": "^0.13.0",
     "@plaited/development-skills": "^0.8.1",
-    "@types/bun": "1.3.12",
+    "@types/bun": "1.3.13",
     "format-package": "^7.0.0",
     "lint-staged": "^16.4.0",
     "typescript": "^6.0.3",
     "typescript-language-server": "^5.1.3",
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.71",
-    "@langchain/anthropic": "^1.3.26",
-    "@langchain/core": "^1.1.40",
+    "@ai-sdk/anthropic": "^3.0.74",
+    "@langchain/anthropic": "^1.3.28",
+    "@langchain/core": "^1.1.42",
     "@youdotcom-oss/ai-sdk-plugin": "^2.2.3",
     "@youdotcom-oss/api": "^0.5.2",
     "@youdotcom-oss/langchain": "^1.2.2",
-    "ai": "^6.0.168",
-    "langchain": "^1.3.3"
+    "ai": "^6.0.174",
+    "langchain": "^1.3.5"
   }
 }
