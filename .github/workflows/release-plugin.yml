@@ -103,10 +103,11 @@ jobs:
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
           BRANCH: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
           TAG="youdotcom@${VERSION}"
-          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+          if gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping"
           else
             gh release create "$TAG" \
@@ -129,9 +130,10 @@ jobs:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
           VERSION: ${{ steps.bump-version.outputs.version }}
           SOURCE_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
-          bunx clawhub package publish "youdotcom-oss/agent-skills@${{ github.ref_name }}" \
+          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
             --source-path plugins/openclaw-youdotcom \
             --owner youdotcom-oss \
             --version "${VERSION}" \
