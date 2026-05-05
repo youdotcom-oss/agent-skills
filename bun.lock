@@ -37,8 +37,8 @@
       },
     },
     "plugins/you-openclaw": {
-      "name": "you-openclaw",
-      "version": "1.0.3",
+      "name": "you",
+      "version": "1.0.5",
       "dependencies": {
         "@youdotcom-oss/api": "^0.5.1",
         "zod": "^4.3.6",
@@ -1423,7 +1423,7 @@
 
     "yoctocolors": ["yoctocolors@2.1.2", "", {}, "sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug=="],
 
-    "you-openclaw": ["you-openclaw@workspace:plugins/you-openclaw"],
+    "you": ["you@workspace:plugins/you-openclaw"],
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 

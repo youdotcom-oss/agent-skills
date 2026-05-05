@@ -1,12 +1,12 @@
 {
-  "name": "you-openclaw",
+  "name": "you",
   "version": "1.0.5",
   "description": "You.com OpenClaw plugin — web search, research, and content extraction via You.com APIs",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
-    "directory": "plugins/openclaw-youdotcom"
+    "directory": "plugins/you-openclaw"
   },
   "author": {
     "name": "You.com",
