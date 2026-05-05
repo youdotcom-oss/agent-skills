@@ -75,7 +75,7 @@ type CapturedTool = { name: string; execute: (id: string, params: Record<string,
 const captureTools = (pluginConfig?: Record<string, unknown>): CapturedTool[] => {
   const tools: CapturedTool[] = []
   const mockApi = {
-    id: 'youdotcom',
+    id: 'you',
     name: 'You.com',
     pluginConfig: pluginConfig ?? {},
     registerWebSearchProvider: () => {},
