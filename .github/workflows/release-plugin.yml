@@ -136,6 +136,7 @@ jobs:
           bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
             --source-path plugins/you-openclaw \
             --owner youdotcom-oss \
+            --name you \
             --version "${VERSION}" \
             --source-commit "${SOURCE_COMMIT}"
 
