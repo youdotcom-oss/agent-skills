@@ -89,7 +89,7 @@ jobs:
           BUMP_TYPE: ${{ inputs.bump_type }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          git add "plugins/you-openclaw/package.json" "plugins/you-openclaw/openclaw.plugin.json"
+          git add "plugins/you-openclaw/package.json" "plugins/you-openclaw/openclaw.plugin.json" bun.lock
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
