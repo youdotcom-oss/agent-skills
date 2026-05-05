@@ -64,12 +64,7 @@
                 "additionalProperties": false
               }
             },
-            "required": [
-              "url",
-              "title",
-              "description",
-              "snippets"
-            ],
+            "required": ["url", "title", "description", "snippets"],
             "additionalProperties": false
           }
         },
@@ -114,12 +109,7 @@
                 "additionalProperties": false
               }
             },
-            "required": [
-              "title",
-              "description",
-              "page_age",
-              "url"
-            ],
+            "required": ["title", "description", "page_age", "url"],
             "additionalProperties": false
           }
         }
@@ -145,9 +135,6 @@
       "additionalProperties": false
     }
   },
-  "required": [
-    "results",
-    "metadata"
-  ],
+  "required": ["results", "metadata"],
   "additionalProperties": false
 }

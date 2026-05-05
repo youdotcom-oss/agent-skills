@@ -28,9 +28,9 @@ const GRADER_FILE = join(ROOT, 'scripts/grader.ts')
 
 const args = process.argv.slice(2)
 const skillFlag = args.indexOf('--skill')
-const skillId = skillFlag !== -1 ? args[skillFlag + 1] : null
+const skillId = skillFlag === -1 ? null : args[skillFlag + 1]
 const concurrencyFlag = args.indexOf('-j')
-const concurrency = concurrencyFlag !== -1 ? args[concurrencyFlag + 1] : null
+const concurrency = concurrencyFlag === -1 ? null : args[concurrencyFlag + 1]
 const summaryOnly = args.includes('--summary-only')
 const PASS_THRESHOLD = 0.65
 

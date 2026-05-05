@@ -68,30 +68,19 @@
     "safesearch": {
       "description": "Filter level",
       "type": "string",
-      "enum": [
-        "off",
-        "moderate",
-        "strict"
-      ]
+      "enum": ["off", "moderate", "strict"]
     },
     "livecrawl": {
       "description": "Live-crawl sections for full content",
       "type": "string",
-      "enum": [
-        "web",
-        "news",
-        "all"
-      ]
+      "enum": ["web", "news", "all"]
     },
     "livecrawl_formats": {
       "description": "Formats for crawled content",
       "type": "array",
       "items": {
         "type": "string",
-        "enum": [
-          "html",
-          "markdown"
-        ]
+        "enum": ["html", "markdown"]
       }
     },
     "language": {
@@ -174,8 +163,6 @@
       "maximum": 60
     }
   },
-  "required": [
-    "query"
-  ],
+  "required": ["query"],
   "additionalProperties": false
 }

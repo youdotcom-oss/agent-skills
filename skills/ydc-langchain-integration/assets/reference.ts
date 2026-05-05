@@ -1,7 +1,7 @@
 import { getEnvironmentVariable } from '@langchain/core/utils/env'
+import { youContents, youSearch } from '@youdotcom-oss/langchain'
 import { createAgent, initChatModel } from 'langchain'
 import * as z from 'zod'
-import { youContents, youSearch } from '@youdotcom-oss/langchain'
 
 const apiKey = getEnvironmentVariable('YDC_API_KEY') ?? ''
 

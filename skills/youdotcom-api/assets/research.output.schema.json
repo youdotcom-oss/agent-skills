@@ -11,9 +11,7 @@
         },
         "content_type": {
           "type": "string",
-          "enum": [
-            "text"
-          ],
+          "enum": ["text"],
           "description": "The format of the content field"
         },
         "sources": {
@@ -37,25 +35,17 @@
                 }
               }
             },
-            "required": [
-              "url"
-            ],
+            "required": ["url"],
             "additionalProperties": false
           },
           "description": "List of web sources used to generate the answer"
         }
       },
-      "required": [
-        "content",
-        "content_type",
-        "sources"
-      ],
+      "required": ["content", "content_type", "sources"],
       "additionalProperties": false,
       "description": "The research output containing the answer and sources"
     }
   },
-  "required": [
-    "output"
-  ],
+  "required": ["output"],
   "additionalProperties": false
 }

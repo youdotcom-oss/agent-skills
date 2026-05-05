@@ -19,9 +19,9 @@
     "check:write-package": "format-package --write",
     "check:write-py": "uv tool run ruff check --fix . && uv tool run ruff format .",
     "copy:openclaw": "bun scripts/copy-openclaw.ts",
-    "generate:ydc-schemas": "bun scripts/generate-ydc-schemas.ts",
     "eval": "bun scripts/run.ts",
     "eval:summary": "bun scripts/run.ts --summary-only",
+    "generate:ydc-schemas": "bun scripts/generate-ydc-schemas.ts",
     "prepare": "git config core.hooksPath .hooks"
   },
   "lint-staged": {
@@ -38,6 +38,16 @@
     "package.json": [
       "format-package --write"
     ]
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.74",
+    "@langchain/anthropic": "^1.3.28",
+    "@langchain/core": "^1.1.42",
+    "@youdotcom-oss/ai-sdk-plugin": "^2.2.3",
+    "@youdotcom-oss/api": "^0.5.2",
+    "@youdotcom-oss/langchain": "^1.2.2",
+    "ai": "^6.0.174",
+    "langchain": "^1.3.5"
   },
   "devDependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.126",
@@ -59,15 +69,5 @@
     "typescript": "^6.0.3",
     "typescript-language-server": "^5.1.3",
     "zod": "^4.4.1"
-  },
-  "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.74",
-    "@langchain/anthropic": "^1.3.28",
-    "@langchain/core": "^1.1.42",
-    "@youdotcom-oss/ai-sdk-plugin": "^2.2.3",
-    "@youdotcom-oss/api": "^0.5.2",
-    "@youdotcom-oss/langchain": "^1.2.2",
-    "ai": "^6.0.174",
-    "langchain": "^1.3.5"
   }
 }
