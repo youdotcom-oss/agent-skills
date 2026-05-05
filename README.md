@@ -4,6 +4,38 @@ Agent skills for integrating You.com's AI-powered search, content extraction, an
 
 These skills provide interactive workflows that guide your AI agent through setting up You.com integrations for SDKs, frameworks, and CLI tools.
 
+## OpenClaw Plugin
+
+**you** — Published on [ClawHub](https://clawhub.ai/you)
+
+A native OpenClaw plugin providing web search, research, and content extraction via You.com APIs. Powers the built-in `web_search` and `web_fetch` tools, plus custom `web_research` and `web_contents` tools.
+
+**Install:**
+
+```bash
+openclaw plugins install clawhub:you
+```
+
+**Features:**
+- **Web search provider** — powers `web_search` tool (free tier, no API key required)
+- **Web fetch provider** — powers `web_fetch` tool (requires YDC_API_KEY)
+- **web_research** — deep research with cited answers at multiple effort levels (lite, standard, deep, exhaustive)
+- **web_contents** — full page content extraction (Markdown, HTML, metadata)
+- Prompt injection defense via system prompt trust boundary
+
+**Configuration:**
+
+```bash
+# Optional for search (free tier); required for research and contents
+export YDC_API_KEY="your-api-key"
+```
+
+Or set `webSearch.apiKey` in your OpenClaw config.
+
+**Plugin directory:** `plugins/you-openclaw/`
+
+---
+
 ## Available Skills
 
 ### ydc-ai-sdk-integration
