@@ -2,7 +2,7 @@
   "id": "you",
   "name": "You.com",
   "description": "Web search, research, and content extraction via You.com APIs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "skills": [
     "./skills"
   ],
