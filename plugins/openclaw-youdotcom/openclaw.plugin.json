@@ -2,15 +2,26 @@
   "id": "youdotcom",
   "name": "You.com",
   "description": "Web search, research, and content extraction via You.com APIs",
-  "version": "1.0.2",
-  "skills": ["./skills"],
+  "version": "1.0.3",
+  "skills": [
+    "./skills"
+  ],
   "providerAuthEnvVars": {
-    "youdotcom": ["YDC_API_KEY"]
+    "youdotcom": [
+      "YDC_API_KEY"
+    ]
   },
   "contracts": {
-    "webSearchProviders": ["youdotcom"],
-    "webFetchProviders": ["youdotcom"],
-    "tools": ["web_research", "web_contents"]
+    "webSearchProviders": [
+      "youdotcom"
+    ],
+    "webFetchProviders": [
+      "youdotcom"
+    ],
+    "tools": [
+      "web_research",
+      "web_contents"
+    ]
   },
   "uiHints": {
     "webSearch.apiKey": {
