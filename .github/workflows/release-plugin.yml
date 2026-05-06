@@ -106,7 +106,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
-          TAG="youdotcom@${VERSION}"
+          TAG="you@${VERSION}"
           if gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping"
           else
