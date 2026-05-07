@@ -1,5 +1,5 @@
 ---
-name: youdotcom
+name: you
 description: >
   Web search, research with citations, and content extraction via You.com
   OpenClaw plugin.
@@ -22,7 +22,7 @@ metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"author":"youd
 The You.com plugin must be installed in OpenClaw:
 
 ```
-openclaw plugins install clawhub:@youdotcom-oss/youdotcom
+openclaw plugins install clawhub:you
 ```
 
 ### API Key (optional for Search)

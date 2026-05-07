@@ -38,18 +38,18 @@ jobs:
 
       - name: Install plugin dependencies
         run: bun install
-        working-directory: plugins/openclaw-youdotcom
+        working-directory: plugins/you-openclaw
 
       - name: Typecheck
         run: bunx tsc --noEmit
-        working-directory: plugins/openclaw-youdotcom
+        working-directory: plugins/you-openclaw
 
       - name: Lint
-        run: bunx biome check plugins/openclaw-youdotcom/*.ts
+        run: bunx biome check plugins/you-openclaw/*.ts
 
       - name: Test
         run: bun test
-        working-directory: plugins/openclaw-youdotcom
+        working-directory: plugins/you-openclaw
 
       - name: Bump version
         id: bump-version
@@ -74,7 +74,7 @@ jobs:
 
           # Update manifest
           jq --arg v "$NEW_VERSION" '.version = $v' openclaw.plugin.json > openclaw.plugin.json.tmp && mv openclaw.plugin.json.tmp openclaw.plugin.json
-        working-directory: plugins/openclaw-youdotcom
+        working-directory: plugins/you-openclaw
 
       - name: Configure git
         if: ${{ !inputs.dry_run }}
@@ -89,7 +89,7 @@ jobs:
           BUMP_TYPE: ${{ inputs.bump_type }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          git add "plugins/openclaw-youdotcom/package.json" "plugins/openclaw-youdotcom/openclaw.plugin.json"
+          git add "plugins/you-openclaw/package.json" "plugins/you-openclaw/openclaw.plugin.json" bun.lock
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -103,10 +103,11 @@ jobs:
         env:
           VERSION: ${{ steps.bump-version.outputs.version }}
           BRANCH: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
         run: |
-          TAG="youdotcom@${VERSION}"
-          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+          TAG="you@${VERSION}"
+          if gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists, skipping"
           else
             gh release create "$TAG" \
@@ -128,13 +129,15 @@ jobs:
         env:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
           VERSION: ${{ steps.bump-version.outputs.version }}
-          SOURCE_REPO: ${{ github.repository }}
           SOURCE_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref_name }}
         run: |
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
-          bunx clawhub package publish plugins/openclaw-youdotcom \
+          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
+            --source-path plugins/you-openclaw \
+            --owner youdotcom-oss \
+            --name you \
             --version "${VERSION}" \
-            --source-repo "${SOURCE_REPO}" \
             --source-commit "${SOURCE_COMMIT}"
 
       - name: Dry run summary

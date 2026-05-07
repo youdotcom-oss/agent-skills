@@ -132,7 +132,7 @@ describe('schema JSON Schema output', () => {
 
 describe('plugin entry contract', () => {
   test('exports a valid plugin entry with correct id and name', () => {
-    expect(pluginEntry.id).toBe('youdotcom')
+    expect(pluginEntry.id).toBe('you')
     expect(pluginEntry.name).toBe('You.com')
   })
 
@@ -145,7 +145,7 @@ describe('plugin entry contract', () => {
     const registeredFetchProviders: string[] = []
     const registeredTools: string[] = []
     const mockApi = {
-      id: 'youdotcom',
+      id: 'you',
       name: 'You.com',
       pluginConfig: {},
       registerWebSearchProvider: (provider: { id: string }) => {
@@ -159,8 +159,8 @@ describe('plugin entry contract', () => {
       },
     }
     pluginEntry.register(mockApi as never)
-    expect(registeredSearchProviders).toContain('youdotcom')
-    expect(registeredFetchProviders).toContain('youdotcom')
+    expect(registeredSearchProviders).toContain('you')
+    expect(registeredFetchProviders).toContain('you')
     expect(registeredTools).toContain('web_research')
     expect(registeredTools).toContain('web_contents')
   })
@@ -168,7 +168,7 @@ describe('plugin entry contract', () => {
   test('web search provider has requiresCredential false', () => {
     let provider: { requiresCredential?: boolean } = {} as never
     const mockApi = {
-      id: 'youdotcom',
+      id: 'you',
       name: 'You.com',
       pluginConfig: {},
       registerWebSearchProvider: (p: { requiresCredential?: boolean }) => {
@@ -184,7 +184,7 @@ describe('plugin entry contract', () => {
   test('web fetch provider has requiresCredential true', () => {
     let provider: { requiresCredential?: boolean } = {} as never
     const mockApi = {
-      id: 'youdotcom',
+      id: 'you',
       name: 'You.com',
       pluginConfig: {},
       registerWebSearchProvider: () => {},

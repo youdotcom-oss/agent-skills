@@ -59,13 +59,13 @@ export const ContentsToolSchema = ContentsQuerySchema.pick({
   crawl_timeout: true,
 })
 
-const CREDENTIAL_PATH = 'plugins.entries.youdotcom.config.webSearch.apiKey'
+const CREDENTIAL_PATH = 'plugins.entries.you.config.webSearch.apiKey'
 
 const contractFields = createWebSearchProviderContractFields({
   credentialPath: CREDENTIAL_PATH,
   inactiveSecretPaths: [CREDENTIAL_PATH],
   searchCredential: { type: 'scoped', scopeId: 'webSearch' },
-  configuredCredential: { pluginId: 'youdotcom', field: 'webSearch.apiKey' },
+  configuredCredential: { pluginId: 'you', field: 'webSearch.apiKey' },
 })
 
 const secureContentResults = <T extends { markdown?: string | null; html?: string | null }>(results: T[]) =>
@@ -76,7 +76,7 @@ const secureContentResults = <T extends { markdown?: string | null; html?: strin
   }))
 
 export default definePluginEntry({
-  id: 'youdotcom',
+  id: 'you',
   name: 'You.com',
   description: 'Web search, research, and content extraction via You.com APIs',
   register(api) {
@@ -85,7 +85,7 @@ export default definePluginEntry({
     // --- Web search provider (powers built-in web_search tool) ---
     // Search works without an API key (free tier); research/contents require YDC_API_KEY.
     const webSearchProvider: WebSearchProviderPlugin = {
-      id: 'youdotcom',
+      id: 'you',
       label: 'You.com Search',
       hint: 'Search, research & content extraction · $100 credit on signup',
       requiresCredential: false,
@@ -146,7 +146,7 @@ export default definePluginEntry({
     // --- Web fetch provider (powers built-in web_fetch tool) ---
     // Contents API requires YDC_API_KEY.
     const webFetchProvider: WebFetchProviderPlugin = {
-      id: 'youdotcom',
+      id: 'you',
       label: 'You.com Fetch',
       hint: 'Extract full page content from URLs · $100 credit on signup',
       requiresCredential: true,
@@ -174,16 +174,12 @@ export default definePluginEntry({
         }
       },
       getConfiguredCredentialValue: (config) =>
-        (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.webSearch
-          ? (
-              (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown>).webSearch as Record<
-                string,
-                unknown
-              >
-            )?.apiKey
-          : (config?.plugins?.entries?.youdotcom?.config as Record<string, unknown> | undefined)?.apiKey,
+        (config?.plugins?.entries?.you?.config as Record<string, unknown> | undefined)?.webSearch
+          ? ((config?.plugins?.entries?.you?.config as Record<string, unknown>).webSearch as Record<string, unknown>)
+              ?.apiKey
+          : (config?.plugins?.entries?.you?.config as Record<string, unknown> | undefined)?.apiKey,
       setConfiguredCredentialValue: (configTarget, value) => {
-        const entry = configTarget.plugins?.entries?.youdotcom
+        const entry = configTarget.plugins?.entries?.you
         if (entry) {
           const cfg = entry.config as Record<string, unknown>
           const ws = (cfg.webSearch as Record<string, unknown> | undefined) ?? {}
