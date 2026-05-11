@@ -1,30 +1,30 @@
 # Skill Eval Results
 
-_Generated: 2026-05-04T07:18:42.739Z (CI run 25305939419)_
+_Generated: 2026-05-11T07:43:13.676Z (CI run 25656200320)_
 
-# Agent Skill Evaluation Summary
+# Claude Code Agent Skill Evaluation Report
 
-## Overall Results
-**Pass Rate: 8/9 skills (88.9%)**
+## Summary
+**Pass Rate: 7/9 skills (77.8%)**
 
 | Skill | Pass | Score | Notes |
 |-------|------|-------|-------|
-| ydc-openai-agent-sdk-integration-typescript | ✅ | 0.96 | Real API calls (5.5s + 3.5s), both connection methods tested, strong keyword assertions |
-| ydc-crewai-mcp-integration | ✅ | 0.72 | Tests pass but filtered agent tests use weak assertions (length only, no keywords) |
-| ydc-langchain-integration-typescript | ✅ | 0.78 | Real API calls (6s), both tools invoked, assertions weak (string length > 50 only) |
-| ydc-ai-sdk-integration | ✅ | 0.93 | Real API calls (9s each), streaming verified via `chunks.length > 1`, strong keyword checks |
-| teams-anthropic-integration | ✅ | 0.96 | Real API calls (2.5s + 9.7s), both paths tested, environment validation present |
-| ydc-langchain-integration-python | ✅ | 0.88 | All 5 tests pass (33.65s), tool usage verified via message history inspection |
-| ydc-claude-agent-sdk-integration-python | ✅ | 0.78 | Real API calls (30.32s), restricts to web search only, weak second assertion (length only) |
-| ydc-openai-agent-sdk-integration-python | ✅ | 0.94 | Real API calls (19.21s), both hosted and self-managed MCP modes tested |
-| ydc-claude-agent-sdk-integration-typescript | ❌ | 0.15 | **Test suite failed (exit code 1)** — files truncated mid-definition |
+| ydc-openai-agent-sdk-integration-typescript | ✅ | 1.00 | Both hosted and self-managed MCP paths work; 2 tests pass |
+| ydc-crewai-mcp-integration | ✅ | 0.95 | Real crew execution with tool restriction validation |
+| ydc-langchain-integration-typescript | ✅ | 0.78 | Both youSearch and youContents tools called; weak content assertions |
+| ydc-ai-sdk-integration | ✅ | 0.94 | generateText and streamText both pass with real API calls |
+| teams-anthropic-integration | ✅ | 0.96 | Basic and MCP web-search paths both pass |
+| ydc-langchain-integration-python | ✅ | 0.94 | Retriever and agent with both tools; comprehensive validation |
+| ydc-openai-agent-sdk-integration-python | ✅ | 0.96 | Hosted and self-managed MCP variants both work |
+| ydc-claude-agent-sdk-integration-python | ❌ | 0.15 | Agent returns empty result; integration does not work |
+| ydc-claude-agent-sdk-integration-typescript | ❌ | 0.00 | Runtime error during Anthropic SDK initialization |
 
 ## Failures
 
-### ydc-claude-agent-sdk-integration-typescript
-**Root Cause:** Incomplete file generation — both `agent.ts` and `agent.spec.ts` are truncated mid-code:
-- `agent.spec.ts` ends with incomplete test: `expect(result.length).toBeGre` (line 53)
-- `agent.ts` system prompt definition is cut off
-- Runtime errors in test execution indicate syntax issues
+### ydc-claude-agent-sdk-integration-python
+**Root Cause:** Agent executes but returns empty string from API call. Result extraction or MCP server integration is broken.  
+**Recommended Fix:** Debug the `agent.py` result extraction logic; verify Claude Agent SDK properly handles You.com MCP server responses; check if the API key validation is silently failing.
 
-**Recommended Fix:** Regenerate both files ensuring complete code output. Verify file size and content completeness before returning.
+### ydc-claude-agent-sdk-integration-typescript
+**Root Cause:** Runtime error in Anthropic SDK initialization during test execution. The test structure is correct, but the SDK fails to instantiate in the test environment.  
+**Recommended Fix:** Verify Anthropic SDK compatibility with the test environment (Bun runtime); check if API keys are properly injected; consider using a different SDK initialization pattern or updating dependencies.
