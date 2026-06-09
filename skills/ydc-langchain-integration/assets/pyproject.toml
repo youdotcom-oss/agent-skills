@@ -3,7 +3,7 @@ name = "ydc-langchain-integration-python"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "langchain-youdotcom>=0.1.0",
+    "langchain-youdotcom>=0.3.0",
     "langchain>=1.0.0",
     "langchain-openai>=1.0.0",
     "langgraph>=0.2.60",

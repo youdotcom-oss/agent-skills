@@ -24,3 +24,15 @@ def test_path_b_agent():
     assert "legislative" in text
     assert "executive" in text
     assert "judicial" in text
+
+
+def test_path_b_research():
+    assert os.environ.get("YDC_API_KEY"), "YDC_API_KEY is required"
+    from langchain_youdotcom import YouResearchTool
+
+    tool = YouResearchTool()
+    result = tool.invoke("What are the three branches of the US government?")
+    text = result.lower()
+    assert "legislative" in text
+    assert "executive" in text
+    assert "judicial" in text
