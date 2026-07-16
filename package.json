@@ -1,5 +1,5 @@
 {
-  "name": "@youdotcom-oss/agent-skill",
+  "name": "@youdotcom-oss/agent-skills",
   "private": true,
   "engines": {
     "node": ">=18",

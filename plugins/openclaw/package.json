@@ -1,12 +1,12 @@
 {
-  "name": "you",
+  "name": "@youdotcom-oss/openclaw",
   "version": "1.0.6",
   "description": "You.com OpenClaw plugin — web search, research, and content extraction via You.com APIs",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
-    "directory": "plugins/you-openclaw"
+    "directory": "plugins/openclaw"
   },
   "author": {
     "name": "You.com",
@@ -23,13 +23,13 @@
     "clawhub"
   ],
   "type": "module",
-  "main": "./index.ts",
+  "main": "./plugin.ts",
   "exports": {
-    ".": "./index.ts"
+    ".": "./plugin.ts"
   },
   "openclaw": {
     "extensions": [
-      "./index.ts"
+      "./plugin.ts"
     ],
     "compat": {
       "pluginApi": ">=2026.5.3-1",
@@ -40,10 +40,7 @@
       "pluginSdkVersion": "2026.5.3-1"
     }
   },
-  "dependencies": {
-    "@youdotcom-oss/api": "^0.5.1",
-    "zod": "^4.3.6"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "openclaw": ">=2026.5.3-1"
   }

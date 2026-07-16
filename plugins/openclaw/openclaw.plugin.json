@@ -1,0 +1,10 @@
+{
+  "id": "you",
+  "name": "You.com",
+  "description": "Trust-boundary middleware for the You.com remote MCP server (you-search, you-contents, you-research, you-finance). Register the server via `openclaw mcp add`.",
+  "version": "2.0.0",
+  "skills": ["./skills"],
+  "contracts": {
+    "agentToolResultMiddleware": ["pi", "codex"]
+  }
+}
