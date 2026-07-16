@@ -1,0 +1,46 @@
+# Lock files (managed at monorepo root)
+bun.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+bin/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
