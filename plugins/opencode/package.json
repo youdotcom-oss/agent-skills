@@ -1,0 +1,41 @@
+{
+  "name": "@youdotcom-oss/opencode",
+  "version": "0.0.1",
+  "description": "You.com OpenCode plugin — trust-boundary floor for the You.com remote MCP server (you-search, you-contents, you-research, you-finance)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "plugins/opencode"
+  },
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "keywords": [
+    "you.com",
+    "opencode",
+    "opencode-plugin",
+    "web-search",
+    "research",
+    "content-extraction",
+    "mcp"
+  ],
+  "type": "module",
+  "main": "./plugin.ts",
+  "exports": {
+    ".": "./plugin.ts"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.18.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.18.2"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  }
+}

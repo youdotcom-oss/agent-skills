@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "you-com": {
+      "url": "https://api.you.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:YDC_API_KEY}"
+      }
+    }
+  }
+}

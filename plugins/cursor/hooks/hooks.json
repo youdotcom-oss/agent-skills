@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": "bun run hooks/you-com.ts",
+        "matcher": "MCP:you-search|MCP:you-contents|MCP:you-research|MCP:you-finance",
+        "failClosed": true
+      }
+    ]
+  }
+}
