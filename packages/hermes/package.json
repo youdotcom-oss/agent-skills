@@ -1,0 +1,11 @@
+{
+  "name": "@youdotcom-oss/hermes",
+  "private": true,
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "check": "bun run check:typescript && bun run check:python",
+    "check:python": "uv tool run ruff format --check . && uv tool run ruff check . && uv tool run mypy __init__.py tests/test_plugin.py",
+    "check:typescript": "tsc --noEmit",
+    "test": "bun test scripts/tests && python3 -m unittest discover -s tests -v"
+  }
+}

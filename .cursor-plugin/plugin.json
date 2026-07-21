@@ -1,0 +1,7 @@
+{
+  "name": "you",
+  "description": "You.com web search, research, and content extraction via the You.com remote MCP server, with a postToolUse trust-boundary hook.",
+  "version": "0.0.1",
+  "author": { "name": "You.com", "url": "https://you.com" },
+  "hooks": "./hooks/claude/hooks.json"
+}

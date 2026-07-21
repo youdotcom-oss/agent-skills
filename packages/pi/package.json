@@ -1,0 +1,35 @@
+{
+  "name": "@youdotcom-oss/pi-plugin",
+  "version": "0.0.0",
+  "description": "Pi extension for You.com MCP tools and skills",
+  "license": "MIT",
+  "keywords": [
+    "pi-package"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./extensions/you.ts"
+  },
+  "files": [
+    "extensions",
+    "skills"
+  ],
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "check": "bun run check:biome && bun run check:types",
+    "check:biome": "biome check",
+    "check:types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}

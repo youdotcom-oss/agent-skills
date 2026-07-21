@@ -6,7 +6,7 @@
     "bun": ">= 1.2.21"
   },
   "workspaces": [
-    "plugins/*"
+    "packges/*"
   ],
   "scripts": {
     "check": "bun run check:js && bun run check:py && bun run check:package && check:types",
