@@ -1,6 +1,35 @@
 {
   "name": "you",
-  "description": "You.com web search, research, and content extraction via the You.com remote MCP server, with a postToolUse trust-boundary hook.",
-  "version": "0.0.1",
-  "author": { "name": "You.com", "url": "https://you.com" }
+  "version": "1.0.0",
+  "description": "You.com skills for search, contents, research, finance, and integration discovery with MCP, ARD, API-key, OAuth, and MPP/x402 payment guidance.",
+  "keywords": [
+    "you.com",
+    "kimi-code",
+    "agent-skills",
+    "mcp",
+    "web-search",
+    "content-extraction",
+    "research",
+    "finance",
+    "citations",
+    "ard",
+    "ai-catalog",
+    "x402",
+    "mpp"
+  ],
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "homepage": "https://docs.you.com",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "You.com",
+    "shortDescription": "You.com web search, research, finance, and discovery skills",
+    "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths without bundling a fixed MCP server configuration.",
+    "developerName": "You.com",
+    "websiteURL": "https://you.com"
+  }
 }
