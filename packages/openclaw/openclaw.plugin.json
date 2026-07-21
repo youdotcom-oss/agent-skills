@@ -1,10 +1,9 @@
 {
   "id": "you",
   "name": "You.com",
-  "description": "Requester-scoped connection resolvers for the You.com remote MCP server profiles.",
+  "description": "You.com skill pack with MCP setup metadata.",
   "version": "3.0.0",
   "skills": ["./skills"],
-  "providers": ["you"],
   "setup": {
     "providers": [
       {
