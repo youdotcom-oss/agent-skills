@@ -1,0 +1,48 @@
+{
+  "name": "you",
+  "version": "1.0.0",
+  "description": "You.com skills for search, contents, research, finance, and integration discovery with MCP, ARD, API-key, OAuth, and MPP/x402 payment guidance.",
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "homepage": "https://docs.you.com",
+  "repository": "https://github.com/youdotcom-oss/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "you.com",
+    "codex",
+    "chatgpt",
+    "agent-skills",
+    "mcp",
+    "web-search",
+    "content-extraction",
+    "research",
+    "finance",
+    "citations",
+    "ard",
+    "ai-catalog",
+    "x402",
+    "mpp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "You.com",
+    "shortDescription": "You.com web search, research, finance, and discovery skills",
+    "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths without bundling a fixed MCP server configuration.",
+    "developerName": "You.com",
+    "category": "Productivity",
+    "capabilities": ["Read"],
+    "websiteURL": "https://you.com",
+    "privacyPolicyURL": "https://you.com/privacy",
+    "termsOfServiceURL": "https://you.com/terms",
+    "defaultPrompt": [
+      "Use You.com to search the web and cite current sources.",
+      "Use You.com to research this question with source comparison.",
+      "Use You.com finance for market, ticker, earnings, or company financial questions.",
+      "Use You.com discovery to find the best integration path for an agent or SDK."
+    ],
+    "brandColor": "#6C5CE7"
+  }
+}
