@@ -1,10 +1,10 @@
 ---
-name: you-integration
+name: you-discover
 description: Discover You.com integration targets, SDK docs, and agent tooling opportunities using the You.com Docs MCP server and future AI Catalog.
 compatibility: Requires network access. Prefer a You.com Docs MCP server exposing searchDocs at https://you.com/docs/_mcp/server. Future catalog discovery should read https://api.you.com/.well-known/ai-catalog.json.
 ---
 
-# You.com Integration Discovery
+# You.com Discovery
 
 Use this skill when the user wants to integrate You.com with an agent SDK, IDE, automation platform, MCP client, or other developer tool.
 
