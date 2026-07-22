@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      publish_artifacts:
+        description: "Publish npm, PyPI, and ClawHub artifacts after applying versions"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +31,10 @@ jobs:
   plan:
     name: Plan release
     runs-on: ubuntu-latest
+    outputs:
+      has_npm: ${{ steps.outputs.outputs.has_npm }}
+      has_pypi: ${{ steps.outputs.outputs.has_pypi }}
+      has_clawhub: ${{ steps.outputs.outputs.has_clawhub }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -44,6 +53,13 @@ jobs:
         env:
           BASE_REF: ${{ inputs.base_ref || 'HEAD~1' }}
         run: bun scripts/semver-release.ts plan --base "$BASE_REF" --out release-plan.json
+
+      - name: Set release outputs
+        id: outputs
+        run: |
+          echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
+          echo "has_pypi=$(jq -r 'any(.units.pypi[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
+          echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
 
       - name: Upload release plan
         uses: actions/upload-artifact@v4
@@ -85,6 +101,8 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions }}
     needs: plan
     runs-on: ubuntu-latest
+    outputs:
+      release_sha: ${{ steps.commit.outputs.release_sha }}
     permissions:
       contents: write
     steps:
@@ -118,6 +136,7 @@ jobs:
           bun run check:package
 
       - name: Commit version changes
+        id: commit
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
@@ -131,3 +150,129 @@ jobs:
             git pull origin "$REF_NAME" --rebase
             git push origin "HEAD:$REF_NAME"
           fi
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  publish-npm:
+    name: Publish npm packages
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && inputs.publish_artifacts && needs.plan.outputs.has_npm == 'true' }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Download release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+
+      - name: Setup Node for npm trusted publishing
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Publish opencode
+        run: |
+          if jq -e '.units.npm["@youdotcom-oss/opencode"].bump != "none"' ../../release-plan.json >/dev/null; then
+            bun run build
+            npm publish --provenance --access public
+          fi
+        working-directory: packages/opencode
+
+      - name: Publish Pi
+        run: |
+          if jq -e '.units.npm["@youdotcom-oss/pi-plugin"].bump != "none"' ../../release-plan.json >/dev/null; then
+            bun run build
+            npm publish --provenance --access public
+          fi
+        working-directory: packages/pi
+
+      - name: Publish OpenClaw npm
+        run: |
+          if jq -e '.units.npm["@youdotcom-oss/openclaw"].bump != "none"' ../../release-plan.json >/dev/null; then
+            bun run build
+            npm publish --provenance --access public
+          fi
+        working-directory: packages/openclaw
+
+  publish-pypi:
+    name: Publish PyPI packages
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && inputs.publish_artifacts && needs.plan.outputs.has_pypi == 'true' }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Download release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build Hermes package
+        run: uv build
+        working-directory: packages/hermes
+
+      - name: Publish Hermes to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/hermes/dist
+
+  publish-clawhub:
+    name: Publish ClawHub package
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && inputs.publish_artifacts && needs.plan.outputs.has_clawhub == 'true' }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build OpenClaw package
+        run: bun run build
+        working-directory: packages/openclaw
+
+      - name: Publish to ClawHub
+        env:
+          BRANCH: ${{ github.ref_name }}
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+        run: |
+          VERSION=$(jq -r '.version' packages/openclaw/package.json)
+          bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
+          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
+            --source-path packages/openclaw \
+            --owner youdotcom-oss \
+            --name you \
+            --version "${VERSION}" \
+            --source-commit "$(git rev-parse HEAD)"
