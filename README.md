@@ -1,442 +1,221 @@
-# You.com Agent Skills
+# You.com Agent Skills and Plugins
 
-Agent skills for integrating You.com's AI-powered search, content extraction, and web capabilities with popular AI agent frameworks and bash-based agents.
+You.com skills and plugin manifests for giving coding agents current web search, URL content extraction, cited research, finance research, and integration discovery through the You.com MCP server.
 
-These skills provide interactive workflows that guide your AI agent through setting up You.com integrations for SDKs, frameworks, and CLI tools.
+This repository is intentionally lightweight: the shared `skills/` directory teaches agents when and how to use You.com, while platform-specific plugin manifests package the same skills for Claude Code, Cursor, Codex, GitHub Copilot CLI, Kimi Code, OpenCode, OpenClaw, Pi, and Hermes.
 
-## OpenClaw Plugin
+## What You Get
 
-**you** — Published on [ClawHub](https://clawhub.ai/you)
+| Capability | Included skill | What it covers |
+| --- | --- | --- |
+| Web search and synthesis | `you-web` | Current web search, URL content extraction, cited synthesis, and `you-research` tool selection. |
+| Free search | `you-free` | Keyless basic web search with `you-search` only. |
+| Agent-led research | `you-research` | Multi-hop source discovery, content reading, cross-checking, and cited answers using `you-search` plus `you-contents`. |
+| Finance research | `you-finance` | Market data, ticker lookups, company financials, analyst context, earnings, and finance-specific answers. |
+| Integration discovery | `you-discover` | You.com integration target discovery across MCP, SDKs, skills, docs, and future ARD `ai-catalog` workflows. |
 
-A native OpenClaw plugin providing web search, research, and content extraction via You.com APIs. Powers the built-in `web_search` and `web_fetch` tools, plus custom `web_research` and `web_contents` tools.
+## Supported Agent Surfaces
 
-**Install:**
+| Surface | Status | Repository files |
+| --- | --- | --- |
+| Claude Code | Supported | `.claude-plugin/plugin.json`, `skills/` |
+| Cursor | Supported | `.cursor-plugin/plugin.json`, `skills/` |
+| OpenAI Codex and ChatGPT plugins | Supported | `.codex-plugin/plugin.json`, `skills/` |
+| GitHub Copilot CLI | Supported | `.plugin/plugin.json`, `skills/` |
+| Kimi Code | Supported | `.kimi-plugin/plugin.json`, `skills/` |
+| OpenClaw | Supported | `packages/openclaw/`, copied skills |
+| OpenCode | Supported | `packages/opencode/`, copied skills |
+| Pi | Supported | `packages/pi/`, copied skills |
+| Hermes | Supported | `packages/hermes/`, copied skills |
+| Agent Skills CLI | Supported | `skills/`, `skills.sh.json` |
+
+All plugin manifests point at the shared top-level `skills/` directory where the host supports it. Package-specific integrations under `packages/` carry their own copied skills or runtime adapters for that host.
+
+## How It Works
+
+The You.com MCP server exposes the web intelligence tools:
+
+| Tool | Use it for |
+| --- | --- |
+| `you-search` | Current web search, snippets, source discovery, freshness, and domain-targeted queries. |
+| `you-contents` | Reading specific URLs or promising search results before relying on exact details. |
+| `you-research` | One-shot cited synthesis when a concise researched answer is the right path. |
+| `you-finance` | Finance-specific market, ticker, company, earnings, and source-backed financial answers. |
+
+The skills do not assume a single authentication model. They guide the agent through the right access path for the task and client:
+
+| Access path | When to use |
+| --- | --- |
+| Keyless search | Basic `you-search` tasks that can use the free profile. |
+| API key or Bearer auth | Default authenticated path for contents, research, finance, and higher-capability search. |
+| OAuth | Clients that support OAuth login for the You.com MCP server. |
+| MPP or x402 | Agent-native payment flows when an API-key path is unavailable or a pay-per-call flow is preferred. |
+
+This repo does not bundle a fixed MCP server configuration in the shared manifests. That is deliberate, because different clients may use keyless search, API keys, OAuth, MPP, or x402. The skills tell the agent which MCP profile or auth path to install for the current task.
+
+## Install Skills
+
+For any Agent Skills compatible client, install the top-level You.com skills:
 
 ```bash
-openclaw plugins install clawhub:you
+npx skills add youdotcom-oss/agent-skills
 ```
 
-**Features:**
-- **Web search provider** — powers `web_search` tool (free tier, no API key required)
-- **Web fetch provider** — powers `web_fetch` tool (requires YDC_API_KEY)
-- **web_research** — deep research with cited answers at multiple effort levels (lite, standard, deep, exhaustive)
-- **web_contents** — full page content extraction (Markdown, HTML, metadata)
-- Prompt injection defense via system prompt trust boundary
-
-**Configuration:**
+Or install one skill at a time:
 
 ```bash
-# Optional for search (free tier); required for research and contents
+npx skills add youdotcom-oss/agent-skills --skill you-web
+npx skills add youdotcom-oss/agent-skills --skill you-finance
+```
+
+The skills.sh repository page is curated by `skills.sh.json` and intentionally highlights only the top-level `skills/` entries.
+
+## Install as a Plugin
+
+Use the plugin install flow for your client and point it at this repository. The platform-specific manifests are already present:
+
+```text
+.claude-plugin/plugin.json   Claude Code
+.cursor-plugin/plugin.json   Cursor
+.codex-plugin/plugin.json    Codex and ChatGPT plugin surfaces
+.plugin/plugin.json          GitHub Copilot CLI
+.kimi-plugin/plugin.json     Kimi Code
+```
+
+For GitHub Copilot CLI, the repository can be installed directly:
+
+```bash
+copilot plugin install youdotcom-oss/agent-skills
+```
+
+For Kimi Code, install the GitHub repository from the plugin manager:
+
+```text
+/plugins install https://github.com/youdotcom-oss/agent-skills
+```
+
+For Claude Code, Cursor, and Codex, use the client plugin UI or CLI with this repository as the plugin source.
+
+## Configure You.com MCP
+
+The standard remote MCP endpoint is:
+
+```text
+https://api.you.com/mcp
+```
+
+For API-key based clients, configure an authorization header equivalent to:
+
+```json
+{
+  "Authorization": "Bearer ${YDC_API_KEY}"
+}
+```
+
+Get an API key at [you.com/platform/api-keys](https://you.com/platform/api-keys):
+
+```bash
 export YDC_API_KEY="your-api-key"
 ```
 
-Or set `webSearch.apiKey` in your OpenClaw config.
+For free basic search, clients may use the free profile instead:
 
-**Plugin directory:** `plugins/you-openclaw/`
-
----
-
-## Available Skills
-
-### ydc-ai-sdk-integration
-
-Integrate Vercel AI SDK applications with You.com tools for real-time web search, AI-powered answers, and content extraction.
-
-**Use when:**
-- Building AI SDK applications with `generateText()` or `streamText()`
-- Adding web search capabilities to your AI agents
-- Extracting and processing web content programmatically
-
-**Features:**
-- Interactive setup workflow for existing or new projects
-- Three powerful tools: `youSearch`, `youContents`
-- Smart integration with existing AI SDK code
-- Support for multiple AI providers (Anthropic, OpenAI, Google, etc.)
-
----
-
-### ydc-claude-agent-sdk-integration
-
-Connect Claude Agent SDK (Python and TypeScript) to You.com's HTTP MCP server for web search and content extraction.
-
-**Use when:**
-- Building Claude-powered agents in Python or TypeScript
-- Integrating MCP tools with Claude Agent SDK v1 or v2
-- Adding You.com capabilities to existing Claude applications
-
-**Features:**
-- Complete templates for Python and TypeScript (v1 & v2)
-- HTTP MCP server configuration patterns
-- Bearer token authentication setup
-- Error handling and validation examples
-
----
-
-### ydc-openai-agent-sdk-integration
-
-Add You.com MCP tools to OpenAI Agents SDK using Hosted MCP or Streamable HTTP modes.
-
-**Use when:**
-- Building OpenAI-powered agents with MCP integration
-- Using Python or TypeScript OpenAI Agents SDK
-- Choosing between Hosted MCP and Streamable HTTP deployment
-
-**Features:**
-- Dual-mode templates (Hosted MCP + Streamable HTTP)
-- Python and TypeScript implementations
-- Complete configuration examples for both modes
-- Tool approval and validation patterns
-
----
-
-### ydc-crewai-mcp-integration
-
-Integrate You.com's remote MCP server with crewAI agents for web search, AI-powered answers, and content extraction.
-
-**Use when:**
-- Building crewAI agents that need real-time web access
-- Integrating You.com MCP via `MCPServerHTTP` or `MCPServerAdapter`
-- Adding web search and content extraction to existing crewAI workflows
-
-**Features:**
-- DSL and MCPServerAdapter integration patterns
-- Python implementation with uv/pip setup
-- Bearer token authentication for the remote MCP server
-- Complete crewAI crew and task configuration examples
-
----
-
-### ydc-langchain-integration
-
-Integrate LangChain applications (TypeScript and Python) with You.com tools for web search, content extraction, and retrieval.
-
-**Use when:**
-- Building LangChain.js agents with `createAgent` and `initChatModel` (TypeScript)
-- Using `YouRetriever`, `YouSearchTool`, or `YouContentsTool` with LangChain (Python)
-- Adding web search or content extraction to existing LangChain workflows
-
-**Features:**
-- TypeScript: `youSearch` and `youContents` via `@youdotcom-oss/langchain`, structured output with Zod
-- Python: `YouRetriever` for RAG chains, `YouSearchTool` + `YouContentsTool` for agents via `langchain-youdotcom`
-- Prompt injection defense guidance (W011 trust boundary)
-- Direct invocation and agent-based usage patterns for both languages
-
----
-
-### teams-anthropic-integration
-
-Use @youdotcom-oss/teams-anthropic to add Anthropic Claude models (Opus, Sonnet, Haiku) to Microsoft Teams.ai applications. Optionally integrate You.com MCP server for web search and content extraction.
-
-**Use when:**
-- Building Teams.ai apps with Claude models
-- Need streaming, function calling, or conversation memory
-- Optionally want web search capabilities via You.com MCP
-
-**Features:**
-- Two paths: Basic setup (Claude only) or with You.com MCP
-- Complete templates for new and existing apps
-- Streaming responses and function calling
-- Conversation memory with Teams.ai Memory API
-
----
-
-### youdotcom-api
-
-Integrate You.com APIs (Research, Search, Contents) into any language using direct HTTP calls — no SDK required.
-
-**Use when:**
-- Calling You.com APIs directly without an SDK wrapper
-- Need synthesized, cited answers via the Research API
-- Building custom search pipelines with raw Search + Contents data
-- Working in a language without a dedicated You.com SDK
-
-**Features:**
-- Research API: one call for multi-step reasoning with cited Markdown answers
-- Search API: raw web and news results with filtering, pagination, and livecrawl
-- Contents API: full page extraction (HTML, Markdown, metadata) from any URL
-- Language-agnostic — works with any HTTP client (fetch, requests, httpx, curl)
-- TypeScript and Python reference implementations included
-- JSON Schemas for all request/response shapes
-
----
-
-### youdotcom-cli
-
-Web search, research with citations, and content extraction for bash agents using curl and You.com's REST API.
-
-**Use when:**
-- Working with bash-capable AI agents (Claude Code, Cursor, Codex, etc.)
-- Need fast web search with verifiable citations
-- Want simultaneous search + content extraction (livecrawl)
-- Building bash agent workflows with curl and jq
-
-**Features:**
-- Search works without an API key (free tier)
-- Livecrawl: search + extract content in one API call
-- Research with citations at multiple effort levels
-- Compatible with any bash-based agent
-
----
-
-## Installation
-
-### For Agent Skills Spec Compatible Agents
-
-**Install All Skills** (recommended):
-
-```bash
-# Using npm
-npx skills add youdotcom-oss/agent-skills
-
-# Using Bun (recommended)
-bunx skills add youdotcom-oss/agent-skills
+```text
+https://api.you.com/mcp?profile=free
 ```
 
-This installs all 8 skills at once:
-- `ydc-ai-sdk-integration`
-- `ydc-claude-agent-sdk-integration`
-- `ydc-openai-agent-sdk-integration`
-- `ydc-crewai-mcp-integration`
-- `ydc-langchain-integration`
-- `teams-anthropic-integration`
-- `youdotcom-api`
-- `youdotcom-cli`
+For finance-only installs, clients may prefer the finance profile:
 
-**Install Individual Skills**:
-
-```bash
-# Install just one skill
-npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli
-bunx skills add youdotcom-oss/agent-skills --skill ydc-ai-sdk-integration
-
-# Install multiple specific skills
-npx skills add youdotcom-oss/agent-skills --skill youdotcom-cli --skill ydc-ai-sdk-integration
+```text
+https://api.you.com/mcp?tools=you-finance
 ```
 
----
+When proxying through MCP transports or custom HTTP clients, preserve payment and settlement headers such as `payment-required`, `payment-signature`, `x-payment`, `payment-response`, `www-authenticate`, and `Authorization: Payment ...`.
 
-## Quick Start
+## Runtime Packages
 
-Before using any skill, you'll need a You.com API key:
+| Package | Purpose |
+| --- | --- |
+| `@youdotcom-oss/openclaw` | OpenClaw plugin that labels You.com MCP results as untrusted external content before model consumption. |
+| `@youdotcom-oss/opencode` | OpenCode plugin that wraps You.com MCP tool output in an untrusted-content boundary. |
+| `@youdotcom-oss/pi-plugin` | Pi extension for discovering You.com MCP tools and registering bundled skills. |
+| `packages/hermes` | Hermes package with copied You.com skills and host-specific validation. |
 
-1. **Get API Key**: Visit [you.com/platform/api-keys](https://you.com/platform/api-keys)
-2. **Set Environment Variable**:
-   ```bash
-   export YDC_API_KEY="your-api-key-here"
-   ```
-3. **Request Integration**: Ask your AI agent to integrate You.com (see Usage examples below)
+The OpenClaw and OpenCode packages do not ship the You.com tools themselves. They add the trust-boundary behavior those hosts need when consuming output from the remote You.com MCP server.
 
----
+## Skill Details
 
-## Usage
+### `you-web`
 
-Once installed, your AI coding agent will automatically activate the relevant skill when you request integration. For example:
+Use for current web information, specific URL reading, cited synthesis, and general You.com MCP tool routing. Financial questions should route to `you-finance`.
 
-- "Integrate Vercel AI SDK with You.com tools"
-- "Set up Claude Agent SDK with You.com MCP"
-- "Add You.com to my Teams app with Anthropic"
-- "Configure OpenAI Agents SDK with You.com MCP"
-- "Integrate You.com MCP with my crewAI agents"
-- "Add You.com tools to my LangChain.js agent"
-- "Integrate You.com Research API into my Python app"
-- "Call You.com Search and Contents APIs directly with fetch"
-- "Add You.com CLI tools to my bash agent"
+### `you-free`
 
-Each skill provides step-by-step instructions, code templates, and validation checklists.
+Use when the task only needs basic search results and the client has no API key or OAuth session. It only expects `you-search` and avoids contents, research, finance, and livecrawl paths.
 
----
+### `you-research`
 
-## Skill Structure
+Use when the agent should do the research loop itself: plan, search broadly, read pages, cross-check sources, and produce a cited answer. It intentionally uses `you-search` and `you-contents`, not the one-shot `you-research` tool.
 
-Each skill follows the [agent-skills-spec](https://agentskills.io) format:
+### `you-finance`
 
-```
-skills/{skill-name}/
-├── SKILL.md          # Complete workflow with YAML frontmatter
-└── assets/           # Code templates (optional, mostly inlined)
-```
+Use for market-sensitive and finance-specific questions. The skill asks the agent to include date or timeframe, cite returned sources, and flag uncertainty when sources disagree or data may be delayed.
 
-**Skills are self-contained:**
-- **YAML frontmatter** defines skill metadata (name, description, category, keywords, compatibility)
-- **Markdown body** contains complete workflow, inline code examples, templates, validation, and troubleshooting
-- **Assets directory** (optional) for additional templates - most examples are now inlined for immediate visibility
+### `you-discover`
 
----
-
-## Prerequisites
-
-**API Keys:**
-- You.com API key: [Get yours](https://you.com/platform/api-keys)
-- Provider API keys (Anthropic, OpenAI, etc.) depending on the skill
-
----
-
-## Documentation
-
-Each skill includes:
-- **Prerequisites** - Required packages and environment variables
-- **Complete templates** - Ready-to-run code for Python and TypeScript
-- **Configuration examples** - Side-by-side comparisons for different modes
-- **Validation checklists** - Ensure your integration works correctly
-- **Troubleshooting** - Common issues and solutions
-
----
+Use when a user wants to integrate You.com with an agent SDK, IDE, automation platform, MCP client, or other developer tool. It prefers native MCP, then thin MCP bridges, then SDK-specific guides, then manual HTTP integrations. It also documents the expected future ARD flow through `https://api.you.com/.well-known/ai-catalog.json` and ARD endpoints such as `POST /search`, `POST /explore`, and `GET /agents`.
 
 ## Development
 
-### Environment Setup
-
-Create a `.env` file in the project root with the following API keys:
+Install dependencies with Bun, then run checks:
 
 ```bash
-# Required for all skills
-YDC_API_KEY=your-you-com-api-key
-
-# Required for Claude Agent SDK skill
-ANTHROPIC_API_KEY=your-anthropic-api-key
-
-# Required for OpenAI Agent SDK skill
-OPENAI_API_KEY=your-openai-api-key
-```
-
-Get API keys from:
-- You.com: [you.com/platform/api-keys](https://you.com/platform/api-keys)
-- Anthropic: [console.anthropic.com](https://console.anthropic.com)
-- OpenAI: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-
-### Skill Evals
-
-Skills are validated by running Claude Code against prompts and checking that the generated integration code passes real API tests.
-
-**Run all skill evals:**
-
-```bash
-bun run eval
-```
-
-**Run a single skill eval:**
-
-```bash
-bun run eval --skill ydc-crewai-mcp-integration
-```
-
-**Run with parallelism:**
-
-```bash
-bun run eval -j 4
-```
-
-**Regenerate `data/RESULTS.md` from existing results (no re-run):**
-
-```bash
-bun run eval:summary
-```
-
-**Note**: Evals use real API keys from `.env` and invoke Claude Code as a subprocess to generate integration code. Valid API keys are required.
-
-### Eval Structure
-
-```
-data/
-├── prompts/
-│   └── prompts.jsonl       # One entry per skill variant (id, prompt, grader config)
-├── results/
-│   └── results.jsonl       # Grader output per eval run (gitignored)
-└── RESULTS.md              # Human-readable summary (committed on weekly CI run)
-
-tests/{skill-id}/           # Generated integration code lives here (gitignored)
-├── agent.ts                # Example: TypeScript integration file
-└── agent.spec.ts           # Tests that validate the generated code
-
-scripts/
-├── run.ts                  # Eval orchestrator (clean → harness → grade → summarize)
-└── grader.ts               # Scoring logic for generated integration code
-```
-
-**Eval IDs and test directories use language suffixes where needed:**
-- `ydc-claude-agent-sdk-integration-python` → `tests/ydc-claude-agent-sdk-integration-python/`
-- `ydc-claude-agent-sdk-integration-typescript` → `tests/ydc-claude-agent-sdk-integration-typescript/`
-- `ydc-openai-agent-sdk-integration-python` → `tests/ydc-openai-agent-sdk-integration-python/`
-- `ydc-openai-agent-sdk-integration-typescript` → `tests/ydc-openai-agent-sdk-integration-typescript/`
-- `youdotcom-api-python` → `tests/youdotcom-api-python/`
-- `youdotcom-api-typescript` → `tests/youdotcom-api-typescript/`
-- `youdotcom-cli` → `tests/youdotcom-cli/`
-- Single-variant skills (e.g., `ydc-crewai-mcp-integration`) use a single test directory
-
-**Workflow:**
-1. `data/prompts/prompts.jsonl` contains prompts that trigger each skill
-2. The eval harness runs Claude Code against each prompt, generating code into `tests/{skill-id}/`
-3. The grader validates the generated code against the test files
-4. Results are written to `data/results/results.jsonl` and summarized in `data/RESULTS.md`
-
-### CI
-
-Evals run automatically on:
-- **Pull requests** that change `skills/*/SKILL.md`, assets, or eval scripts
-- **Pushes to main** for the same paths
-- **Weekly schedule** (Monday 06:00 UTC) — results committed back to `data/RESULTS.md`
-
-Current eval results: see [`data/RESULTS.md`](./data/RESULTS.md)
-
-### Linting & Formatting
-
-**Check for issues:**
-```bash
-# Check all files (TypeScript + Python)
+bun install
+bun test
 bun run check
-
-# Check only Python files
-bun run check:py
 ```
 
-**Auto-fix issues:**
+Useful package-level checks:
+
 ```bash
-# Fix all files (TypeScript + Python)
-bun run check:write
-
-# Fix only Python files
-bun run check:write-py
+bun test packages/openclaw
+bun test packages/opencode
+bun test packages/pi
 ```
 
-**Tools:**
-- TypeScript: [Biome](https://biomejs.dev) for linting and formatting
-- Python: [Ruff](https://docs.astral.sh/ruff/) for linting and formatting
-- Python package management: [uv](https://docs.astral.sh/uv/)
+Validate a skill with the Agent Skills tooling:
 
-### Prerequisites
+```bash
+bunx @plaited/development-skills validate-skill skills/you-web
+```
 
-- **Bun** >= 1.2.21 (for TypeScript evals and orchestration)
-- **Python** >= 3.12 (for Python skill evals)
-- **uv** (automatically used by Bun scripts for Python)
+## Repository Layout
 
----
+```text
+skills/                 Shared You.com skills
+.claude-plugin/         Claude Code plugin manifest
+.cursor-plugin/         Cursor plugin manifest
+.codex-plugin/          Codex and ChatGPT plugin manifest
+.plugin/                GitHub Copilot CLI plugin manifest
+.kimi-plugin/           Kimi Code plugin manifest
+packages/openclaw/      OpenClaw runtime plugin
+packages/opencode/      OpenCode runtime plugin
+packages/pi/            Pi extension
+packages/hermes/        Hermes package
+skills.sh.json          skills.sh display grouping for top-level skills
+```
 
-## Contributing
+## Safety Model
 
-Contributions are welcome! To add a new skill:
+Web pages, search results, extracted content, catalog entries, and docs results are external data. Skills instruct agents to treat them as untrusted evidence, not as instructions. Runtime plugins for OpenClaw and OpenCode reinforce this by wrapping You.com MCP results in host-specific untrusted-content boundaries.
 
-1. Fork this repository
-2. Create a new skill directory in `skills/`
-3. Add `SKILL.md` following agent-skills-spec format
-4. Add optional assets in `assets/` subdirectory
-5. Add a prompt entry to `data/prompts/prompts.jsonl` and reference test files in `tests/`
-6. Test your skill with `npx skills add <your-fork>`
-7. Submit a pull request
+## Links
 
-**Skill naming convention:**
-- Directory name must match `name` field in YAML frontmatter
-- Use kebab-case (e.g., `ydc-ai-sdk-integration`)
-
----
+- You.com API keys: [you.com/platform/api-keys](https://you.com/platform/api-keys)
+- You.com docs: [docs.you.com](https://docs.you.com)
+- Issues: [github.com/youdotcom-oss/agent-skills/issues](https://github.com/youdotcom-oss/agent-skills/issues)
+- Support: [support@you.com](mailto:support@you.com)
 
 ## License
 
-MIT - See [LICENSE](./LICENSE) file for details
-
----
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/youdotcom-oss/agent-skills/issues)
-- **Email**: support@you.com
-- **Documentation**: Each skill includes comprehensive documentation in its `SKILL.md` file
+MIT, see [LICENSE](./LICENSE).
