@@ -38,7 +38,7 @@ const npmPackages = {
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
 } as const
 const pypiPackages = {
-  'youdotcom-hermes-plugin': 'packages/hermes/pyproject.toml',
+  'hermes-youdotcom': 'packages/hermes/pyproject.toml',
 } as const
 const packageBuildDirectories = ['packages/hermes', 'packages/opencode', 'packages/openclaw', 'packages/pi']
 const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major']
@@ -170,8 +170,8 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
         path,
         `bundled skill ${skillMatch[1]} changed`,
       )
-      plan.units.pypi['youdotcom-hermes-plugin'] = updateReleaseUnit(
-        plan.units.pypi['youdotcom-hermes-plugin'],
+      plan.units.pypi['hermes-youdotcom'] = updateReleaseUnit(
+        plan.units.pypi['hermes-youdotcom'],
         bump,
         path,
         `bundled skill ${skillMatch[1]} changed`,
@@ -200,8 +200,8 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
     }
 
     if (path.startsWith('packages/hermes/')) {
-      plan.units.pypi['youdotcom-hermes-plugin'] = updateReleaseUnit(
-        plan.units.pypi['youdotcom-hermes-plugin'],
+      plan.units.pypi['hermes-youdotcom'] = updateReleaseUnit(
+        plan.units.pypi['hermes-youdotcom'],
         'patch',
         path,
         'Hermes package changed',
