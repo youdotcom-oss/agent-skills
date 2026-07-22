@@ -144,7 +144,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add skills packages .plugin .claude-plugin .codex-plugin .cursor-plugin .kimi-plugin
+          git add skills packages .plugin .claude-plugin .codex-plugin .cursor-plugin .kimi-plugin .agents/plugins .github/plugin
           if git diff --staged --quiet; then
             echo "No version changes to commit"
           else

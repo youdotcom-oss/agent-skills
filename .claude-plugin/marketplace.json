@@ -1,0 +1,16 @@
+{
+  "name": "you-com",
+  "owner": {
+    "name": "You.com",
+    "email": "support@you.com"
+  },
+  "description": "You.com Claude Code plugins for web search, research, finance, and integration discovery skills.",
+  "plugins": [
+    {
+      "name": "you",
+      "source": "./",
+      "description": "You.com skills for search, contents, research, finance, and integration discovery.",
+      "version": "0.0.0"
+    }
+  ]
+}

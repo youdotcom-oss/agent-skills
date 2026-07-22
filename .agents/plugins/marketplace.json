@@ -1,0 +1,21 @@
+{
+  "name": "you-com",
+  "interface": {
+    "displayName": "You.com"
+  },
+  "plugins": [
+    {
+      "name": "you",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity",
+      "version": "0.0.0"
+    }
+  ]
+}

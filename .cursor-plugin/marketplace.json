@@ -1,0 +1,19 @@
+{
+  "name": "you-com",
+  "owner": {
+    "name": "You.com",
+    "email": "support@you.com"
+  },
+  "metadata": {
+    "description": "You.com Cursor plugins for web search, research, finance, and integration discovery skills."
+  },
+  "plugins": [
+    {
+      "name": "you",
+      "source": ".",
+      "description": "You.com skills for search, contents, research, finance, and integration discovery.",
+      "category": "Productivity",
+      "version": "0.0.0"
+    }
+  ]
+}
