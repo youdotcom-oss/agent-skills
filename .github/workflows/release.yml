@@ -1,9 +1,6 @@
 name: Semantic Release
 
 on:
-  push:
-    branches:
-      - feat/skill-plugin-overhaul
   workflow_dispatch:
     inputs:
       base_ref:
