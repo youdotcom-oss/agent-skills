@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import packageJson from '../../package.json' with { type: 'json' }
+import packageJson from '../package.json' with { type: 'json' }
 
 type RegisteredTool = {
   name: string
@@ -63,7 +63,7 @@ mock.module('@modelcontextprotocol/sdk/client/streamableHttp.js', () => ({
   StreamableHTTPClientTransport: transportMock,
 }))
 
-const loadExtension = async () => (await import(`../you.ts?test=${Date.now()}-${Math.random()}`)).default
+const loadExtension = async () => (await import(`../main.ts?test=${Date.now()}-${Math.random()}`)).default
 
 const createPiMock = () => {
   const events: RegisteredEvent[] = []

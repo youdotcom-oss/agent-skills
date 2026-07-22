@@ -7,8 +7,9 @@
     "pi-package"
   ],
   "type": "module",
+  "main": "./main.ts",
   "exports": {
-    ".": "./extensions/you.ts"
+    ".": "./main.ts"
   },
   "files": [
     "extensions",
@@ -23,7 +24,7 @@
   },
   "pi": {
     "extensions": [
-      "./extensions"
+      "./main.ts"
     ],
     "skills": [
       "./skills"

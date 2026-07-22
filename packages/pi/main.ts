@@ -1,6 +1,6 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
-import packageJson from '../package.json' with { type: 'json' }
+import packageJson from './package.json' with { type: 'json' }
 
 type PiToolDefinition = {
   name: string
@@ -37,7 +37,7 @@ type McpServerConfig = {
 
 const MCP_URL = 'https://api.you.com/mcp'
 const DOCS_MCP_URL = 'https://you.com/docs/_mcp/server'
-const SKILLS_PATH = new URL('../skills', import.meta.url).pathname
+const SKILLS_PATH = new URL('./skills', import.meta.url).pathname
 const CLIENT_INFO = { name: packageJson.name, version: packageJson.version }
 
 const parameters = {

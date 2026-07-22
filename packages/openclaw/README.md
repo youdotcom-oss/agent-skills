@@ -3,9 +3,9 @@
 You.com skills and MCP setup metadata for [OpenClaw](https://openclaw.ai).
 
 This plugin packages You.com skills for web search, content extraction,
-research, finance, integration discovery, and docs lookup. It also declares
-`YDC_API_KEY` setup metadata so OpenClaw can guide users through authenticated
-You.com MCP configuration.
+research, finance, docs lookup, and guidance on adding You.com APIs, MCP, and
+SDKs to agentic projects. It also declares `YDC_API_KEY` setup metadata so
+OpenClaw can guide users through authenticated You.com MCP configuration.
 
 ## Install
 

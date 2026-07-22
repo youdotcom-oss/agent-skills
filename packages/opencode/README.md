@@ -3,8 +3,8 @@
 You.com skills and remote MCP setup for [OpenCode](https://opencode.ai).
 
 This plugin registers bundled You.com skills and configures You.com MCP servers
-for web search, content extraction, research, finance, integration discovery,
-and docs search.
+for web search, content extraction, research, finance, docs search, and
+guidance on adding You.com APIs, MCP, and SDKs to agentic projects.
 
 ## Install
 
