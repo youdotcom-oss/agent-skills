@@ -37,7 +37,7 @@ jobs:
       has_clawhub: ${{ steps.outputs.outputs.has_clawhub }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -57,12 +57,14 @@ jobs:
       - name: Set release outputs
         id: outputs
         run: |
-          echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
-          echo "has_pypi=$(jq -r 'any(.units.pypi[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
-          echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)" >> "$GITHUB_OUTPUT"
+          {
+            echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)"
+            echo "has_pypi=$(jq -r 'any(.units.pypi[]?; .bump != "none")' release-plan.json)"
+            echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload release plan
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-plan
           path: release-plan.json
@@ -77,12 +79,12 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Download release plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-plan
 
@@ -107,13 +109,13 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           token: ${{ secrets.PUBLISH_TOKEN }}
           fetch-depth: 0
 
       - name: Download release plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-plan
 
@@ -157,22 +159,23 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && inputs.publish_artifacts && needs.plan.outputs.has_npm == 'true' }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
+    environment: npm
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout release commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.apply.outputs.release_sha }}
 
       - name: Download release plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-plan
 
       - name: Setup Node for npm trusted publishing
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: "https://registry.npmjs.org"
@@ -185,51 +188,59 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Publish opencode
+      - name: Build changed npm packages
         run: |
-          if jq -e '.units.npm["@youdotcom-oss/opencode"].bump != "none"' ../../release-plan.json >/dev/null; then
-            bun run build
-            npm publish --provenance --access public
-          fi
-        working-directory: packages/opencode
+          packages=(
+            "@youdotcom-oss/opencode=packages/opencode"
+            "@youdotcom-oss/pi-plugin=packages/pi"
+            "@youdotcom-oss/openclaw=packages/openclaw"
+          )
 
-      - name: Publish Pi
-        run: |
-          if jq -e '.units.npm["@youdotcom-oss/pi-plugin"].bump != "none"' ../../release-plan.json >/dev/null; then
-            bun run build
-            npm publish --provenance --access public
-          fi
-        working-directory: packages/pi
+          for entry in "${packages[@]}"; do
+            package="${entry%%=*}"
+            if jq -e --arg package "$package" '.units.npm[$package].bump != "none"' release-plan.json >/dev/null; then
+              bun run --filter "$package" build
+            fi
+          done
 
-      - name: Publish OpenClaw npm
+      - name: Publish changed npm packages
         run: |
-          if jq -e '.units.npm["@youdotcom-oss/openclaw"].bump != "none"' ../../release-plan.json >/dev/null; then
-            bun run build
-            npm publish --provenance --access public
-          fi
-        working-directory: packages/openclaw
+          packages=(
+            "@youdotcom-oss/opencode=packages/opencode"
+            "@youdotcom-oss/pi-plugin=packages/pi"
+            "@youdotcom-oss/openclaw=packages/openclaw"
+          )
+
+          for entry in "${packages[@]}"; do
+            package="${entry%%=*}"
+            directory="${entry#*=}"
+            if jq -e --arg package "$package" '.units.npm[$package].bump != "none"' release-plan.json >/dev/null; then
+              npm publish --provenance --access public "$directory"
+            fi
+          done
 
   publish-pypi:
     name: Publish PyPI packages
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && inputs.publish_artifacts && needs.plan.outputs.has_pypi == 'true' }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
+    environment: pypi
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout release commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.apply.outputs.release_sha }}
 
       - name: Download release plan
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-plan
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v9
 
       - name: Build Hermes package
         run: uv build
@@ -247,7 +258,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.apply.outputs.release_sha }}
 

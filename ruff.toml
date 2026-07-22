@@ -1,7 +1,7 @@
 # Ruff configuration for Python formatting and linting
 # https://docs.astral.sh/ruff/configuration/
 
-target-version = "py312"
+target-version = "py311"
 line-length = 100
 
 [lint]
@@ -31,4 +31,4 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [lint.per-file-ignores]
-"tests/**/*.py" = ["F401", "F841"]  # Allow unused imports/variables in tests
+"packages/hermes/tests/**/*.py" = ["F401", "F841"]  # Allow unused imports/variables in tests
