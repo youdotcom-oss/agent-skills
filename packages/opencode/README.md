@@ -1,13 +1,10 @@
 # @youdotcom-oss/opencode
 
-You.com web search, research, and content extraction for
-[OpenCode](https://opencode.ai), via the You.com **remote MCP server**
-(`https://api.you.com/mcp`).
+You.com skills and remote MCP setup for [OpenCode](https://opencode.ai).
 
-The MCP server provides the tools (`you-search`, `you-contents`, `you-research`,
-`you-finance`). This plugin provides the one thing OpenCode does not apply
-itself: a `tool.execute.after` hook that labels every You.com tool result as
-untrusted external content before the model sees it.
+This plugin registers bundled You.com skills and configures You.com MCP servers
+for web search, content extraction, research, finance, integration discovery,
+and docs search.
 
 ## Install
 
@@ -17,41 +14,26 @@ Add the plugin to your `opencode.json`:
 { "plugin": ["@youdotcom-oss/opencode"] }
 ```
 
-## Register the You.com MCP server
+## What it configures
 
-This plugin does **not** ship the tools — the MCP server does. Register it in
-`opencode.json`:
+- Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
+  `you-discover`, and `you-free`
+- MCP server `you`: authenticated You.com MCP tools
+- MCP server `you-free`: no-auth web search
+- MCP server `you-finance`: finance tools
+- MCP server `you-docs`: You.com docs search
 
-```json
-{
-  "mcp": {
-    "you-com": {
-      "type": "remote",
-      "url": "https://api.you.com/mcp",
-      "headers": { "Authorization": "Bearer ${YDC_API_KEY}" }
-    }
-  }
-}
-```
+The MCP servers provide the tools. The skills explain when and how to use them
+safely.
 
 ## Auth
 
-- `you-search` runs **keyless** on the free tier.
-- `you-contents`, `you-research`, and `you-finance` require `YDC_API_KEY`.
-  Get a key at https://you.com/platform/api-keys.
-
-## What this plugin does
-
-One runtime responsibility: a `tool.execute.after` hook that wraps every
-You.com tool's output in an untrusted-content boundary. Wrapping is idempotent;
-non-You.com tools are left untouched.
+- `you-free` and `you-docs` do not require auth.
+- `you`, `you-finance`, and authenticated You.com tools use OAuth through
+  OpenCode's remote MCP support.
 
 ## Test
 
 ```sh
 bun test
 ```
-
-The suite (`tests/`) covers tool-name resolution, output wrapping, non-You.com
-pass-through, host-namespaced callables, and idempotency — all driven through
-the single public plugin interface.
