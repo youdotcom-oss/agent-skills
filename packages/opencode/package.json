@@ -38,5 +38,8 @@
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.18.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
