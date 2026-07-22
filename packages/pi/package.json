@@ -20,6 +20,9 @@
     "extensions",
     "skills"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "bun run scripts/build.ts",
     "check": "bun run check:biome && bun run check:types",
@@ -37,8 +40,5 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

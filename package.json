@@ -9,9 +9,10 @@
     "packages/*"
   ],
   "scripts": {
-    "check": "bun run check:js && bun run check:py && bun run check:package && check:types",
+    "build": "bun run --filter '*' build",
+    "check": "bun run check:ts && bun run check:py && bun run check:package && bun run check:types",
     "check:package": "format-package --check",
-    "check:py": "uv tool run ruff check packages/hermes",
+    "check:py": "bun run --cwd packages/hermes check:python",
     "check:ts": "biome check",
     "check:types": "tsc --noEmit",
     "check:write": "bun run check:write-js && bun run check:write-py && bun run check:write-package",
@@ -22,6 +23,7 @@
     "release:apply": "bun scripts/semver-release.ts apply --plan /tmp/agent-skills-release-plan.json",
     "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
     "release:plan": "bun scripts/semver-release.ts plan",
+    "test": "bun test && bun run --cwd packages/hermes test:python",
     "validate:skills": "bun test tests/validate-skills.spec.ts"
   },
   "lint-staged": {

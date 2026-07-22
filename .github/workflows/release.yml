@@ -124,6 +124,9 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v9
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -132,10 +135,9 @@ jobs:
 
       - name: Validate release changes
         run: |
-          bun test
-          bun run check:types
-          bun run check:js
-          bun run check:package
+          bun run build
+          bun run check
+          bun run test
 
       - name: Commit version changes
         id: commit
@@ -188,20 +190,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build changed npm packages
-        run: |
-          packages=(
-            "@youdotcom-oss/opencode=packages/opencode"
-            "@youdotcom-oss/pi-plugin=packages/pi"
-            "@youdotcom-oss/openclaw=packages/openclaw"
-          )
-
-          for entry in "${packages[@]}"; do
-            package="${entry%%=*}"
-            if jq -e --arg package "$package" '.units.npm[$package].bump != "none"' release-plan.json >/dev/null; then
-              bun run --filter "$package" build
-            fi
-          done
+      - name: Build packages
+        run: bun run build
 
       - name: Publish changed npm packages
         run: |
@@ -239,11 +229,19 @@ jobs:
         with:
           name: release-plan
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Setup uv
         uses: astral-sh/setup-uv@v9
 
-      - name: Build Hermes package
-        run: uv build
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build Hermes distribution
+        run: bun run build:dist
         working-directory: packages/hermes
 
       - name: Publish Hermes to PyPI

@@ -27,6 +27,9 @@
   "exports": {
     ".": "./plugin.ts"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "bun scripts/build.ts",
     "check": "tsc --noEmit",
@@ -38,8 +41,5 @@
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.18.4"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

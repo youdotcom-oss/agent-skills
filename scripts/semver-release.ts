@@ -339,6 +339,19 @@ const bumpPyprojectVersion = async ({ repoRoot, path, bump }: { repoRoot: string
   }
 }
 
+const bumpYamlVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
+  const content = await Bun.file(resolve(repoRoot, path)).text()
+  const current = /^version:\s*["']?(\d+\.\d+\.\d+)["']?\s*$/m.exec(content)?.[1]
+  if (!current) {
+    throw new TypeError(`${path} must contain a version`)
+  }
+
+  return {
+    path,
+    content: content.replace(/^version:\s*["']?\d+\.\d+\.\d+["']?\s*$/m, `version: ${bumpVersion(current, bump)}`),
+  }
+}
+
 const writeUpdates = async (updates: { path: string; content: string }[]) => {
   for (const update of updates) {
     await Bun.write(resolve(defaultRepoRoot, update.path), update.content)
@@ -389,6 +402,7 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
     if (path && unit.bump !== 'none') {
       updates.push(await bumpPyprojectVersion({ repoRoot, path, bump: unit.bump }))
       updates.push(await bumpJsonVersion({ repoRoot, path: 'packages/hermes/package.json', bump: unit.bump }))
+      updates.push(await bumpYamlVersion({ repoRoot, path: 'packages/hermes/plugin.yaml', bump: unit.bump }))
     }
   }
 
