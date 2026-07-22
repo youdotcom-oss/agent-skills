@@ -1,6 +1,6 @@
 {
   "name": "@youdotcom-oss/openclaw",
-  "version": "3.0.0",
+  "version": "1.0.2",
   "description": "You.com OpenClaw plugin — MCP setup metadata and web intelligence skills",
   "license": "MIT",
   "repository": {

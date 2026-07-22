@@ -2,7 +2,7 @@
   "id": "you",
   "name": "You.com",
   "description": "You.com skill pack with MCP setup metadata.",
-  "version": "3.0.0",
+  "version": "1.0.2",
   "skills": ["./skills"],
   "setup": {
     "providers": [
