@@ -2,6 +2,7 @@
 name: you-web
 description: Use You.com MCP tools for current web search, URL content extraction, and cited web synthesis.
 compatibility: Requires network access and a You.com MCP server authenticated with `YDC_API_KEY` or OAuth, exposing `you-search`, `you-contents`, and `you-research`.
+license: MIT
 metadata:
   mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp","auth":"YDC_API_KEY OAuth","tools":["you-search","you-contents","you-research"]}}'
   author: youdotcom-oss
@@ -20,7 +21,7 @@ The authenticated You.com MCP server must be installed and connected before usin
 
 - Server URL: `https://api.you.com/mcp`
 - Auth: either `YDC_API_KEY` bearer auth or OAuth login into the server
-- Required tools: `you-search`, `you-contents`, and `you-research`
+- Default tools: `you-search`, `you-contents`, and `you-research`
 
 For bearer auth, configure the host MCP client with an authorization header equivalent to:
 

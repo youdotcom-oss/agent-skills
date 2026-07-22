@@ -186,12 +186,14 @@ describe('skills validation', () => {
     }
   })
 
-  test('skill directories contain only SKILL.md files', async () => {
+  test('skill directories contain only SKILL.md files and approved support directories', async () => {
     const skillFiles = await loadSkillFiles()
 
     for (const skillFile of skillFiles) {
       const entries = await readdir(dirname(skillFile.path))
-      expect(entries.sort()).toEqual(['SKILL.md'])
+      const expectedEntries = skillFile.directoryName === 'you-research' ? ['SKILL.md', 'references'] : ['SKILL.md']
+
+      expect(entries.sort()).toEqual(expectedEntries)
     }
   })
 

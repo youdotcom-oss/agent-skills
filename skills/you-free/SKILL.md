@@ -2,6 +2,7 @@
 name: you-free
 description: Use the free You.com MCP profile for unauthenticated basic web search with `you-search` only.
 compatibility: Requires network access and the You.com free MCP profile exposing `you-search`. Does not require `YDC_API_KEY` or OAuth.
+license: MIT
 metadata:
   mcp_servers: '{"you-free":{"url":"https://api.you.com/mcp?profile=free","auth":"none","tools":["you-search"],"avoidTools":["you-contents","you-research","you-finance"]}}'
   author: youdotcom-oss
@@ -32,14 +33,19 @@ Required tool:
 
 - `you-search`: find current web sources and snippets.
 
+Before using this skill, check the MCP tools available in the current agent environment:
+
+- If `you-search` is available, use it directly.
+- If `you-search` is missing, ask the user to install or enable the You.com free MCP server profile.
+- The free profile does not require You.com auth via `YDC_API_KEY` or OAuth.
+
 Do not use `livecrawl=web` with this skill. Do not use `you-contents`, `you-research`, or `you-finance`.
 
 ## Tool selection
 
 - Use `you-search` for simple current lookup, source discovery, and search-result based answers.
-- If the user provides URLs, switch to `you-web` and `you-contents`.
-- If the user asks for synthesized cited research, switch to `you-web` and `you-research`.
-- If the user needs finance-specific data, switch to `you-finance`.
+- If the user provides URLs, asks for synthesized cited research, or needs finance-specific data, this skill cannot satisfy the request.
+- Ask the user to enable an authenticated You.com MCP profile or use the appropriate You.com skill for those tasks.
 
 ## Safety
 
