@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "You.com",
+      "description": "Skills for You.com web search, research, finance, and integration discovery.",
+      "skills": ["you-discover", "you-finance", "you-free", "you-research", "you-web"]
+    }
+  ]
+}
