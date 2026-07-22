@@ -50,13 +50,14 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 
 The top-level plugin manifests reuse the shared `skills/` directory when the host supports it. Packages under `packages/` include host-specific metadata, copied skills, or runtime adapters where needed.
 
-## Configure You.com MCP
+## Configure You.com MCP servers
 
-The standard remote MCP endpoint is:
+Core remote MCP endpoints:
 
-```text
-https://api.you.com/mcp
-```
+| Endpoint                           | Use it for                      |
+| ---------------------------------- | ------------------------------- |
+| `https://api.you.com/mcp`          | Authenticated You.com MCP tools |
+| `https://you.com/docs/_mcp/server` | You.com docs search             |
 
 For clients that use API-key headers:
 
@@ -72,14 +73,13 @@ export YDC_API_KEY="your-api-key"
 
 Get an API key at [you.com/platform/api-keys](https://you.com/platform/api-keys).
 
-Useful MCP profiles:
+Useful tool profiles:
 
 | Endpoint                                    | Use it for                      |
 | ------------------------------------------- | ------------------------------- |
 | `https://api.you.com/mcp`                   | Authenticated You.com MCP tools |
 | `https://api.you.com/mcp?profile=free`      | Keyless basic `you-search`      |
 | `https://api.you.com/mcp?tools=you-finance` | Finance-only MCP setup          |
-| `https://you.com/docs/_mcp/server`          | You.com docs search             |
 
 Some clients use OAuth instead of a static API key. The skills are written to guide the agent through the best available auth path for the current host.
 
