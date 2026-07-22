@@ -85,13 +85,15 @@ Some clients use OAuth instead of a static API key. The skills are written to gu
 
 ## Skills
 
-| Skill          | Use it for                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `you-web`      | Current web search, URL reading, cited synthesis, and general You.com MCP tool routing.          |
-| `you-free`     | Keyless basic web search with `you-search` only.                                                 |
-| `you-research` | Agent-led multi-hop research using search, page reading, cross-checking, and citations.          |
-| `you-finance`  | Market data, ticker lookups, company financials, earnings, and finance-specific answers.         |
-| `you-discover` | Finding how to integrate You.com APIs, MCP servers, SDKs, docs, and tools into agentic projects. |
+The shared skills route agents to the lightest You.com surface that fits the task. MCP tools are the default for web search and URL reading, while slower managed research and finance workflows prefer reusable local scripts or direct API calls when an API key is available.
+
+| Skill          | Use it for                                                                                                      |
+| -------------- | --------------------------------------------------------------------------------------------------------------- |
+| `you-web`      | Current web search, URL reading, cited synthesis, and general You.com MCP tool routing.                         |
+| `you-free`     | Keyless basic web search with `you-search` only.                                                                |
+| `you-research` | Routing research tasks between agent-led search, Research API scripts, and managed `you-research` MCP fallback. |
+| `you-finance`  | Routing finance questions to an existing script, a new Finance Research API call, or an MCP fallback.           |
+| `you-discover` | Finding how to integrate You.com APIs, MCP servers, SDKs, docs, and tools into agentic projects.                |
 
 `you-discover` is the best starting point when your goal is to build with You.com rather than just search with it. Ask it questions like:
 
