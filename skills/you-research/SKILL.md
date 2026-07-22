@@ -3,18 +3,9 @@ name: you-research
 description: Use for multi-hop web research, source comparison, factual verification, or cited synthesis with You.com MCP search and content tools.
 compatibility: Requires network access and You.com MCP server auth via `YDC_API_KEY` or OAuth, with tools `you-search` and `you-contents`.
 metadata:
-  mcp:
-    server: https://api.you.com/mcp
-    auth:
-      - YDC_API_KEY
-      - OAuth
-    requiredTools:
-      - you-search
-      - you-contents
-    excludedTools:
-      - you-research
+  mcp_servers: '{"you-research":{"url":"https://api.you.com/mcp","auth":"YDC_API_KEY OAuth","tools":["you-search","you-contents"],"avoidTools":["you-research"]}}'
   author: youdotcom-oss
-  version: 0.0.1
+  version: 0.0.0
   category: research
   keywords: you.com,mcp,web-search,content-extraction,deep-research,citations
 ---
