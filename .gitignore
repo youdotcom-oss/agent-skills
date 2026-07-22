@@ -19,6 +19,11 @@ node_modules/
 .venv/
 venv/
 
+# Generated package skill bundles
+packages/*/skills/**
+!packages/*/skills/
+!packages/*/skills/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]
