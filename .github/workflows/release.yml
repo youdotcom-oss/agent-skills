@@ -1,6 +1,9 @@
 name: Semantic Release
 
 on:
+  push:
+    branches:
+      - feat/skill-plugin-overhaul
   workflow_dispatch:
     inputs:
       base_ref:
@@ -42,7 +45,7 @@ jobs:
 
       - name: Create release plan
         env:
-          BASE_REF: ${{ inputs.base_ref }}
+          BASE_REF: ${{ inputs.base_ref || 'HEAD~1' }}
         run: bun scripts/semver-release.ts plan --base "$BASE_REF" --out release-plan.json
 
       - name: Upload release plan
@@ -53,7 +56,7 @@ jobs:
 
   droid-advice:
     name: Droid release advice
-    if: ${{ inputs.droid_advice }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.droid_advice }}
     needs: plan
     runs-on: ubuntu-latest
     permissions:
@@ -82,7 +85,7 @@ jobs:
 
   apply:
     name: Apply release plan
-    if: ${{ inputs.apply_versions }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions }}
     needs: plan
     runs-on: ubuntu-latest
     permissions:
