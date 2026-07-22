@@ -1,0 +1,133 @@
+name: Semantic Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: "Base ref for release planning"
+        required: false
+        default: HEAD~1
+      droid_advice:
+        description: "Ask Droid to review the release plan"
+        required: false
+        type: boolean
+        default: true
+      apply_versions:
+        description: "Apply version bumps from the generated release plan"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  plan:
+    name: Plan release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create release plan
+        env:
+          BASE_REF: ${{ inputs.base_ref }}
+        run: bun scripts/semver-release.ts plan --base "$BASE_REF" --out release-plan.json
+
+      - name: Upload release plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-plan
+          path: release-plan.json
+
+  droid-advice:
+    name: Droid release advice
+    if: ${{ inputs.droid_advice }}
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+
+      - name: Ask Droid for semver advice
+        continue-on-error: true
+        run: |
+          curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://app.factory.ai/cli | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          droid exec --auto medium "Review release-plan.json and the current git diff. Recommend any semver changes needed for cohesive releases across skills, plugins, npm packages, PyPI, and ClawHub. Do not edit files. Return concise markdown."
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+
+  apply:
+    name: Apply release plan
+    if: ${{ inputs.apply_versions }}
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PUBLISH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Download release plan
+        uses: actions/download-artifact@v4
+        with:
+          name: release-plan
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Apply release plan
+        run: bun scripts/semver-release.ts apply --plan release-plan.json
+
+      - name: Validate release changes
+        run: |
+          bun test
+          bun run check:types
+          bun run check:js
+          bun run check:package
+
+      - name: Commit version changes
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add skills packages .plugin .claude-plugin .codex-plugin .cursor-plugin .kimi-plugin
+          if git diff --staged --quiet; then
+            echo "No version changes to commit"
+          else
+            git commit -m "chore(release): apply semantic release plan [skip ci]"
+            git pull origin "$REF_NAME" --rebase
+            git push origin "HEAD:$REF_NAME"
+          fi

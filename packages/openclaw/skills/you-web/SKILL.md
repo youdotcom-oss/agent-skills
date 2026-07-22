@@ -2,7 +2,7 @@
 name: "you-web"
 description: "Use You.com MCP tools for current web search, URL content extraction, and cited web synthesis."
 compatibility: "Requires network access and a You.com MCP server authenticated with `YDC_API_KEY` or OAuth, exposing `you-search`, `you-contents`, and `you-research`."
-metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp":{"server":"https://api.you.com/mcp","auth":["YDC_API_KEY","OAuth"],"requiredTools":["you-search","you-contents","you-research"]},"author":"youdotcom-oss","version":"0.0.1","category":"web-search","keywords":"you.com,mcp,web-search,content-extraction,research,citations,livecrawl"}
+metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp_servers":"{\"you-web\":{\"url\":\"https://api.you.com/mcp\",\"auth\":\"YDC_API_KEY OAuth\",\"tools\":[\"you-search\",\"you-contents\",\"you-research\"]}}","author":"youdotcom-oss","version":"0.0.0","category":"web-search","keywords":"you.com,mcp,web-search,content-extraction,research,citations,livecrawl"}
 ---
 
 # You.com Web MCP

@@ -23,7 +23,10 @@
     "eval": "bun scripts/run.ts",
     "eval:summary": "bun scripts/run.ts --summary-only",
     "generate:ydc-schemas": "bun scripts/generate-ydc-schemas.ts",
-    "prepare": "git config core.hooksPath .hooks"
+    "prepare": "git config core.hooksPath .hooks",
+    "release:apply": "bun scripts/semver-release.ts apply --plan /tmp/agent-skills-release-plan.json",
+    "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
+    "release:plan": "bun scripts/semver-release.ts plan"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import packageJson from '../../package.json' with { type: 'json' }
 
 type RegisteredTool = {
   name: string
@@ -148,7 +149,10 @@ describe('Pi extension', () => {
       }),
     )
     expect(connectMock).toHaveBeenCalled()
-    expect(clientConstructorMock).toHaveBeenCalledWith({ name: '@youdotcom-oss/pi-plugin', version: '0.0.0' })
+    expect(clientConstructorMock).toHaveBeenCalledWith({
+      name: '@youdotcom-oss/pi-plugin',
+      version: packageJson.version,
+    })
     expect(callToolMock).toHaveBeenCalledWith({ name: 'you-search', arguments: { query: 'OpenAI' } })
     expect(closeMock).toHaveBeenCalled()
     expect(result).toEqual({ content: [{ type: 'text', text: 'ok' }], structuredContent: { answer: 'ok' } })

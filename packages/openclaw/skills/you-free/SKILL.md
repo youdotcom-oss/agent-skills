@@ -2,7 +2,7 @@
 name: "you-free"
 description: "Use the free You.com MCP profile for unauthenticated basic web search with `you-search` only."
 compatibility: "Requires network access and the You.com free MCP profile exposing `you-search`. Does not require `YDC_API_KEY` or OAuth."
-metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp":{"server":"https://api.you.com/mcp?profile=free","auth":[],"requiredTools":["you-search"],"excludedTools":["you-contents","you-research","you-finance"]},"author":"youdotcom-oss","version":"0.0.1","category":"web-search","keywords":"you.com,mcp,free-search,web-search,no-auth"}
+metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp_servers":"{\"you-free\":{\"url\":\"https://api.you.com/mcp?profile=free\",\"auth\":\"none\",\"tools\":[\"you-search\"],\"avoidTools\":[\"you-contents\",\"you-research\",\"you-finance\"]}}","author":"youdotcom-oss","version":"0.0.0","category":"web-search","keywords":"you.com,mcp,free-search,web-search,no-auth"}
 ---
 
 # You.com Free Search MCP

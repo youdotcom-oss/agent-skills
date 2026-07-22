@@ -2,7 +2,7 @@
 name: "you-finance"
 description: "Use You.com finance MCP for market data, ticker lookups, company financials, analyst or earnings research, and other finance-specific web questions."
 compatibility: "Requires network access and You.com MCP server auth via `YDC_API_KEY` or OAuth, with the finance profile exposing `you-finance`."
-metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp":{"server":"https://api.you.com/mcp?tools=you-finance","auth":["YDC_API_KEY","OAuth"],"requiredTools":["you-finance"]},"author":"youdotcom-oss","version":"0.0.1","category":"finance","keywords":"you.com,mcp,finance,market-data,tickers,earnings,company-financials"}
+metadata: {"openclaw":{"emoji":"🔍","primaryEnv":"YDC_API_KEY"},"mcp_servers":"{\"you-finance\":{\"url\":\"https://api.you.com/mcp?tools=you-finance\",\"auth\":\"YDC_API_KEY OAuth\",\"tools\":[\"you-finance\"]}}","author":"youdotcom-oss","version":"0.0.0","category":"finance","keywords":"you.com,mcp,finance,market-data,tickers,earnings,company-financials"}
 ---
 
 # You.com Finance MCP
