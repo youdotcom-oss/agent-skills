@@ -24,7 +24,7 @@ type ReleasePlan = {
   }
 }
 
-const repoRoot = resolve(import.meta.dir, '..')
+const defaultRepoRoot = resolve(import.meta.dir, '..')
 const pluginManifests = [
   '.plugin/plugin.json',
   '.claude-plugin/plugin.json',
@@ -32,6 +32,13 @@ const pluginManifests = [
   '.cursor-plugin/plugin.json',
   '.kimi-plugin/plugin.json',
 ]
+const pluginMarketplaces = [
+  '.claude-plugin/marketplace.json',
+  '.agents/plugins/marketplace.json',
+  '.cursor-plugin/marketplace.json',
+  '.github/plugin/marketplace.json',
+]
+const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces]
 const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',
   '@youdotcom-oss/pi-plugin': 'packages/pi/package.json',
@@ -92,8 +99,11 @@ const updateReleaseUnit = (
   rationale: unique([...(unit?.rationale ?? []), rationale]),
 })
 
+export const isPluginReleasePath = (path: string) =>
+  pluginReleasePaths.some((releasePath) => path === releasePath || path.startsWith(`${dirname(releasePath)}/`))
+
 const readChangedPaths = async (baseRef: string) => {
-  const names = await $`git -C ${repoRoot} diff --name-only ${baseRef}`.text()
+  const names = await $`git -C ${defaultRepoRoot} diff --name-only ${baseRef}`.text()
   return names
     .split('\n')
     .map((path) => path.trim())
@@ -101,7 +111,7 @@ const readChangedPaths = async (baseRef: string) => {
 }
 
 const readChangedStatuses = async (baseRef: string) => {
-  const names = await $`git -C ${repoRoot} diff --name-status ${baseRef}`.text()
+  const names = await $`git -C ${defaultRepoRoot} diff --name-status ${baseRef}`.text()
   return names
     .split('\n')
     .map((line) => line.trim().split(/\s+/))
@@ -118,7 +128,7 @@ const changedSkillBump = async ({ baseRef, path, isAdded }: { baseRef: string; p
     return { bump: 'patch' as const, rationale: 'skill resource change' }
   }
 
-  const diff = await $`git -C ${repoRoot} diff ${baseRef} -- ${path}`.text()
+  const diff = await $`git -C ${defaultRepoRoot} diff ${baseRef} -- ${path}`.text()
   if (/^[+-](name|description):/m.test(diff) || diff.includes('mcp_servers')) {
     return { bump: 'minor' as const, rationale: 'skill activation or MCP contract changed' }
   }
@@ -130,7 +140,7 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
   const changes = await readChangedPaths(baseRef)
   const statuses = await readChangedStatuses(baseRef)
   const addedPaths = new Set(statuses.filter((item) => item.status.startsWith('A')).map((item) => item.path))
-  const headRef = (await $`git -C ${repoRoot} rev-parse --short HEAD`.text()).trim()
+  const headRef = (await $`git -C ${defaultRepoRoot} rev-parse --short HEAD`.text()).trim()
   const plan: ReleasePlan = {
     schemaVersion: 1,
     baseRef,
@@ -185,7 +195,7 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
       continue
     }
 
-    if (pluginManifests.some((manifest) => path === manifest || path.startsWith(dirname(manifest)))) {
+    if (isPluginReleasePath(path)) {
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, 'patch', path, 'plugin manifest changed')
       continue
     }
@@ -234,7 +244,7 @@ const validateReleaseUnitGroup = (value: unknown, path: string) => {
   )
 }
 
-const readReleasePlan = async (path: string): Promise<ReleasePlan> => {
+const readReleasePlan = async ({ repoRoot, path }: { repoRoot: string; path: string }): Promise<ReleasePlan> => {
   const parsed: unknown = await Bun.file(resolve(repoRoot, path)).json()
   if (!isRecord(parsed) || parsed.schemaVersion !== 1 || !isRecord(parsed.units)) {
     throw new TypeError(`${path} must be a release plan`)
@@ -256,7 +266,7 @@ const readReleasePlan = async (path: string): Promise<ReleasePlan> => {
   }
 }
 
-const readJson = async (path: string): Promise<Record<string, unknown>> => {
+const readJson = async ({ repoRoot, path }: { repoRoot: string; path: string }): Promise<Record<string, unknown>> => {
   const parsed: unknown = await Bun.file(resolve(repoRoot, path)).json()
   if (!isRecord(parsed)) {
     throw new TypeError(`${path} must contain a JSON object`)
@@ -265,8 +275,8 @@ const readJson = async (path: string): Promise<Record<string, unknown>> => {
   return parsed
 }
 
-const bumpJsonVersion = async (path: string, bump: Bump) => {
-  const json = await readJson(path)
+const bumpJsonVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
+  const json = await readJson({ repoRoot, path })
   if (typeof json.version !== 'string') {
     throw new TypeError(`${path} must contain a version string`)
   }
@@ -275,7 +285,23 @@ const bumpJsonVersion = async (path: string, bump: Bump) => {
   return { path, content: `${JSON.stringify(json, null, 2)}\n` }
 }
 
-const bumpSkillVersion = async (skillName: string, bump: Bump) => {
+const bumpMarketplaceVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
+  const json = await readJson({ repoRoot, path })
+  const plugins = json.plugins
+  if (!Array.isArray(plugins)) {
+    throw new TypeError(`${path} must contain a plugins array`)
+  }
+
+  const plugin = plugins.find((item) => isRecord(item) && item.name === 'you')
+  if (!isRecord(plugin) || typeof plugin.version !== 'string') {
+    throw new TypeError(`${path} must contain a you plugin version string`)
+  }
+
+  plugin.version = bumpVersion(plugin.version, bump)
+  return { path, content: `${JSON.stringify(json, null, 2)}\n` }
+}
+
+const bumpSkillVersion = async ({ repoRoot, skillName, bump }: { repoRoot: string; skillName: string; bump: Bump }) => {
   const path = `skills/${skillName}/SKILL.md`
   const content = await Bun.file(resolve(repoRoot, path)).text()
   const match = /^---\n([\s\S]*?)\n---/.exec(content)
@@ -300,7 +326,7 @@ const bumpSkillVersion = async (skillName: string, bump: Bump) => {
   return { path, content: updated }
 }
 
-const bumpPyprojectVersion = async (path: string, bump: Bump) => {
+const bumpPyprojectVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
   const content = await Bun.file(resolve(repoRoot, path)).text()
   const current = /^version = "(\d+\.\d+\.\d+)"/m.exec(content)?.[1]
   if (!current) {
@@ -315,39 +341,45 @@ const bumpPyprojectVersion = async (path: string, bump: Bump) => {
 
 const writeUpdates = async (updates: { path: string; content: string }[]) => {
   for (const update of updates) {
-    await Bun.write(resolve(repoRoot, update.path), update.content)
+    await Bun.write(resolve(defaultRepoRoot, update.path), update.content)
   }
 }
 
 const buildPackages = async () => {
   for (const directory of packageBuildDirectories) {
-    await $`bun run build`.cwd(resolve(repoRoot, directory))
+    await $`bun run build`.cwd(resolve(defaultRepoRoot, directory))
   }
 }
 
-const applyReleasePlan = async (planPath: string) => {
-  const plan = await readReleasePlan(planPath)
+export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: string; planPath: string }) => {
+  const plan = await readReleasePlan({ repoRoot, path: planPath })
   const updates: { path: string; content: string }[] = []
 
   for (const [skillName, unit] of Object.entries(plan.units.skills)) {
     if (unit.bump !== 'none') {
-      updates.push(await bumpSkillVersion(skillName, unit.bump))
+      updates.push(await bumpSkillVersion({ repoRoot, skillName, bump: unit.bump }))
     }
   }
 
   const pluginUnit = plan.units.plugins.you
   if (pluginUnit?.bump && pluginUnit.bump !== 'none') {
     for (const manifest of pluginManifests) {
-      updates.push(await bumpJsonVersion(manifest, pluginUnit.bump))
+      updates.push(await bumpJsonVersion({ repoRoot, path: manifest, bump: pluginUnit.bump }))
+    }
+
+    for (const marketplace of pluginMarketplaces) {
+      updates.push(await bumpMarketplaceVersion({ repoRoot, path: marketplace, bump: pluginUnit.bump }))
     }
   }
 
   for (const [name, unit] of Object.entries(plan.units.npm)) {
     const path = npmPackages[name as keyof typeof npmPackages]
     if (path && unit.bump !== 'none') {
-      updates.push(await bumpJsonVersion(path, unit.bump))
+      updates.push(await bumpJsonVersion({ repoRoot, path, bump: unit.bump }))
       if (name === '@youdotcom-oss/openclaw') {
-        updates.push(await bumpJsonVersion('packages/openclaw/openclaw.plugin.json', unit.bump))
+        updates.push(
+          await bumpJsonVersion({ repoRoot, path: 'packages/openclaw/openclaw.plugin.json', bump: unit.bump }),
+        )
       }
     }
   }
@@ -355,11 +387,16 @@ const applyReleasePlan = async (planPath: string) => {
   for (const [name, unit] of Object.entries(plan.units.pypi)) {
     const path = pypiPackages[name as keyof typeof pypiPackages]
     if (path && unit.bump !== 'none') {
-      updates.push(await bumpPyprojectVersion(path, unit.bump))
-      updates.push(await bumpJsonVersion('packages/hermes/package.json', unit.bump))
+      updates.push(await bumpPyprojectVersion({ repoRoot, path, bump: unit.bump }))
+      updates.push(await bumpJsonVersion({ repoRoot, path: 'packages/hermes/package.json', bump: unit.bump }))
     }
   }
 
+  return updates
+}
+
+const applyReleasePlan = async (planPath: string) => {
+  const updates = await createVersionUpdates({ repoRoot: defaultRepoRoot, planPath })
   await writeUpdates(updates)
   await buildPackages()
 }
@@ -381,7 +418,7 @@ const main = async () => {
     const baseRef = readArg('--base', process.env.RELEASE_BASE_REF ?? 'HEAD~1')
     const out = readArg('--out', '/tmp/agent-skills-release-plan.json')
     const plan = await createReleasePlan(baseRef)
-    await Bun.write(resolve(repoRoot, out), `${JSON.stringify(plan, null, 2)}\n`)
+    await Bun.write(resolve(defaultRepoRoot, out), `${JSON.stringify(plan, null, 2)}\n`)
     await Bun.write(Bun.stdout, `${JSON.stringify(plan, null, 2)}\n`)
     return
   }
@@ -395,4 +432,6 @@ const main = async () => {
   process.exit(1)
 }
 
-await main()
+if (import.meta.main) {
+  await main()
+}

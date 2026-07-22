@@ -20,7 +20,8 @@
     "web-search",
     "research",
     "content-extraction",
-    "clawhub"
+    "clawhub",
+    "mcp"
   ],
   "type": "module",
   "main": "./plugin.ts",

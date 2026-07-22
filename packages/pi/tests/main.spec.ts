@@ -150,7 +150,7 @@ describe('Pi extension', () => {
     )
     expect(connectMock).toHaveBeenCalled()
     expect(clientConstructorMock).toHaveBeenCalledWith({
-      name: '@youdotcom-oss/pi-plugin',
+      name: packageJson.name,
       version: packageJson.version,
     })
     expect(callToolMock).toHaveBeenCalledWith({ name: 'you-search', arguments: { query: 'OpenAI' } })

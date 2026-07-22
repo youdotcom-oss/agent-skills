@@ -1,7 +1,7 @@
-import { Glob, YAML } from 'bun'
+import { describe, expect, test } from 'bun:test'
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
-import { describe, expect, test } from 'bun:test'
+import { Glob, YAML } from 'bun'
 
 const repoRoot = join(import.meta.dir, '..')
 const skillsRoot = join(repoRoot, 'skills')
@@ -172,7 +172,10 @@ describe('skills validation', () => {
   test('discovers only skill directories containing SKILL.md files', async () => {
     const skillFiles = await loadSkillFiles()
     const rootEntries = await readdir(skillsRoot, { withFileTypes: true })
-    const skillDirectories = rootEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort()
+    const skillDirectories = rootEntries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort()
     const discoveredDirectories = skillFiles.map((skillFile) => skillFile.directoryName).sort()
 
     expect(discoveredDirectories).toEqual(skillDirectories)

@@ -1,10 +1,16 @@
-# @youdotcom-oss/pi-plugin
+# @youdotcom-oss/pi
 
 You.com skills and MCP tools for Pi.
 
 This package registers bundled You.com skills and bridges You.com remote MCP
 tools into Pi for web search, content extraction, research, finance, docs
 lookup, and guidance on adding You.com APIs, MCP, and SDKs to agentic projects.
+
+## Install
+
+```sh
+pi install npm:@youdotcom-oss/pi
+```
 
 ## What it includes
 

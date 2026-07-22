@@ -10,6 +10,10 @@ Hermes plugin that bundles You.com MCP setup skills for web search, research, fi
 - `you-discover`: guidance for integrating You.com APIs, MCP, and SDKs into agentic projects
 - `you-free`: no-auth web search setup
 
-## Usage
+## Install
 
-Install the package, enable the `youdotcom` Hermes plugin, then load the bundled skills explicitly from Hermes when needed.
+```sh
+pip install hermes-youdotcom
+```
+
+Then enable the `youdotcom` Hermes plugin and load the bundled skills explicitly from Hermes when needed.

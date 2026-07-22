@@ -9,8 +9,16 @@ OpenClaw can guide users through authenticated You.com MCP configuration.
 
 ## Install
 
+From ClawHub:
+
 ```sh
 openclaw plugins install clawhub:you
+```
+
+From npm:
+
+```sh
+openclaw plugins install npm:@youdotcom-oss/openclaw
 ```
 
 ## What it includes

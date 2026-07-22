@@ -1,10 +1,15 @@
 {
-  "name": "@youdotcom-oss/pi-plugin",
+  "name": "@youdotcom-oss/pi",
   "version": "0.0.0",
   "description": "Pi extension for You.com MCP tools and skills",
   "license": "MIT",
   "keywords": [
-    "pi-package"
+    "pi-package",
+    "you.com",
+    "web-search",
+    "research",
+    "content-extraction",
+    "mcp"
   ],
   "type": "module",
   "main": "./main.ts",

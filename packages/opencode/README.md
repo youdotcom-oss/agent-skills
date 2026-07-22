@@ -8,7 +8,13 @@ guidance on adding You.com APIs, MCP, and SDKs to agentic projects.
 
 ## Install
 
-Add the plugin to your `opencode.json`:
+Install with OpenCode:
+
+```sh
+opencode plugin @youdotcom-oss/opencode
+```
+
+Or add the plugin to your `opencode.json`:
 
 ```json
 { "plugin": ["@youdotcom-oss/opencode"] }
