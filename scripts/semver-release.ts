@@ -168,8 +168,8 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
         path,
         `bundled skill ${skillMatch[1]} changed`,
       )
-      plan.units.npm['@youdotcom-oss/pi-plugin'] = updateReleaseUnit(
-        plan.units.npm['@youdotcom-oss/pi-plugin'],
+      plan.units.npm['@youdotcom-oss/pi'] = updateReleaseUnit(
+        plan.units.npm['@youdotcom-oss/pi'],
         bump,
         path,
         `bundled skill ${skillMatch[1]} changed`,

@@ -197,7 +197,7 @@ jobs:
         run: |
           packages=(
             "@youdotcom-oss/opencode=packages/opencode"
-            "@youdotcom-oss/pi-plugin=packages/pi"
+            "@youdotcom-oss/pi=packages/pi"
             "@youdotcom-oss/openclaw=packages/openclaw"
           )
 
