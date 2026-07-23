@@ -36,7 +36,7 @@
       },
     },
     "packages/pi": {
-      "name": "@youdotcom-oss/pi-plugin",
+      "name": "@youdotcom-oss/pi",
       "version": "0.0.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
@@ -238,7 +238,7 @@
 
     "@youdotcom-oss/opencode": ["@youdotcom-oss/opencode@workspace:packages/opencode"],
 
-    "@youdotcom-oss/pi-plugin": ["@youdotcom-oss/pi-plugin@workspace:packages/pi"],
+    "@youdotcom-oss/pi": ["@youdotcom-oss/pi@workspace:packages/pi"],
 
     "abort-controller": ["abort-controller@3.0.0", "", { "dependencies": { "event-target-shim": "^5.0.0" } }, "sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg=="],
 
