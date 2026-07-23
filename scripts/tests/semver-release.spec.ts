@@ -86,6 +86,42 @@ describe('semver release', () => {
     }
   })
 
+  test('skips missing skills when applying a release plan', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-07-22T00:00:00.000Z',
+          changes: ['skills/deleted-skill/SKILL.md'],
+          units: {
+            skills: {
+              'deleted-skill': {
+                bump: 'minor',
+                paths: ['skills/deleted-skill/SKILL.md'],
+                rationale: ['skill activation or MCP contract changed'],
+              },
+            },
+            plugins: {},
+            npm: {},
+            pypi: {},
+            clawhub: {},
+          },
+        }),
+      )
+
+      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+
+      expect(updates).toEqual([])
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
   test('bumps Hermes PyPI package and plugin versions together', async () => {
     const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
 
