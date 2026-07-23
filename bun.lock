@@ -30,9 +30,11 @@
       "version": "0.0.0",
       "devDependencies": {
         "@opencode-ai/plugin": "^1.18.4",
+        "@opencode-ai/sdk": "^1.18.4",
       },
       "peerDependencies": {
         "@opencode-ai/plugin": ">=1.18.0",
+        "@opencode-ai/sdk": ">=1.18.0",
       },
     },
     "packages/pi": {

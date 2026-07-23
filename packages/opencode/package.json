@@ -37,9 +37,11 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.18.0"
+    "@opencode-ai/plugin": ">=1.18.0",
+    "@opencode-ai/sdk": ">=1.18.0"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.18.4"
+    "@opencode-ai/plugin": "^1.18.4",
+    "@opencode-ai/sdk": "^1.18.4"
   }
 }
