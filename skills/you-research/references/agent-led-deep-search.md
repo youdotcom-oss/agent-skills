@@ -20,7 +20,7 @@ You are a deep research agent. Answer complex, multi-step research questions by 
 Use the focused You.com MCP server profile when the host supports MCP:
 
 - Server URL: `https://api.you.com/mcp?tools=you-search,you-contents`
-- Auth: either `YDC_API_KEY` bearer auth or OAuth login into the server
+- Auth: either `YDC_API_KEY` bearer auth, OAuth login into the server, or an x402-aware MCP client that can process payment challenges
 - Required tools: `you-search` and `you-contents`
 - Avoid managed `you-research` for this base workflow; use it only as an OAuth or long-timeout fallback outside this workflow.
 
@@ -31,6 +31,8 @@ For bearer auth, configure the host MCP client with an authorization header equi
   "Authorization": "Bearer ${YDC_API_KEY}"
 }
 ```
+
+If the MCP client supports x402 and a search or contents tool call returns HTTP `402` with a `payment-required` header, treat it as a payment challenge. Let the client pay externally and retry through MCP with `Authorization: Payment ...`, `x-payment`, or `payment-signature` headers. Do not use MPP for plain search or contents REST calls, and do not add wallet signing or settlement logic to the research skill itself.
 
 ### Decision tree
 
