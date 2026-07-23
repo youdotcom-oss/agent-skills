@@ -36,6 +36,8 @@ Use this skill while planning how to integrate You.com with an agent SDK, IDE, a
 5. Compare discovery results and docs, then recommend the smallest integration path.
 6. If no first-class integration fits, recommend a small direct API script or thin MCP bridge rather than reimplementing catalog crawling in the skill.
 
+When planning paid direct API or MCP integrations, keep payment protocol guidance endpoint-specific: search and contents use x402 for keyless paid retries, while research and finance research can use MPP or x402.
+
 ## Planning loop
 
 Use `you-discover` as part of the integration planning loop, not as a one-time preflight check:

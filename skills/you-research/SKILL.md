@@ -1,10 +1,10 @@
 ---
 name: you-research
-description: Route research tasks between a cost-conscious agentic search workflow, You.com Research API scripts, and managed you-research MCP fallback.
-compatibility: Requires network access and either You.com MCP tools with `YDC_API_KEY` or OAuth, or the You.com Research API with `YDC_API_KEY`.
+description: Route research tasks between a cost-conscious agentic search workflow, You.com Research API scripts, and managed or payment-aware MCP fallback.
+compatibility: Requires network access and either You.com MCP tools with `YDC_API_KEY`, OAuth, or payment support, or the You.com Research API with `YDC_API_KEY` or an MPP/x402-capable client.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server","auth":"none","tools":["searchDocs"]},"you-research-base":{"url":"https://api.you.com/mcp?tools=you-search,you-contents","auth":"YDC_API_KEY OAuth","tools":["you-search","you-contents"],"avoidTools":["you-research"]}}'
+  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server","auth":"none","tools":["searchDocs"]},"you-research-base":{"url":"https://api.you.com/mcp?tools=you-search,you-contents","auth":"YDC_API_KEY OAuth x402","tools":["you-search","you-contents"],"avoidTools":["you-research"]}}'
   author: youdotcom-oss
   version: 0.1.0
   category: research
@@ -19,10 +19,13 @@ Use this skill to choose the right You.com research path for the user's goal: ag
 
 For API scripts:
 
-- `YDC_API_KEY` must be available.
-- Use these API request headers: `X-API-Key: ${YDC_API_KEY}` and `User-Agent: SKILL/(@youdotcom-oss/agent-skills you-research)`.
+- Use `YDC_API_KEY` when available, or an MPP/x402-capable HTTP client for keyless paid Research API calls.
+- With `YDC_API_KEY`, use these API request headers: `X-API-Key: ${YDC_API_KEY}` and `User-Agent: SKILL/(@youdotcom-oss/agent-skills you-research)`.
+- With MPP/x402, expect Research API pricing by `research_effort` and at least a 1 cent charge; confirm the user expects a paid managed research request before sending it.
 
-For the agent-led workflow, use the `you-research-base` MCP profile with `you-search` and `you-contents` when available. See the [agent-led deep-search workflow](references/agent-led-deep-search.md) for setup and workflow details.
+For the agent-led workflow, use the `you-research-base` MCP profile with `you-search` and `you-contents` when available. Those tools and their REST endpoints should use x402 for keyless paid retries, not MPP. See the [agent-led deep-search workflow](references/agent-led-deep-search.md) for setup and workflow details.
+
+MPP/x402-aware MCP or HTTP clients may receive HTTP `402` payment challenges from You.com tools and endpoints, then retry with payment headers. Use MPP/x402 for managed Research API calls where appropriate. Let the host client handle external payment and retry; do not add wallet signing logic to this skill.
 
 ## Research API scripts
 
@@ -40,13 +43,13 @@ If Docs MCP is unavailable, use the canonical pages:
 - https://you.com/docs/api-reference/research/v1-research-task
 - https://you.com/docs/api-reference/research/v1-research-task-stream
 
-Keep the script aligned with the docs returned at runtime and include the API request headers listed above.
+Keep the script aligned with the docs returned at runtime and include the auth or payment headers listed above. If the user wants keyless MPP/x402 direct HTTP usage for Research API, verify current payment guidance in Docs MCP first, then handle `402 payment-required` as a challenge and retry only through a payment-capable client or library. Do not apply MPP guidance to plain search or contents REST calls; those should use x402 only.
 
 ## Decision Tree
 
 - User is cost-conscious or wants to develop/fine-tune a research skill -> follow the [agent-led deep-search workflow](references/agent-led-deep-search.md).
 - User asks for You.com managed API output, structured output, source controls, background tasks, or `deep`/`exhaustive`/`frontier` research -> write a script against the Research API.
-- User needs OAuth and direct API scripts are not practical -> use managed `you-research` MCP only if the MCP client supports the expected response time.
+- User needs OAuth or MPP/x402 payment handling and direct API scripts are not practical -> use MCP only if the MCP client supports the expected response time and payment flow.
 - Simple lookup -> use `you-research-base` `you-search` once, answer directly.
 - URL provided -> use `you-research-base` `you-contents` on those URLs.
 - Everything else -> use the base agent-led workflow.
