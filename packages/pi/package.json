@@ -17,7 +17,7 @@
     ".": "./main.ts"
   },
   "files": [
-    "extensions",
+    "main.ts",
     "skills"
   ],
   "publishConfig": {

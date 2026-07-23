@@ -204,7 +204,7 @@ jobs:
           for entry in "${packages[@]}"; do
             package="${entry%%=*}"
             directory="${entry#*=}"
-            if jq -e --arg package "$package" '.units.npm[$package].bump != "none"' release-plan.json >/dev/null; then
+            if jq -e --arg package "$package" '(.units.npm[$package].bump // "none") != "none"' release-plan.json >/dev/null; then
               npm publish --provenance --access public "$directory"
             fi
           done
