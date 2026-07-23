@@ -136,7 +136,10 @@ jobs:
 
       - name: Apply release plan
         if: ${{ inputs.apply_versions }}
-        run: bun scripts/semver-release.ts apply --plan release-plan.json
+        run: |
+          bun scripts/semver-release.ts apply --plan release-plan.json
+          rm release-plan.json
+          bun run check:write
 
       - name: Validate release changes
         if: ${{ inputs.apply_versions }}
