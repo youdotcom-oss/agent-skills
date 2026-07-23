@@ -3,6 +3,16 @@
   "version": "0.0.0",
   "description": "Pi extension for You.com MCP tools and skills",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "packages/pi"
+  },
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
   "keywords": [
     "pi-package",
     "you.com",
