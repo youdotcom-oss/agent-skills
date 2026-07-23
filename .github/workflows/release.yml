@@ -303,7 +303,6 @@ jobs:
 
       - name: Publish to ClawHub
         env:
-          BRANCH: ${{ github.ref_name }}
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
         run: |
           VERSION=$(jq -r '.version' packages/openclaw/package.json)
