@@ -155,7 +155,15 @@ describe('Pi extension', () => {
     })
     expect(callToolMock).toHaveBeenCalledWith({ name: 'you-search', arguments: { query: 'OpenAI' } })
     expect(closeMock).toHaveBeenCalled()
-    expect(result).toEqual({ content: [{ type: 'text', text: 'ok' }], structuredContent: { answer: 'ok' } })
+    expect(result).toEqual({
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify({ content: [{ type: 'text', text: 'ok' }], structuredContent: { answer: 'ok' } }),
+        },
+      ],
+      details: { content: [{ type: 'text', text: 'ok' }], structuredContent: { answer: 'ok' } },
+    })
   })
 
   test('registers free and finance MCP server variants', async () => {

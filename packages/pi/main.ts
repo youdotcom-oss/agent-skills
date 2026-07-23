@@ -1,21 +1,10 @@
+import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Type } from 'typebox'
 import packageJson from './package.json' with { type: 'json' }
 
-type PiToolDefinition = {
-  name: string
-  label: string
-  description: string
-  promptSnippet: string
-  promptGuidelines: string[]
-  parameters: Record<string, unknown>
-  execute: (toolCallId: string, params: unknown, signal?: AbortSignal) => Promise<unknown>
-}
-
-type ExtensionAPI = {
-  on: (eventName: 'resources_discover', handler: () => { skillPaths: string[] }) => void
-  registerTool: (definition: PiToolDefinition) => void
-}
+type PiToolDefinition = Parameters<ExtensionAPI['registerTool']>[0]
 
 type McpBridgeConfig = Omit<PiToolDefinition, 'execute' | 'parameters'> & {
   url?: string
@@ -40,13 +29,15 @@ const DOCS_MCP_URL = 'https://you.com/docs/_mcp/server'
 const SKILLS_PATH = new URL('./skills', import.meta.url).pathname
 const CLIENT_INFO = { name: packageJson.name, version: packageJson.version }
 
-const parameters = {
-  type: 'object',
-  additionalProperties: true,
-}
+const parameters = Type.Object({}, { additionalProperties: true })
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const toToolResult = (result: unknown) => ({
+  content: [{ type: 'text' as const, text: JSON.stringify(result) }],
+  details: result,
+})
 
 const createHeaders = ({ authenticated = true }: { authenticated?: boolean } = {}) => {
   if (authenticated && !process.env.YDC_API_KEY) {
@@ -107,13 +98,15 @@ const registerMcpTool = (pi: ExtensionAPI, definition: McpBridgeConfig & { tool:
         throw new Error('params must be an object')
       }
 
-      return await withMcpClient(
+      const result = await withMcpClient(
         {
           authenticated: definition.authenticated,
           url: definition.url ?? MCP_URL,
         },
         async (client) => await client.callTool({ name: definition.tool.name, arguments: params }),
       )
+
+      return toToolResult(result)
     },
   })
 }
