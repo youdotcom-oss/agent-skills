@@ -56,8 +56,9 @@ The GitHub Actions UI runs **Semantic Release** manually:
 1. Open **Actions** -> **Semantic Release** -> **Run workflow**.
 2. First run with `apply_versions=false` and `publish_artifacts=false`; inspect the `release-plan` artifact.
 3. Set `base_ref` to the intended comparison point. `HEAD~1` only sees the last commit; an older base may bump every changed skill, plugin, npm package, PyPI package, and ClawHub package since that ref.
-4. Run again with `apply_versions=true` to commit version bumps.
-5. Run with `publish_artifacts=true` only when ready to publish npm, PyPI, and ClawHub artifacts.
+4. Run again with `apply_versions=true` and `publish_artifacts=false` to commit version bumps.
+5. After the version-bump commit lands on the branch, run publish-only with `apply_versions=false` and `publish_artifacts=true`.
+6. If a registry already succeeded and a retry should skip it, disable the matching publish toggle: `publish_npm`, `publish_pypi`, or `publish_clawhub`.
 
 ## Verification
 

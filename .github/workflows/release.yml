@@ -22,6 +22,21 @@ on:
         required: false
         type: boolean
         default: false
+      publish_npm:
+        description: "Publish changed npm packages when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
+      publish_pypi:
+        description: "Publish changed PyPI packages when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
+      publish_clawhub:
+        description: "Publish changed ClawHub packages when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -172,7 +187,7 @@ jobs:
 
   publish-npm:
     name: Publish npm packages
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && needs.plan.outputs.has_npm == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_npm && needs.plan.outputs.has_npm == 'true' }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
     environment: npm
@@ -219,13 +234,13 @@ jobs:
             package="${entry%%=*}"
             directory="${entry#*=}"
             if jq -e --arg package "$package" '(.units.npm[$package].bump // "none") != "none"' release-plan.json >/dev/null; then
-              npm publish --provenance --access public "$directory"
+              npm publish --provenance --access public "./$directory"
             fi
           done
 
   publish-pypi:
     name: Publish PyPI packages
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && needs.plan.outputs.has_pypi == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_pypi && needs.plan.outputs.has_pypi == 'true' }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
     environment: pypi
@@ -265,7 +280,7 @@ jobs:
 
   publish-clawhub:
     name: Publish ClawHub package
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && needs.plan.outputs.has_clawhub == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_clawhub && needs.plan.outputs.has_clawhub == 'true' }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
     steps:
@@ -292,11 +307,17 @@ jobs:
           CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
         run: |
           VERSION=$(jq -r '.version' packages/openclaw/package.json)
+          SOURCE_COMMIT="$(git rev-parse HEAD)"
+          CLAWHUB_PACKAGE_DIR="$(mktemp -d)/openclaw"
+          cp -R packages/openclaw "${CLAWHUB_PACKAGE_DIR}"
+          jq '.name = "you"' "${CLAWHUB_PACKAGE_DIR}/package.json" > "${CLAWHUB_PACKAGE_DIR}/package.json.tmp"
+          mv "${CLAWHUB_PACKAGE_DIR}/package.json.tmp" "${CLAWHUB_PACKAGE_DIR}/package.json"
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
-          bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
+          bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
             --source-path packages/openclaw \
+            --source-repo youdotcom-oss/agent-skills \
             --family bundle-plugin \
             --owner youdotcom-oss \
             --name you \
             --version "${VERSION}" \
-            --source-commit "$(git rev-parse HEAD)"
+            --source-commit "${SOURCE_COMMIT}"
