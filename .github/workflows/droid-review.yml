@@ -56,7 +56,7 @@ jobs:
           factory_api_key: ${{ secrets.FACTORY_API_KEY }}
           automatic_review: true
           automatic_security_review: true
-          review_model: glm-5.1
+          review_model: glm-5.2
           allowed_bots: "claude[bot],github-advanced-security[bot],semgrep-dotnet[bot]"
 
       - name: Checkout PR branch
