@@ -281,6 +281,7 @@ jobs:
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
           bunx clawhub package publish "youdotcom-oss/agent-skills@${BRANCH}" \
             --source-path packages/openclaw \
+            --family bundle-plugin \
             --owner youdotcom-oss \
             --name you \
             --version "${VERSION}" \
