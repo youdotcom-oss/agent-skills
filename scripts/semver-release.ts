@@ -41,7 +41,7 @@ const pluginMarketplaces = [
 const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces]
 const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',
-  '@youdotcom-oss/pi-plugin': 'packages/pi/package.json',
+  '@youdotcom-oss/pi': 'packages/pi/package.json',
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
 } as const
 const pypiPackages = {
