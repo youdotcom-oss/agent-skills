@@ -1,0 +1,21 @@
+{
+  "id": "you",
+  "name": "You.com",
+  "description": "You.com skill pack with MCP setup metadata.",
+  "version": "1.0.2",
+  "skills": ["./skills"],
+  "setup": {
+    "providers": [
+      {
+        "id": "you",
+        "envVars": ["YDC_API_KEY"]
+      }
+    ],
+    "requiresRuntime": false
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

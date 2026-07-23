@@ -35,17 +35,17 @@ jobs:
           if [[ "$PERMISSION" != "admin" && "$PERMISSION" != "maintain" && "$PERMISSION" != "write" ]]; then
             echo "Skipping auto-review for external contributor (permission: $PERMISSION)"
             echo "Use 'Actions > Droid Auto Review > Run workflow' to manually trigger review"
-            echo "is_internal=false" >> $GITHUB_OUTPUT
+            echo "is_internal=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           echo "Author is internal contributor, proceeding with review"
-          echo "is_internal=true" >> $GITHUB_OUTPUT
+          echo "is_internal=true" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ github.token }}
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -56,7 +56,7 @@ jobs:
           factory_api_key: ${{ secrets.FACTORY_API_KEY }}
           automatic_review: true
           automatic_security_review: true
-          review_model: glm-5.1
+          review_model: glm-5.2
           allowed_bots: "claude[bot],github-advanced-security[bot],semgrep-dotnet[bot]"
 
       - name: Checkout PR branch

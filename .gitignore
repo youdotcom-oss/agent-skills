@@ -19,6 +19,11 @@ node_modules/
 .venv/
 venv/
 
+# Generated package skill bundles
+packages/*/skills/**
+!packages/*/skills/
+!packages/*/skills/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]
@@ -26,6 +31,7 @@ __pycache__/
 *.so
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 *.egg-info/
 dist/
 build/
@@ -46,11 +52,3 @@ data/prompts/.tmp-prompts.jsonl
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# OpenClaw
-skills/youdotcom-cli-openclaw
-skills/youdotcom-api-openclaw
-
-# Plugin subdirectory deps (managed independently)
-plugins/*/node_modules/
-plugins/*/bun.lock

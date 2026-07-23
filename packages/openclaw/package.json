@@ -1,0 +1,56 @@
+{
+  "name": "@youdotcom-oss/openclaw",
+  "version": "1.0.2",
+  "description": "You.com OpenClaw plugin — MCP setup metadata and web intelligence skills",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "packages/openclaw"
+  },
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "keywords": [
+    "you.com",
+    "openclaw",
+    "openclaw-plugin",
+    "web-search",
+    "research",
+    "content-extraction",
+    "clawhub",
+    "mcp"
+  ],
+  "type": "module",
+  "main": "./plugin.ts",
+  "exports": {
+    ".": "./plugin.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "check": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "openclaw": {
+    "extensions": [
+      "./plugin.ts"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.7.1-3",
+      "minGatewayVersion": "2026.7.1-3"
+    },
+    "build": {
+      "openclawVersion": "2026.7.1-3",
+      "pluginSdkVersion": "2026.7.1-3"
+    }
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "openclaw": ">=2026.7.1-3"
+  }
+}

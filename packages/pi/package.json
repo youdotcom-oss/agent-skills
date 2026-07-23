@@ -1,0 +1,58 @@
+{
+  "name": "@youdotcom-oss/pi",
+  "version": "0.0.0",
+  "description": "Pi extension for You.com MCP tools and skills",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "packages/pi"
+  },
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "keywords": [
+    "pi-package",
+    "you.com",
+    "web-search",
+    "research",
+    "content-extraction",
+    "mcp"
+  ],
+  "type": "module",
+  "main": "./main.ts",
+  "exports": {
+    ".": "./main.ts"
+  },
+  "files": [
+    "main.ts",
+    "skills"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "check": "bun run check:biome && bun run check:types",
+    "check:biome": "biome check",
+    "check:types": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "pi": {
+    "extensions": [
+      "./main.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "typebox": "^1.3.6"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "^0.81.1"
+  }
+}
