@@ -140,6 +140,7 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
   const changes = await readChangedPaths(baseRef)
   const statuses = await readChangedStatuses(baseRef)
   const addedPaths = new Set(statuses.filter((item) => item.status.startsWith('A')).map((item) => item.path))
+  const deletedPaths = new Set(statuses.filter((item) => item.status.startsWith('D')).map((item) => item.path))
   const headRef = (await $`git -C ${defaultRepoRoot} rev-parse --short HEAD`.text()).trim()
   const plan: ReleasePlan = {
     schemaVersion: 1,
@@ -159,6 +160,10 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
   for (const path of changes) {
     const skillMatch = /^skills\/([^/]+)\//.exec(path)
     if (skillMatch?.[1]) {
+      if (deletedPaths.has(path)) {
+        continue
+      }
+
       const { bump, rationale } = await changedSkillBump({ baseRef, path, isAdded: addedPaths.has(path) })
       plan.units.skills[skillMatch[1]] = updateReleaseUnit(plan.units.skills[skillMatch[1]], bump, path, rationale)
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, bump, path, `skill ${skillMatch[1]} changed`)
@@ -370,6 +375,10 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
 
   for (const [skillName, unit] of Object.entries(plan.units.skills)) {
     if (unit.bump !== 'none') {
+      if (!(await Bun.file(resolve(repoRoot, `skills/${skillName}/SKILL.md`)).exists())) {
+        continue
+      }
+
       updates.push(await bumpSkillVersion({ repoRoot, skillName, bump: unit.bump }))
     }
   }
