@@ -6,7 +6,7 @@ license: MIT
 metadata:
   mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp","auth":"YDC_API_KEY OAuth x402","tools":["you-search","you-contents","you-research"]}}'
   author: youdotcom-oss
-  version: 0.1.0
+  version: 0.2.0
   category: web-search
   keywords: you.com,mcp,web-search,content-extraction,research,citations,livecrawl
 ---
