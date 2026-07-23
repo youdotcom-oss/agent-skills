@@ -6,7 +6,7 @@ license: MIT
 metadata:
   mcp_servers: '{"you-free":{"url":"https://api.you.com/mcp?profile=free","auth":"none","tools":["you-search"],"avoidTools":["you-contents","you-research","you-finance"]}}'
   author: youdotcom-oss
-  version: 0.0.0
+  version: 0.1.0
   category: web-search
   keywords: you.com,mcp,free-search,web-search,no-auth
 ---

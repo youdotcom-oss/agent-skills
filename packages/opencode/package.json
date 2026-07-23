@@ -1,6 +1,6 @@
 {
   "name": "@youdotcom-oss/opencode",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "You.com OpenCode plugin with bundled skills and remote MCP setup",
   "license": "MIT",
   "repository": {

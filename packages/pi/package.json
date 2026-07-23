@@ -1,6 +1,6 @@
 {
   "name": "@youdotcom-oss/pi",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Pi extension for You.com MCP tools and skills",
   "license": "MIT",
   "repository": {

@@ -6,7 +6,7 @@ compatibility: Requires network access and either the You.com Finance Research A
 metadata:
   mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server","auth":"none","tools":["searchDocs"]},"you-finance-fallback":{"url":"https://api.you.com/mcp?tools=you-finance","auth":"YDC_API_KEY OAuth","tools":["you-finance"]}}'
   author: youdotcom-oss
-  version: 0.0.0
+  version: 0.1.0
   category: finance
   keywords: you.com,mcp,finance,market-data,tickers,earnings,company-financials
 ---
