@@ -21,7 +21,7 @@ The authenticated You.com MCP server must be installed and connected before usin
 
 - Server URL: `https://api.you.com/mcp`
 - Auth: either `YDC_API_KEY` bearer auth or OAuth login into the server
-- Default tools: `you-search`, `you-contents`, and `you-research`
+- Required tools: `you-search`, `you-contents`, and `you-research`
 
 For bearer auth, configure the host MCP client with an authorization header equivalent to:
 
