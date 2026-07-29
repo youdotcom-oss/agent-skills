@@ -38,7 +38,7 @@ Before answering, choose the lightest path that fits the task:
 - If direct API scripts are not practical because OAuth or MCP-hosted payment handling is required, and `you-finance` is present in an MCP client that can tolerate long response times, use the MCP fallback.
 - Prefer a dedicated `you-finance` server profile when using MCP and the host exposes server profiles. The expected remote MCP config is `https://api.you.com/mcp?tools=you-finance`.
 - Finance Research API and `you-finance` can use either MPP or x402 when the client supports payment challenges. If the MCP client receives a `402 payment-required` challenge, let the client pay externally and retry with payment headers. Do not handle wallets or signing in this skill.
-- If neither API access nor `you-finance` is available, ask the user to provide `YDC_API_KEY`, install/enable the You.com finance MCP server profile, or use an MPP/x402-capable client.
+- If neither API access nor `you-finance` is available, tell the user what is missing and ask whether they want to provide `YDC_API_KEY`, install or connect the You.com finance MCP server profile, or use an MPP/x402-capable client. Provide the server URL and auth options from the prerequisites above, point to the MCP setup mechanism for their current agent or MCP client, and do not install or modify configuration without user approval.
 - `you-finance` supports You.com auth via `YDC_API_KEY` bearer auth, OAuth, or MCP payment-header pass-through.
 
 ## When to use
