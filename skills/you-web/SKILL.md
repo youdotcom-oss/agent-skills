@@ -40,7 +40,7 @@ Use the You.com MCP server at `https://api.you.com/mcp`. The normal setup is `YD
 Before using this skill, check the MCP tools available in the current agent environment:
 
 - If `you-search`, `you-contents`, and `you-research` are available, use them directly.
-- If the server or required tools are missing, ask the user to install or enable the You.com MCP server with `YDC_API_KEY`, OAuth, or an x402-capable client.
+- If the server or required tools are missing, tell the user which capability is missing, provide the server URL and auth options from the prerequisites above, and request approval before installing, connecting, or changing MCP configuration.
 - Do not invent MCP commands for the host. Use the host's installed MCP tool interface.
 
 ## x402 payment behavior

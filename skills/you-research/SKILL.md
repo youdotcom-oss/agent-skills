@@ -50,6 +50,7 @@ Keep the script aligned with the docs returned at runtime and include the auth o
 - User is cost-conscious or wants to develop/fine-tune a research skill -> follow the [agent-led deep-search workflow](references/agent-led-deep-search.md).
 - User asks for You.com managed API output, structured output, source controls, background tasks, or `deep`/`exhaustive`/`frontier` research -> write a script against the Research API.
 - User needs OAuth or MPP/x402 payment handling and direct API scripts are not practical -> use MCP only if the MCP client supports the expected response time and payment flow.
+- Required API access or `you-research-base` MCP tools are unavailable -> tell the user what is missing, provide the relevant API or MCP setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-research-base` `you-search` once, answer directly.
 - URL provided -> use `you-research-base` `you-contents` on those URLs.
 - Everything else -> use the base agent-led workflow.
