@@ -4,8 +4,8 @@
   "groupings": [
     {
       "title": "You.com",
-      "description": "Skills for You.com web search, research, finance, and integration discovery.",
-      "skills": ["you-discover", "you-finance", "you-free", "you-research", "you-web"]
+      "description": "Skills for You.com web search, research, finance, x402 payments, and integration discovery.",
+      "skills": ["you-discover", "you-finance", "you-free", "you-research", "you-web", "you-x402"]
     }
   ]
 }

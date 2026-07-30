@@ -51,6 +51,7 @@ Before using this skill, check the MCP tools available in the current agent envi
 - Research and finance endpoints have broader MPP/x402 support; use the `you-research` or `you-finance` skill for those flows.
 - Account balance is private billing data; do not access balance endpoints through keyless payment flows.
 - Do not implement wallet signing or payment settlement inside this skill. Use the host MCP client's x402 flow.
+- If the agent must sign and settle the payment itself against `GET /v1/search`, use the `you-x402` skill.
 
 ## Tools
 

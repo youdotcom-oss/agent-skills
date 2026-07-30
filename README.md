@@ -23,6 +23,7 @@ Use you-web to find current docs and cite sources.
 Use you-research to investigate this topic across multiple sources.
 Use you-finance to research this company and cite market data.
 Use you-discover to find the best way to integrate You.com MCP or SDKs into my agent.
+Use you-x402 to pay per call for You.com search or finance research without an API key.
 ```
 
 Install one skill at a time if you only need a subset:
@@ -31,6 +32,7 @@ Install one skill at a time if you only need a subset:
 npx skills add youdotcom-oss/agent-skills --skill you-web
 npx skills add youdotcom-oss/agent-skills --skill you-discover
 npx skills add youdotcom-oss/agent-skills --skill you-finance
+npx skills add youdotcom-oss/agent-skills --skill you-x402
 ```
 
 ## Install for Your Platform
@@ -94,6 +96,7 @@ The shared skills route agents to the lightest You.com surface that fits the tas
 | `you-research` | Routing research tasks between agent-led search, Research API scripts, and managed `you-research` MCP fallback. |
 | `you-finance`  | Routing finance questions to an existing script, a new Finance Research API call, or an MCP fallback.           |
 | `you-discover` | Finding how to integrate You.com APIs, MCP servers, SDKs, docs, and tools into agentic projects.                |
+| `you-x402`     | Keyless pay-per-call search and finance research where the agent itself signs the x402 USDC payment.             |
 
 `you-discover` is the best starting point when your goal is to build with You.com rather than just search with it. Ask it questions like:
 
