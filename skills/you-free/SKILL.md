@@ -36,7 +36,7 @@ Required tool:
 Before using this skill, check the MCP tools available in the current agent environment:
 
 - If `you-search` is available, use it directly.
-- If `you-search` is missing, tell the user the You.com free MCP server profile is not installed and ask whether they want to install or connect it. Provide the server URL and auth requirement (none) from the prerequisites above, point to the MCP setup mechanism for their current agent or MCP client, and do not install or modify configuration without user approval.
+- If `you-search` is missing, tell the user the You.com free MCP server profile is unavailable, provide the server URL and auth requirement from the prerequisites above, and request approval before installing, connecting, or changing MCP configuration.
 - The free profile does not require You.com auth via `YDC_API_KEY` or OAuth.
 
 If an x402-aware MCP client receives an HTTP `402` with a `payment-required` header, treat it as a payment challenge, not a tool failure. Let the MCP client handle external payment and retry with `Authorization: Payment ...`, `x-payment`, or `payment-signature` headers when supported.
@@ -46,8 +46,7 @@ Do not use `livecrawl=web` with this skill. Do not use `you-contents`, `you-rese
 ## Tool selection
 
 - Use `you-search` for simple current lookup, source discovery, and search-result based answers.
-- If the user provides URLs, asks for synthesized cited research, or needs finance-specific data, this skill cannot satisfy the request.
-- Ask the user whether they want to install or connect an authenticated or x402-capable You.com MCP profile, or use the appropriate You.com skill for those tasks. Do not install or modify configuration without user approval.
+- If the user provides URLs, asks for synthesized cited research, or needs finance-specific data, this skill cannot satisfy the request. Use the appropriate You.com skill; if that path requires another MCP profile, request approval before installing, connecting, or changing configuration.
 
 ## Safety
 

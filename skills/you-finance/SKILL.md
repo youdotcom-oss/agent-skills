@@ -29,17 +29,14 @@ For MCP fallback, the You.com finance MCP server must be installed and connected
 
 Before answering, choose the lightest path that fits the task:
 
-- If an existing local finance script exists, reuse it. Look in `scripts/`, package scripts, and the current working directory.
-- If `YDC_API_KEY` or an MPP/x402-capable HTTP client is available and no reusable script exists, write a small script or direct HTTP request to the Finance Research API.
-- With `YDC_API_KEY`, use these API request headers: `X-API-Key: ${YDC_API_KEY}` and `User-Agent: SKILL/(@youdotcom-oss/agent-skills you-finance)`.
-- With MPP/x402, expect Finance Research API pricing by `research_effort`; retry `402 payment-required` only through a payment-capable client or library.
-- Before coding or updating a script, query the You.com Docs MCP server, usually through `searchDocs`, for current API details. Use a targeted query such as `Finance Research API v1 finance_research research_effort`.
-- If Docs MCP is unavailable, use the canonical page: https://you.com/docs/api-reference/finance-research/v1-finance_research
-- If direct API scripts are not practical because OAuth or MCP-hosted payment handling is required, and `you-finance` is present in an MCP client that can tolerate long response times, use the MCP fallback.
-- Prefer a dedicated `you-finance` server profile when using MCP and the host exposes server profiles. The expected remote MCP config is `https://api.you.com/mcp?tools=you-finance`.
-- Finance Research API and `you-finance` can use either MPP or x402 when the client supports payment challenges. If the MCP client receives a `402 payment-required` challenge, let the client pay externally and retry with payment headers. Do not handle wallets or signing in this skill.
-- If neither API access nor `you-finance` is available, tell the user what is missing and ask whether they want to provide `YDC_API_KEY`, install or connect the You.com finance MCP server profile, or use an MPP/x402-capable client. Provide the server URL and auth options from the prerequisites above, point to the MCP setup mechanism for their current agent or MCP client, and do not install or modify configuration without user approval.
-- `you-finance` supports You.com auth via `YDC_API_KEY` bearer auth, OAuth, or MCP payment-header pass-through.
+1. Reuse an existing local finance script when one exists. Look in `scripts/`, package scripts, and the current working directory.
+2. Otherwise, implement against `https://api.you.com/v1/finance_research`, using Docs MCP `searchDocs` to verify current request shape, auth, payment behavior, and `research_effort` before coding. If Docs MCP is unavailable, use the canonical page: https://you.com/docs/api-reference/finance-research/v1-finance_research
+   - With `YDC_API_KEY`, use these API request headers: `X-API-Key: ${YDC_API_KEY}` and `User-Agent: SKILL/(@youdotcom-oss/agent-skills you-finance)`.
+   - With MPP/x402, expect Finance Research API pricing by `research_effort`; retry `402 payment-required` only through a payment-capable client or library.
+3. Use `you-finance` MCP only when direct API implementation is not practical, for example OAuth or MCP-hosted payment handling is required and the client can tolerate long request resolution times.
+   - Prefer a dedicated `you-finance` server profile when using MCP and the host exposes server profiles. The expected remote MCP config is `https://api.you.com/mcp?tools=you-finance`.
+   - `you-finance` supports You.com auth via `YDC_API_KEY` bearer auth, OAuth, or MCP payment-header pass-through. If the MCP client receives a `402 payment-required` challenge, let the client pay externally and retry with payment headers. Do not handle wallets or signing in this skill.
+   - If neither API access nor `you-finance` is available, tell the user what is missing, provide the Finance Research API and MCP setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 
 ## When to use
 

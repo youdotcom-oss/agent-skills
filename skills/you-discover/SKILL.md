@@ -19,9 +19,8 @@ Use this skill while planning how to integrate You.com with an agent SDK, IDE, a
 
 1. Check whether the standard You.com MCP server exposes `you-discover` at `https://api.you.com/mcp`.
 2. Check whether the You.com Docs MCP tool `searchDocs` is available at `https://you.com/docs/_mcp/server`.
-3. If `you-discover` is unavailable but Docs MCP is available, continue with docs-only planning, clearly state that catalog discovery was not available, and ask whether the user wants to install or connect `you-discover` using the setup guidance in step 5.
-4. If neither discovery nor docs access is available, ask whether the user wants to install or connect either server using the setup guidance in step 5.
-5. Setup guidance for a missing server: provide the server name, URL, and auth requirement from the `metadata.mcp_servers` field in the frontmatter above; point to the MCP setup mechanism for the user's current agent or MCP client; do not install or modify configuration without user approval.
+3. If either server is missing, connect or install the missing MCP server(s): provide the server name, URL, and auth requirement from the `metadata.mcp_servers` field in the frontmatter above; point to the MCP setup mechanism for the current agent or MCP client; do not connect or install or modify configuration without approval.
+4. Once both `you-discover` and Docs MCP are available, enter the planning loop: use `you-discover` to explore candidate resources for the target, draft a plan naming the selected resource and why it fits, then return to Docs MCP to verify auth, install, and setup steps before recommending.
 
 ## Discovery workflow
 
@@ -29,7 +28,7 @@ Use this skill while planning how to integrate You.com with an agent SDK, IDE, a
 2. When available, use `you-discover` to search You.com's AI Catalog, and any catalogs it links to when supported, for resources that match the target task.
 3. Use `searchDocs` to verify official You.com docs for API References, MCP setup, Python SDK, auth, and install commands.
 4. Compare available `you-discover` results and docs, then recommend the smallest integration path.
-5. If no first-class integration fits, recommend a small direct API script or thin MCP bridge rather than reimplementing catalog crawling in the skill.
+5. If no discovered resource fits, recommend a small direct API script or thin MCP bridge rather than reimplementing catalog crawling in the skill.
 
 When planning paid direct API or MCP integrations, keep payment protocol guidance endpoint-specific: search and contents use x402 for keyless paid retries, while research and finance research can use MPP or x402.
 
@@ -54,13 +53,12 @@ Do not turn this skill into an ARD crawler or ranking script. Prefer the standar
 
 ## Recommendation policy
 
-Prefer these options in order:
+Recommend the smallest verified path for the target. Tool types are composable, not mutually exclusive: a skill may describe a workflow that uses MCP tools, SDK calls, scripts, or existing integrations, but a skill is not required for every You.com integration. Select the tool type(s) that fit the target:
 
-1. Existing You.com plugin, skill, MCP server, Python SDK, or API resource discovered by `you-discover` and verified with docs.
-2. Native MCP configuration, when the target supports MCP.
+1. Reuse an existing You.com plugin, skill, MCP server, Python SDK, or API resource discovered by `you-discover` and verified with docs when it matches the target.
+2. Use MCP integration through native MCP configuration when the target supports MCP, or through a thin bridge over `listTools` and `callTool` when it does not. Both reach the same You.com MCP servers; the bridge is the fallback shape, not a separate integration.
 3. SDK-specific integration, when the target has an official You.com Python SDK guide.
 4. A small direct API script or HTTP client, when that is simpler than plugin or MCP setup.
-5. A minimal bridge over MCP `listTools` and `callTool`, when the target does not support MCP.
 
 Ask the user before installing, connecting, or modifying any target tool configuration. Never auto-install a discovered resource.
 
