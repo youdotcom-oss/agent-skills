@@ -100,6 +100,34 @@ describe('Pi extension', () => {
       expect(duplicates).toEqual([])
     })
 
+    test('passes MCP content text blocks to the model without JSON-wrapping the full result', async () => {
+      const extension = await loadExtension()
+      const { pi, tools } = createPiMock()
+      process.env.YDC_API_KEY = YDC_API_KEY
+
+      await extension(pi)
+      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search-free')
+      expect(tool).toBeDefined()
+      if (!tool) throw new Error('you-search-free tool was not registered')
+
+      const result = (await tool.execute('call-1', { query: 'OpenAI' })) as {
+        content: Array<{ type: string; text: string }>
+        details: { structuredContent?: unknown }
+      }
+
+      // Model-facing content is raw text blocks from the MCP server, not JSON.stringify(result)
+      expect(result.content.length).toBeGreaterThan(0)
+      expect(result.content.every((block) => block.type === 'text')).toBe(true)
+      const firstBlock = result.content[0]
+      expect(firstBlock).toBeDefined()
+      if (!firstBlock) throw new Error('content block missing')
+      // The text must not be a JSON wrapper of the entire MCP response (which would include structuredContent)
+      expect(firstBlock.text).not.toContain('structuredContent')
+      expect(firstBlock.text).not.toMatch(/^\{"content":/)
+      // Full raw result (including structuredContent) is preserved in details for UI/logs
+      expect(result.details.structuredContent).toBeDefined()
+    })
+
     test('rejects invalid tool input before crossing the MCP boundary', async () => {
       const extension = await loadExtension()
       const { pi, tools } = createPiMock()

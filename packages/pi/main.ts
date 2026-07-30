@@ -35,10 +35,15 @@ const parameters = Type.Object({}, { additionalProperties: true })
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const toToolResult = (result: unknown) => ({
-  content: [{ type: 'text' as const, text: JSON.stringify(result) }],
-  details: result,
-})
+const toToolResult = (result: unknown) => {
+  const { content } = result as { content: Array<{ type: string; text?: string }> }
+  return {
+    content: content
+      .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
+      .map(({ text }) => ({ type: 'text' as const, text })),
+    details: result,
+  }
+}
 
 const createHeaders = ({ authenticated = true }: { authenticated?: boolean } = {}) => {
   if (authenticated && !process.env.YDC_API_KEY) {
