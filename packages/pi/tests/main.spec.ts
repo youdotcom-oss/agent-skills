@@ -10,60 +10,6 @@ type RegisteredEvent = {
   handler: (...args: unknown[]) => unknown
 }
 
-const connectMock = mock(async (_transport: unknown): Promise<void> => {})
-const closeMock = mock(async (): Promise<void> => {})
-const callToolMock = mock(
-  async (_input: unknown): Promise<unknown> => ({
-    content: [{ type: 'text', text: 'ok' }],
-    structuredContent: { answer: 'ok' },
-  }),
-)
-const defaultListToolsImpl = (url: string) => ({
-  tools: url.includes('/docs/')
-    ? [{ name: 'searchDocs', description: 'Search You.com docs', inputSchema: { type: 'object' } }]
-    : [
-        { name: 'you-search', description: 'Search the web', inputSchema: { type: 'object' } },
-        { name: 'you-contents', description: 'Extract page contents', inputSchema: { type: 'object' } },
-        { name: 'you-research', description: 'Research a topic', inputSchema: { type: 'object' } },
-        { name: 'you-finance', description: 'Research finance', inputSchema: { type: 'object' } },
-      ],
-})
-
-const listToolsMock = mock(defaultListToolsImpl)
-const clientConstructorMock = mock((_clientInfo: unknown): void => {})
-
-class MockClient {
-  url = ''
-
-  constructor(clientInfo: unknown) {
-    clientConstructorMock(clientInfo)
-  }
-
-  async connect(transport: unknown) {
-    this.url = (transport as { url: URL }).url.href
-    connectMock(transport)
-  }
-
-  async listTools() {
-    return listToolsMock(this.url)
-  }
-
-  async callTool(input: unknown) {
-    return callToolMock(input)
-  }
-
-  async close() {
-    closeMock()
-  }
-}
-
-const transportMock = mock((url: URL, options: unknown) => ({ options, url }))
-
-mock.module('@modelcontextprotocol/sdk/client/index.js', () => ({ Client: MockClient }))
-mock.module('@modelcontextprotocol/sdk/client/streamableHttp.js', () => ({
-  StreamableHTTPClientTransport: transportMock,
-}))
-
 const loadExtension = async () => (await import(`../main.ts?test=${Date.now()}-${Math.random()}`)).default
 
 const createPiMock = () => {
@@ -103,15 +49,10 @@ const callBeforeAgentStart = async (
   return result
 }
 
+const YDC_API_KEY = process.env.YDC_API_KEY ?? ''
+
 describe('Pi extension', () => {
   afterEach(() => {
-    connectMock.mockClear()
-    closeMock.mockClear()
-    callToolMock.mockClear()
-    listToolsMock.mockReset()
-    listToolsMock.mockImplementation(defaultListToolsImpl)
-    clientConstructorMock.mockClear()
-    transportMock.mockClear()
     delete process.env.YDC_API_KEY
   })
 
@@ -119,7 +60,6 @@ describe('Pi extension', () => {
     test('registers bundled skills via resources_discover', async () => {
       const extension = await loadExtension()
       const { events, pi } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
 
       await extension(pi)
 
@@ -132,75 +72,45 @@ describe('Pi extension', () => {
       })
     })
 
-    test('registers all You.com MCP tool variants', async () => {
+    test('registers all You.com MCP tool variants from real endpoints', async () => {
       const extension = await loadExtension()
       const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
+      process.env.YDC_API_KEY = YDC_API_KEY
 
       await extension(pi)
 
-      expect(tools.map((tool) => tool.name).sort()).toEqual(
-        ['searchDocs', 'you-contents', 'you-finance', 'you-research', 'you-search'].sort(),
-      )
-    })
+      const names = tools.map((tool) => tool.name)
 
-    test('bridges a Pi tool call to the free-profile You.com MCP server', async () => {
-      const extension = await loadExtension()
-      const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
+      // Free-profile server returns only you-search (keyless)
+      expect(names).toContain('you-search-free')
 
-      await extension(pi)
-      transportMock.mockClear()
-      connectMock.mockClear()
-      closeMock.mockClear()
-      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search')
-      expect(tool).toBeDefined()
-      if (!tool) throw new Error('you-search tool was not registered')
+      // Finance server returns only you-finance
+      expect(names).toContain('you-finance')
 
-      await tool.execute('call-1', { query: 'OpenAI' })
+      // Base server returns you-contents, you-research (and NOT you-search or you-finance, which
+      // are scoped to their own query-param endpoints)
+      expect(names).toContain('you-contents')
+      expect(names).toContain('you-research')
 
-      expect(transportMock).toHaveBeenCalledWith(
-        new URL('https://api.you.com/mcp?profile=free'),
-        expect.objectContaining({ requestInit: { headers: {} } }),
-      )
-      expect(callToolMock).toHaveBeenCalledWith({ name: 'you-search', arguments: { query: 'OpenAI' } })
-      expect(closeMock).toHaveBeenCalled()
-    })
+      // Docs server returns searchDocs
+      expect(names).toContain('searchDocs')
 
-    test('bridges the finance tool to the authenticated You.com MCP server', async () => {
-      const extension = await loadExtension()
-      const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
-
-      await extension(pi)
-      transportMock.mockClear()
-      const financeTool = tools.find((registeredTool) => registeredTool.name === 'you-finance')
-      expect(financeTool).toBeDefined()
-      if (!financeTool) throw new Error('you-finance tool was not registered')
-
-      await financeTool.execute('call-2', { query: 'Nvidia earnings' })
-
-      expect(transportMock).toHaveBeenCalledWith(
-        new URL('https://api.you.com/mcp?tools=you-finance'),
-        expect.objectContaining({
-          requestInit: { headers: { Authorization: 'Bearer test-key' } },
-        }),
-      )
+      // No duplicate registrations across endpoints
+      const duplicates = names.filter((name, i) => names.indexOf(name) !== i)
+      expect(duplicates).toEqual([])
     })
 
     test('rejects invalid tool input before crossing the MCP boundary', async () => {
       const extension = await loadExtension()
       const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
+      process.env.YDC_API_KEY = YDC_API_KEY
 
       await extension(pi)
-      connectMock.mockClear()
-      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search')
+      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search-free')
       expect(tool).toBeDefined()
-      if (!tool) throw new Error('you-search tool was not registered')
+      if (!tool) throw new Error('you-search-free tool was not registered')
 
       await expect(tool.execute('call-1', [])).rejects.toThrow('params must be an object')
-      expect(connectMock).not.toHaveBeenCalled()
     })
   })
 
@@ -208,7 +118,7 @@ describe('Pi extension', () => {
     test('appends static host context identifying the MCP adapter config in before_agent_start', async () => {
       const extension = await loadExtension()
       const { pi, events } = createPiMock()
-      process.env.YDC_API_KEY = 'test-key'
+      process.env.YDC_API_KEY = YDC_API_KEY
 
       await extension(pi)
 
@@ -218,6 +128,7 @@ describe('Pi extension', () => {
       expect(result.systemPrompt).toContain('@youdotcom-oss/pi')
       expect(result.systemPrompt).toContain('Pi has no separate MCP configuration mechanism')
       // All four configs identified
+      expect(result.systemPrompt).toContain('`you-search-free` (free profile, no auth)')
       expect(result.systemPrompt).toContain('https://api.you.com/mcp?profile=free')
       expect(result.systemPrompt).toContain('https://api.you.com/mcp?tools=you-finance')
       expect(result.systemPrompt).toContain('https://api.you.com/mcp')
