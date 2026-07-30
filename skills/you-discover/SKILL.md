@@ -19,8 +19,9 @@ Use this skill while planning how to integrate You.com with an agent SDK, IDE, a
 
 1. Check whether the standard You.com MCP server exposes `you-discover` at `https://api.you.com/mcp`.
 2. Check whether the You.com Docs MCP tool `searchDocs` is available at `https://you.com/docs/_mcp/server`.
-3. If `you-discover` is unavailable but Docs MCP is available, continue with docs-only planning and clearly state that catalog discovery was not available.
-4. If either server is unavailable, tell the user which server is missing and ask whether they want to install or connect it. Provide the server name, URL, and auth requirement from the checks above, and point to the MCP setup mechanism for their current agent or MCP client. Do not install or modify configuration without user approval.
+3. If `you-discover` is unavailable but Docs MCP is available, continue with docs-only planning, clearly state that catalog discovery was not available, and ask whether the user wants to install or connect `you-discover` using the setup guidance in step 5.
+4. If neither discovery nor docs access is available, ask whether the user wants to install or connect either server using the setup guidance in step 5.
+5. Setup guidance for a missing server: provide the server name, URL, and auth requirement from the `metadata.mcp_servers` field in the frontmatter above; point to the MCP setup mechanism for the user's current agent or MCP client; do not install or modify configuration without user approval.
 
 ## Discovery workflow
 
