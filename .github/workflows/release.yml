@@ -158,6 +158,8 @@ jobs:
 
       - name: Validate release changes
         if: ${{ inputs.apply_versions }}
+        env:
+          YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
         run: |
           bun run build
           bun run check
