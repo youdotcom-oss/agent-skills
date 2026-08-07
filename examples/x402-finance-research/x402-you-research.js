@@ -83,8 +83,11 @@ async function siwxFetch(url) {
   const first = await fetch(url)
   if (first.status !== 401) return { res: first, body: await first.json().catch(() => null) }
 
-  const challenge = (await first.json())['sign-in-with-x']
+  // Not every 401 is a SIWX challenge — rate limits and proxy errors land here too.
+  const challenge = (await first.json().catch(() => null))?.['sign-in-with-x']
+  if (!challenge?.supportedChains) throw new Error('401 carried no sign-in-with-x challenge')
   const chain = challenge.supportedChains.find((c) => c.chainId === NETWORK)
+  if (!chain) throw new Error(`challenge offers no ${NETWORK} option`)
   if (chain.type !== 'eip191') throw new Error(`server wants ${chain.type}; this signs eip191`)
 
   // The server sends no nonce/issuedAt and createSIWxPayload only copies them
@@ -101,7 +104,11 @@ async function siwxFetch(url) {
   return { res, body: await res.json().catch(() => null) }
 }
 
-const pollUrl = new URL(job.poll_url, ORIGIN).toString()
+// poll_url is server-supplied and gets the SIWX signature, so it must stay on-origin:
+// an absolute URL would override the base and send proof-of-wallet to another host.
+if (!job.poll_url) throw new Error(`no poll_url in the response: ${JSON.stringify(job)}`)
+const pollUrl = new URL(job.poll_url, ORIGIN)
+if (pollUrl.origin !== ORIGIN) throw new Error(`poll_url points off-origin: ${pollUrl.origin}`)
 const started = Date.now()
 while (Date.now() - started < 300_000) {
   const { res, body } = await siwxFetch(pollUrl)
@@ -110,7 +117,12 @@ while (Date.now() - started < 300_000) {
     process.exit(1)
   }
   if (res.ok && body && body.status !== 'pending' && body.status !== 'running') {
-    console.log(`\n--- report (${body.output.sources.length} sources) ---\n`)
+    // Terminal but not successful — you already paid, so say why rather than crashing.
+    if (!body.output) {
+      console.error(`\njob ended as ${body.status}:`, body)
+      process.exit(1)
+    }
+    console.log(`\n--- report (${body.output.sources?.length ?? 0} sources) ---\n`)
     console.log(body.output.content)
     process.exit(0)
   }
