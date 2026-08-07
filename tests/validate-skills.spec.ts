@@ -188,10 +188,13 @@ describe('skills validation', () => {
 
   test('skill directories contain only SKILL.md files and approved support directories', async () => {
     const skillFiles = await loadSkillFiles()
+    const skillsWithReferences = new Set(['you-finance', 'you-research', 'you-web'])
 
     for (const skillFile of skillFiles) {
       const entries = await readdir(dirname(skillFile.path))
-      const expectedEntries = skillFile.directoryName === 'you-research' ? ['SKILL.md', 'references'] : ['SKILL.md']
+      const expectedEntries = skillsWithReferences.has(skillFile.directoryName)
+        ? ['SKILL.md', 'references']
+        : ['SKILL.md']
 
       expect(entries.sort()).toEqual(expectedEntries)
     }

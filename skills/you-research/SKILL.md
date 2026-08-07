@@ -43,7 +43,7 @@ If Docs MCP is unavailable, use the canonical pages:
 - https://you.com/docs/api-reference/research/v1-research-task
 - https://you.com/docs/api-reference/research/v1-research-task-stream
 
-Keep the script aligned with the docs returned at runtime and include the auth or payment headers listed above. If the user wants keyless MPP/x402 direct HTTP usage for Research API, verify current payment guidance in Docs MCP first, then handle `402 payment-required` as a challenge and retry only through a payment-capable client or library. Do not apply MPP guidance to plain search or contents REST calls; those should use x402 only.
+Keep the script aligned with the docs returned at runtime and include the auth or payment headers listed above. If the user wants keyless MPP/x402 direct HTTP usage for Research API, verify current payment guidance in Docs MCP first, then handle `402 payment-required` as a challenge and retry only through a payment-capable client or library. For the direct x402 REST client pattern, follow [x402 direct client](references/x402-direct-client.md); for the MCP-composition alternative (You.com MCP + Coinbase Payments MCP, no manual signing), see [Coinbase Payments MCP path](references/coinbase-payments-mcp.md). Do not apply MPP guidance to plain search or contents REST calls; those should use x402 only.
 
 ## Decision Tree
 
