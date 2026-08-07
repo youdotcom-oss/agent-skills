@@ -1,4 +1,6 @@
 {
+  // `examples/` are standalone runnable snippets with their own dependencies, not part of the workspace build.
+  "exclude": ["examples"],
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],

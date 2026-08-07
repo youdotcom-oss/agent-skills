@@ -113,11 +113,20 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 
 See each package README for host-specific details.
 
+## Examples
+
+Standalone runnable clients that show a You.com API surface end to end. They carry their own dependencies and are not part of the workspace build.
+
+| Example                                                                          | Shows                                                                                                          |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [`examples/x402-finance-research/`](./examples/x402-finance-research/README.md) | Keyless [x402](https://x402.org) payment: pay USDC on Base for a Finance Research report with no API key or account. |
+
 ## Repository Layout
 
 | Path                 | Purpose                                         |
 | -------------------- | ----------------------------------------------- |
 | `skills/`            | Shared You.com skills                           |
+| `examples/`          | Standalone runnable examples                    |
 | `.claude-plugin/`    | Claude Code plugin manifest                     |
 | `.cursor-plugin/`    | Cursor plugin manifest                          |
 | `.codex-plugin/`     | Codex and ChatGPT plugin manifest               |
