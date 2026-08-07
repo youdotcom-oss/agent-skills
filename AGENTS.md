@@ -51,13 +51,17 @@ Mark deliberate shortcuts with a `MINIMAL:` comment naming the ceiling and the u
 
 ## Release workflow
 
-The GitHub Actions UI runs **Semantic Release** manually:
+The **Semantic Release** workflow (`release.yml`) runs manually via `workflow_dispatch` — from the Actions UI, or with `gh` (`workflow` + `repo` scopes):
 
-1. Open **Actions** -> **Semantic Release** -> **Run workflow**.
-2. First run with `apply_versions=false` and `publish_artifacts=false`; inspect the `release-plan` artifact.
-3. Set `base_ref` to the intended comparison point. `HEAD~1` only sees the last commit; an older base may bump every changed skill, plugin, npm package, PyPI package, and ClawHub package since that ref.
-4. Run again with `apply_versions=true` and `publish_artifacts=false` to commit version bumps.
-5. After the version-bump commit lands on the branch, run publish-only with `apply_versions=false` and `publish_artifacts=true`.
+```bash
+gh workflow run release.yml --ref main -f base_ref=<ref> -f apply_versions=<bool> -f publish_artifacts=<bool> [-f droid_advice=false]
+```
+
+1. Preview locally first: `bun scripts/semver-release.ts plan --base <ref> --out /tmp/agent-skills-release-plan.json` (prints bump levels; applies nothing).
+2. Dry-run in CI with `apply_versions=false` and `publish_artifacts=false`; inspect the `release-plan` artifact.
+3. Set `base_ref` to the last release commit. `HEAD~1` only sees the last commit — after a squash-merge plus a follow-up fix it misses the feature changes — so prefer an explicit commit SHA (e.g. the previous `chore(release)` commit). An older base may bump every changed skill, plugin, npm package, PyPI package, and ClawHub package since that ref.
+4. Apply versions: `apply_versions=true`, `publish_artifacts=false`. The workflow bumps, runs `build`/`check`/`test`, and commits `chore(release): apply semantic release plan [skip ci]` to the dispatched ref.
+5. After the version-bump commit lands, publish-only: `apply_versions=false`, `publish_artifacts=true`. **Reuse the same `base_ref` from step 3.** The apply run advanced the ref, so a relative base like `HEAD~2` now points elsewhere — the explicit SHA is what makes the same value work for both runs. The publish jobs use the regenerated plan only to pick which packages to publish (`has_npm`/`has_pypi`/`has_clawhub`); published versions come from the checked-out release commit.
 6. If a registry already succeeded and a retry should skip it, disable the matching publish toggle: `publish_npm`, `publish_pypi`, or `publish_clawhub`.
 
 ## Verification
