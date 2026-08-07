@@ -32,10 +32,11 @@ Before answering, choose the lightest path that fits the task:
 1. Reuse an existing local finance script when one exists. Look in `scripts/`, package scripts, and the current working directory.
 2. Otherwise, implement against `https://api.you.com/v1/finance_research`, using Docs MCP `searchDocs` to verify current request shape, auth, payment behavior, and `research_effort` before coding. If Docs MCP is unavailable, use the canonical page: https://you.com/docs/api-reference/finance-research/v1-finance_research
    - With `YDC_API_KEY`, use these API request headers: `X-API-Key: ${YDC_API_KEY}` and `User-Agent: SKILL/(@youdotcom-oss/agent-skills you-finance)`.
-   - With MPP/x402, expect Finance Research API pricing by `research_effort`; retry `402 payment-required` only through a payment-capable client or library.
+   - With MPP/x402, expect Finance Research API pricing by `research_effort`; retry `402 payment-required` only through a payment-capable client or library. For the keyless direct x402 REST client pattern (pay USDC on Base, no API key), follow [x402 direct client](references/x402-direct-client.md); it encodes the 5-step flow, dependency and version requirements, security rules, and spend discipline.
 3. Use `you-finance` MCP only when direct API implementation is not practical, for example OAuth or MCP-hosted payment handling is required and the client can tolerate long request resolution times.
    - Prefer a dedicated `you-finance` server profile when using MCP and the host exposes server profiles. The expected remote MCP config is `https://api.you.com/mcp?tools=you-finance`.
    - `you-finance` supports You.com auth via `YDC_API_KEY` bearer auth, OAuth, or MCP payment-header pass-through. If the MCP client receives a `402 payment-required` challenge, let the client pay externally and retry with payment headers. Do not handle wallets or signing in this skill.
+   - For keyless payment with no API key and no manual signing, compose the You.com MCP server with the Coinbase Payments MCP server; see [Coinbase Payments MCP path](references/coinbase-payments-mcp.md) for setup and when to choose it over the direct client.
    - If neither API access nor `you-finance` is available, tell the user what is missing, provide the Finance Research API and MCP setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 
 ## When to use

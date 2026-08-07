@@ -49,6 +49,7 @@ Before using this skill, check the MCP tools available in the current agent envi
 - For `you-search`, `you-contents`, and the corresponding REST endpoints, use x402 payment challenges only.
 - If a search or contents tool call returns HTTP `402` with `payment-required`, let the MCP client handle payment externally and retry. Do not treat that response as a final answer.
 - Research and finance endpoints have broader MPP/x402 support; use the `you-research` or `you-finance` skill for those flows.
+- For keyless payment with no API key and no manual signing, compose the You.com MCP server with the Coinbase Payments MCP server so the host handles payment; see [Coinbase Payments MCP path](references/coinbase-payments-mcp.md).
 - Account balance is private billing data; do not access balance endpoints through keyless payment flows.
 - Do not implement wallet signing or payment settlement inside this skill. Use the host MCP client's x402 flow.
 
