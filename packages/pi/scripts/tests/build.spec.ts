@@ -20,7 +20,7 @@ describe('copySkills', () => {
       const copied = await copySkills({ sourceSkillsDir: sourceDir, targetSkillsDir: targetDir })
 
       expect(copied).toBe(1)
-      expect(await readdir(targetDir)).toEqual(['.gitkeep', 'you-web'])
+      expect((await readdir(targetDir)).sort()).toEqual(['.gitkeep', 'you-web'])
       expect(await Bun.file(join(targetDir, 'you-web', 'SKILL.md')).text()).toBe('# You Web\n')
     } finally {
       await rm(tempDir, { force: true, recursive: true })
