@@ -1,6 +1,5 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client, type FetchLike, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import { Type } from 'typebox'
 import packageJson from './package.json' with { type: 'json' }
 
@@ -9,6 +8,7 @@ type PiToolDefinition = Parameters<ExtensionAPI['registerTool']>[0]
 type McpBridgeConfig = Omit<PiToolDefinition, 'execute' | 'parameters'> & {
   url?: string
   authenticated?: boolean
+  fetch?: FetchLike
 }
 
 type McpTool = {
@@ -20,6 +20,8 @@ type McpTool = {
 type McpServerConfig = {
   url: string
   authenticated?: boolean
+  /** Custom fetch for the Streamable HTTP transport — proxies, tests, non-standard runtimes. */
+  fetch?: FetchLike
   promptGuidelines: string[]
   /** Override the name the tool is registered under in Pi. The MCP callTool still uses the original server tool name. */
   registerAs?: (tool: McpTool) => string
@@ -55,23 +57,83 @@ const createHeaders = ({ authenticated = true }: { authenticated?: boolean } = {
   }
 }
 
-const discoveredToolsCache = new Map<string, Promise<McpTool[]>>()
+type McpServerTarget = Pick<McpServerConfig, 'authenticated' | 'fetch' | 'url'>
 
-const withMcpClient = async <T>(
-  { authenticated, url }: { authenticated?: boolean; url: string },
-  fn: (client: Client) => Promise<T>,
-): Promise<T> => {
+type McpConnection = { client: Client; transport: StreamableHTTPClientTransport }
+
+const connectMcpClient = async ({ authenticated, fetch, url }: McpServerTarget): Promise<McpConnection> => {
   const client = new Client(CLIENT_INFO)
   const transport = new StreamableHTTPClientTransport(new URL(url), {
     requestInit: { headers: createHeaders({ authenticated }) },
+    ...(fetch ? { fetch } : {}),
   })
 
   await client.connect(transport)
+  return { client, transport }
+}
+
+const closeMcpConnection = async ({ client, transport }: McpConnection) => {
+  // Over Streamable HTTP the clean disconnect terminates the server-side
+  // session before tearing down the transport; it is a no-op when the server
+  // never issued a session ID.
+  await transport.terminateSession().catch(() => {})
+  await client.close().catch(() => {})
+}
+
+const discoveredToolsCache = new Map<string, Promise<McpTool[]>>()
+
+const withMcpClient = async <T>(server: McpServerTarget, fn: (client: Client) => Promise<T>): Promise<T> => {
+  const connection = await connectMcpClient(server)
 
   try {
-    return await fn(client)
+    return await fn(connection.client)
   } finally {
-    await client.close()
+    await closeMcpConnection(connection)
+  }
+}
+
+// Lazily connected clients shared across callTool executions so the MCP
+// initialize handshake is paid once per server instead of once per call.
+// Closed from the session_shutdown handler registered in the extension entry point.
+const mcpClients = new Map<string, Promise<McpConnection>>()
+
+const mcpCacheKey = ({ authenticated, url }: McpServerTarget) => `${authenticated === false ? 'public' : 'auth'}:${url}`
+
+const getMcpClient = (server: McpServerTarget) => {
+  const cacheKey = mcpCacheKey(server)
+  let connection = mcpClients.get(cacheKey)
+  if (!connection) {
+    connection = connectMcpClient(server)
+    mcpClients.set(cacheKey, connection)
+    connection.catch(() => mcpClients.delete(cacheKey))
+  }
+  return connection
+}
+
+const resetMcpClient = async (server: McpServerTarget) => {
+  const cacheKey = mcpCacheKey(server)
+  const connection = mcpClients.get(cacheKey)
+  mcpClients.delete(cacheKey)
+  await connection?.then(closeMcpConnection).catch(() => {})
+}
+
+const closeMcpClients = async () => {
+  const connections = [...mcpClients.values()]
+  mcpClients.clear()
+  await Promise.all(connections.map((connection) => connection.then(closeMcpConnection).catch(() => {})))
+}
+
+const withPooledMcpClient = async <T>(server: McpServerTarget, fn: (client: Client) => Promise<T>): Promise<T> => {
+  try {
+    return await fn((await getMcpClient(server)).client)
+  } catch {
+    // A long-lived StreamableHTTP session can go stale (server restart, session
+    // expiry). Drop the cached client and retry once on a fresh connection.
+    // MINIMAL: any failure (not just transport errors) triggers one reconnect;
+    // permanent tool errors simply surface again after the retry. Upgrade path:
+    // only reset on SdkError/transport failures and rethrow ProtocolError.
+    await resetMcpClient(server)
+    return await fn((await getMcpClient(server)).client)
   }
 }
 
@@ -104,9 +166,10 @@ const registerMcpTool = (pi: ExtensionAPI, definition: McpBridgeConfig & { tool:
         throw new Error('params must be an object')
       }
 
-      const result = await withMcpClient(
+      const result = await withPooledMcpClient(
         {
           authenticated: definition.authenticated,
+          fetch: definition.fetch,
           url: definition.url ?? MCP_URL,
         },
         async (client) => await client.callTool({ name: definition.tool.name, arguments: params }),
@@ -123,6 +186,7 @@ const registerMcpServerTools = async (pi: ExtensionAPI, server: McpServerConfig)
     registerMcpTool(pi, {
       description: server.promptGuidelines[0] ?? `Use ${tool.name} for You.com MCP calls.`,
       authenticated: server.authenticated,
+      fetch: server.fetch,
       label: registeredName,
       name: registeredName,
       promptGuidelines: server.promptGuidelines,
@@ -158,8 +222,8 @@ const SERVER_CONFIGS: McpServerConfig[] = [
   },
 ]
 
-const registerMcpTools = async (pi: ExtensionAPI) => {
-  await Promise.all(SERVER_CONFIGS.map((config) => registerMcpServerTools(pi, config)))
+const registerMcpTools = async (pi: ExtensionAPI, servers: McpServerConfig[]) => {
+  await Promise.all(servers.map((config) => registerMcpServerTools(pi, config)))
 }
 
 const HOST_CONTEXT = [
@@ -184,14 +248,19 @@ const registerHostContext = (pi: ExtensionAPI) => {
  * Registers the minimal You.com MCP bridge and bundled Pi skill resources.
  *
  * @param pi - Pi extension API.
+ * @param servers - MCP servers to bridge; defaults to the You.com endpoints.
  *
  * @public
  */
-export default async function youPiPlugin(pi: ExtensionAPI) {
+export default async function youPiPlugin(pi: ExtensionAPI, servers: McpServerConfig[] = SERVER_CONFIGS) {
   pi.on('resources_discover', () => ({
     skillPaths: [SKILLS_PATH],
   }))
 
-  await registerMcpTools(pi)
+  // Reload, quit, and session switches all fire session_shutdown; close the
+  // pooled clients there (idempotent) and reconnect lazily on the next call.
+  pi.on('session_shutdown', closeMcpClients)
+
+  await registerMcpTools(pi, servers)
   registerHostContext(pi)
 }
