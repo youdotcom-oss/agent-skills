@@ -1,5 +1,10 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
-import { Client, type FetchLike, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
+import {
+  type CallToolResult,
+  Client,
+  type FetchLike,
+  StreamableHTTPClientTransport,
+} from '@modelcontextprotocol/client'
 import { Type } from 'typebox'
 import packageJson from './package.json' with { type: 'json' }
 
@@ -37,13 +42,15 @@ const parameters = Type.Object({}, { additionalProperties: true })
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const toToolResult = (result: unknown) => {
-  const { content } = result as { content: Array<{ type: string; text?: string }> }
+const toToolResult = ({ content, isError, structuredContent }: CallToolResult) => {
   return {
-    content: content
-      .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
-      .map(({ text }) => ({ type: 'text' as const, text })),
-    details: result,
+    content:
+      structuredContent !== undefined && !isError
+        ? [{ type: 'text' as const, text: JSON.stringify(structuredContent, null, 2) }]
+        : content
+            .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
+            .map(({ text }) => ({ type: 'text' as const, text })),
+    details: structuredContent,
   }
 }
 
