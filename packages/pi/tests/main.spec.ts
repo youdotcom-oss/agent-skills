@@ -290,7 +290,7 @@ describe('Pi extension', () => {
       }
     })
 
-    test('preserves tool error text instead of formatting missing structured content', async () => {
+    test('throws MCP tool execution errors so Pi marks the tool result as failed', async () => {
       const server = createTestServer()
       try {
         const extension = await loadExtension()
@@ -299,13 +299,8 @@ describe('Pi extension', () => {
         await extension(pi, [server.serverConfig])
 
         const tool = findTool(tools, 'structured-echo')
-        const result = (await tool.execute('call-1', { query: 1 })) as {
-          content: Array<{ text: string }>
-          details: unknown
-        }
 
-        expect(result.content[0]?.text).toContain('Input validation error')
-        expect(result.details).toBeUndefined()
+        await expect(tool.execute('call-1', { query: 1 })).rejects.toThrow('Input validation error')
       } finally {
         await server.close()
       }

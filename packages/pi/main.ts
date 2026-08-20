@@ -42,14 +42,22 @@ const parameters = Type.Object({}, { additionalProperties: true })
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const toTextContent = (content: CallToolResult['content']) =>
+  content
+    .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
+    .map(({ text }) => ({ type: 'text' as const, text }))
+
 const toToolResult = ({ content, isError, structuredContent }: CallToolResult) => {
+  const textContent = toTextContent(content)
+  if (isError) {
+    throw new Error(textContent.map(({ text }) => text).join('\n\n') || 'You.com MCP tool execution failed')
+  }
+
   return {
     content:
       structuredContent !== undefined && !isError
         ? [{ type: 'text' as const, text: JSON.stringify(structuredContent, null, 2) }]
-        : content
-            .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
-            .map(({ text }) => ({ type: 'text' as const, text })),
+        : textContent,
     details: structuredContent,
   }
 }
