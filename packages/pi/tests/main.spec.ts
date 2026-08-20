@@ -52,8 +52,18 @@ const callBeforeAgentStart = async (
 
 /** Real in-process MCP server: the extension's transport fetch is wired straight to handler.fetch. */
 const createTestServer = () => {
+  let closeWhileToolCallActive = 0
   let initializeCount = 0
   let failNextToolCall = false
+  let slowToolCallActive = false
+  let resolveSlowCallRelease: () => void = () => {}
+  let resolveSlowCallStarted: () => void = () => {}
+  const slowCallRelease = new Promise<void>((resolve) => {
+    resolveSlowCallRelease = resolve
+  })
+  const slowCallStarted = new Promise<void>((resolve) => {
+    resolveSlowCallStarted = resolve
+  })
 
   const handler = createMcpHandler(() => {
     const server = new McpServer({ name: 'fixture', version: '1.0.0' })
@@ -67,7 +77,15 @@ const createTestServer = () => {
           required: ['query'],
         }),
       },
-      async ({ query }) => ({ content: [{ type: 'text' as const, text: `echo:${query}` }] }),
+      async ({ query }) => {
+        if (query === 'slow') {
+          slowToolCallActive = true
+          resolveSlowCallStarted()
+          await slowCallRelease
+          slowToolCallActive = false
+        }
+        return { content: [{ type: 'text' as const, text: `echo:${query}` }] }
+      },
     )
     server.registerTool(
       'structured-echo',
@@ -97,6 +115,9 @@ const createTestServer = () => {
 
   const fetchHandler = async (url: string | URL, init?: RequestInit) => {
     const request = new Request(String(url), init)
+    if (request.method === 'DELETE' && slowToolCallActive) {
+      closeWhileToolCallActive += 1
+    }
     if (request.method === 'POST') {
       const body = (await request.clone().json()) as { method?: string }
       if (body.method === 'initialize') initializeCount += 1
@@ -110,16 +131,19 @@ const createTestServer = () => {
 
   return {
     close: () => handler.close(),
+    closeWhileToolCallActive: () => closeWhileToolCallActive,
     failNextToolCall: () => {
       failNextToolCall = true
     },
     initializeCount: () => initializeCount,
+    releaseSlowCall: () => resolveSlowCallRelease(),
     serverConfig: {
       url: 'http://fixture.local/mcp',
       authenticated: false,
       fetch: fetchHandler,
       promptGuidelines: ['fixture server'],
     },
+    waitForSlowCall: () => slowCallStarted,
   }
 }
 
@@ -329,6 +353,40 @@ describe('Pi extension', () => {
         // The dropped pooled client was replaced: one new handshake, then success.
         expect(server.initializeCount()).toBe(afterDiscovery + 2)
       } finally {
+        await server.close()
+      }
+    })
+
+    test('defers closing a dropped pooled client until concurrent calls drain', async () => {
+      const server = createTestServer()
+      try {
+        const extension = await loadExtension()
+        const { pi, tools } = createPiMock()
+
+        await extension(pi, [server.serverConfig])
+        const afterDiscovery = server.initializeCount()
+
+        const tool = findTool(tools, 'echo')
+        const slowResultPromise = tool.execute('call-slow', { query: 'slow' }) as Promise<{
+          content: Array<{ text: string }>
+        }>
+        await server.waitForSlowCall()
+
+        server.failNextToolCall()
+        const retryResult = (await tool.execute('call-fail', { query: 'fail' })) as {
+          content: Array<{ text: string }>
+        }
+
+        expect(retryResult.content[0]?.text).toBe('echo:fail')
+        expect(server.initializeCount()).toBe(afterDiscovery + 2)
+        expect(server.closeWhileToolCallActive()).toBe(0)
+
+        server.releaseSlowCall()
+        const slowResult = await slowResultPromise
+        expect(slowResult.content[0]?.text).toBe('echo:slow')
+        expect(server.closeWhileToolCallActive()).toBe(0)
+      } finally {
+        server.releaseSlowCall()
         await server.close()
       }
     })

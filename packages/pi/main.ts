@@ -67,6 +67,12 @@ const createHeaders = ({ authenticated = true }: { authenticated?: boolean } = {
 type McpServerTarget = Pick<McpServerConfig, 'authenticated' | 'fetch' | 'url'>
 
 type McpConnection = { client: Client; transport: StreamableHTTPClientTransport }
+type McpClientPoolEntry = {
+  activeCalls: number
+  closePromise?: Promise<void>
+  closeWhenIdle: boolean
+  promise: Promise<McpConnection>
+}
 
 const connectMcpClient = async ({ authenticated, fetch, url }: McpServerTarget): Promise<McpConnection> => {
   const client = new Client(CLIENT_INFO)
@@ -102,45 +108,80 @@ const withMcpClient = async <T>(server: McpServerTarget, fn: (client: Client) =>
 // Lazily connected clients shared across callTool executions so the MCP
 // initialize handshake is paid once per server instead of once per call.
 // Closed from the session_shutdown handler registered in the extension entry point.
-const mcpClients = new Map<string, Promise<McpConnection>>()
+const mcpClients = new Map<string, McpClientPoolEntry>()
 
 const mcpCacheKey = ({ authenticated, url }: McpServerTarget) => `${authenticated === false ? 'public' : 'auth'}:${url}`
 
 const getMcpClient = (server: McpServerTarget) => {
   const cacheKey = mcpCacheKey(server)
-  let connection = mcpClients.get(cacheKey)
-  if (!connection) {
-    connection = connectMcpClient(server)
-    mcpClients.set(cacheKey, connection)
-    connection.catch(() => mcpClients.delete(cacheKey))
+  let entry = mcpClients.get(cacheKey)
+  if (!entry) {
+    entry = {
+      activeCalls: 0,
+      closeWhenIdle: false,
+      promise: connectMcpClient(server),
+    }
+    mcpClients.set(cacheKey, entry)
+    entry.promise.catch(() => {
+      if (mcpClients.get(cacheKey) === entry) {
+        mcpClients.delete(cacheKey)
+      }
+    })
   }
-  return connection
+  return entry
 }
 
-const resetMcpClient = async (server: McpServerTarget) => {
+const closeMcpClientWhenIdle = async (entry: McpClientPoolEntry) => {
+  entry.closeWhenIdle = true
+  if (entry.activeCalls > 0) return
+
+  entry.closePromise ??= entry.promise.then(closeMcpConnection).catch(() => {})
+  await entry.closePromise
+}
+
+const releaseMcpClient = async (entry: McpClientPoolEntry) => {
+  entry.activeCalls -= 1
+  if (entry.activeCalls === 0 && entry.closeWhenIdle) {
+    await closeMcpClientWhenIdle(entry)
+  }
+}
+
+const resetMcpClient = async (server: McpServerTarget, entry: McpClientPoolEntry) => {
   const cacheKey = mcpCacheKey(server)
-  const connection = mcpClients.get(cacheKey)
-  mcpClients.delete(cacheKey)
-  await connection?.then(closeMcpConnection).catch(() => {})
+  if (mcpClients.get(cacheKey) === entry) {
+    mcpClients.delete(cacheKey)
+  }
+  await closeMcpClientWhenIdle(entry)
 }
 
 const closeMcpClients = async () => {
-  const connections = [...mcpClients.values()]
+  const entries = [...mcpClients.values()]
   mcpClients.clear()
-  await Promise.all(connections.map((connection) => connection.then(closeMcpConnection).catch(() => {})))
+  await Promise.all(entries.map(closeMcpClientWhenIdle))
+}
+
+const withMcpClientPoolEntry = async <T>(entry: McpClientPoolEntry, fn: (client: Client) => Promise<T>): Promise<T> => {
+  entry.activeCalls += 1
+  try {
+    return await fn((await entry.promise).client)
+  } finally {
+    await releaseMcpClient(entry)
+  }
 }
 
 const withPooledMcpClient = async <T>(server: McpServerTarget, fn: (client: Client) => Promise<T>): Promise<T> => {
+  const entry = getMcpClient(server)
   try {
-    return await fn((await getMcpClient(server)).client)
+    return await withMcpClientPoolEntry(entry, fn)
   } catch {
     // A long-lived StreamableHTTP session can go stale (server restart, session
-    // expiry). Drop the cached client and retry once on a fresh connection.
+    // expiry). Drop this entry from the cache, defer closing it until any
+    // concurrent users drain, and retry once on a fresh connection.
     // MINIMAL: any failure (not just transport errors) triggers one reconnect;
     // permanent tool errors simply surface again after the retry. Upgrade path:
     // only reset on SdkError/transport failures and rethrow ProtocolError.
-    await resetMcpClient(server)
-    return await fn((await getMcpClient(server)).client)
+    await resetMcpClient(server, entry)
+    return await withMcpClientPoolEntry(getMcpClient(server), fn)
   }
 }
 
