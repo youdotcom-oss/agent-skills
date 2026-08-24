@@ -6,7 +6,7 @@ This repo is for developers who want to:
 
 - add You.com MCP tools and skills to their coding agent quickly
 - use `you-discover` to find the right You.com API, MCP server, SDK, or docs path for an agentic project
-- package the same You.com skills for agent platforms such as Claude Code, Cursor, Codex, Copilot CLI, Kimi Code, OpenCode, OpenClaw, Pi, and Hermes
+- package the same You.com skills for agent platforms such as Claude Code, Cursor, Codex, Copilot CLI, Deep Code CLI, Kimi Code, OpenCode, OpenClaw, Pi, and Hermes
 
 ## Start Here
 
@@ -42,6 +42,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | GitHub Copilot CLI              | `copilot plugin marketplace add youdotcom-oss/agent-skills` then `copilot plugin install you@you-com` |
 | Codex                           | `codex plugin marketplace add youdotcom-oss/agent-skills --sparse .agents/plugins`                    |
 | Cursor                          | Install this repository from the Cursor plugin UI or CLI                                              |
+| Deep Code CLI                   | `npx skills add youdotcom-oss/agent-skills`                                                           |
 | Kimi Code                       | `/plugins install <repo url>`                                                                         |
 | OpenCode                        | `opencode plugin @youdotcom-oss/opencode`                                                             |
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
