@@ -1,21 +1,130 @@
 {
   "id": "you",
   "name": "You.com",
-  "description": "You.com skill pack with MCP setup metadata.",
+  "description": "You.com web search, content extraction, and research skills for OpenClaw.",
   "version": "1.5.0",
   "skills": ["./skills"],
+  "contracts": {
+    "webSearchProviders": ["you", "you-free"],
+    "webFetchProviders": ["you"]
+  },
+  "activation": {
+    "onStartup": false
+  },
   "setup": {
     "providers": [
       {
         "id": "you",
+        "authMethods": ["api-key"],
         "envVars": ["YDC_API_KEY"]
       }
     ],
     "requiresRuntime": false
   },
+  "configContracts": {
+    "secretInputs": {
+      "paths": [
+        {
+          "path": "apiKey",
+          "expected": "string",
+          "ownerKind": "capability"
+        }
+      ]
+    }
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "You.com API key",
+      "help": "Falls back to the YDC_API_KEY environment variable when unset.",
+      "placeholder": "ydc-...",
+      "sensitive": true
+    },
+    "baseUrl": {
+      "label": "Base URL",
+      "help": "Only change this for a You.com-compatible gateway.",
+      "advanced": true
+    },
+    "timeoutMs": {
+      "label": "Request timeout (ms)",
+      "advanced": true
+    },
+    "crawlTimeoutSeconds": {
+      "label": "Crawl timeout (s)",
+      "advanced": true
+    },
+    "count": {
+      "label": "Results per search"
+    },
+    "safesearch": {
+      "label": "SafeSearch"
+    },
+    "country": {
+      "label": "Country"
+    },
+    "freshness": {
+      "label": "Freshness"
+    },
+    "extractionMode": {
+      "label": "Extraction mode"
+    }
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
-    "properties": {}
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "You.com API key. Accepts a literal string or a SecretRef. Falls back to YDC_API_KEY."
+      },
+      "baseUrl": {
+        "type": "string",
+        "format": "uri",
+        "default": "https://api.you.com",
+        "description": "Base URL for You.com REST endpoints. Must be http or https."
+      },
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 300000,
+        "default": 30000,
+        "description": "Timeout applied to each You.com API request."
+      },
+      "crawlTimeoutSeconds": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 60,
+        "default": 10,
+        "description": "Per-page crawl timeout passed through to You.com content extraction."
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 10,
+        "description": "Default number of search results requested per query."
+      },
+      "safesearch": {
+        "type": "string",
+        "enum": ["off", "moderate", "strict"],
+        "default": "moderate",
+        "description": "SafeSearch filter level passed through to You.com search."
+      },
+      "country": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$",
+        "description": "Optional ISO 3166-1 alpha-2 country code passed through to You.com search."
+      },
+      "freshness": {
+        "type": "string",
+        "pattern": "^(day|week|month|year|[0-9]{4}-[0-9]{2}-[0-9]{2}to[0-9]{4}-[0-9]{2}-[0-9]{2})$",
+        "description": "Optional freshness filter passed through to You.com search."
+      },
+      "extractionMode": {
+        "type": "string",
+        "enum": ["none", "highlights", "full_page"],
+        "default": "none",
+        "description": "Content extraction requested alongside search results."
+      }
+    }
   }
 }

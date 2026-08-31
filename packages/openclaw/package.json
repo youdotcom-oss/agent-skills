@@ -1,7 +1,7 @@
 {
   "name": "@youdotcom-oss/openclaw",
   "version": "1.5.0",
-  "description": "You.com OpenClaw plugin — MCP setup metadata and web intelligence skills",
+  "description": "You.com OpenClaw plugin — native web search/fetch provider plumbing, MCP setup metadata, and web intelligence skills",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -41,16 +41,18 @@
       "./plugin.ts"
     ],
     "compat": {
-      "pluginApi": ">=2026.7.1-3",
-      "minGatewayVersion": "2026.7.1-3"
+      "pluginApi": ">=2026.8.1"
+    },
+    "install": {
+      "minHostVersion": ">=2026.8.1"
     },
     "build": {
-      "openclawVersion": "2026.7.1-3",
-      "pluginSdkVersion": "2026.7.1-3"
+      "openclawVersion": "2026.8.1",
+      "pluginSdkVersion": "2026.8.1"
     }
   },
   "dependencies": {},
   "peerDependencies": {
-    "openclaw": ">=2026.7.1-3"
+    "openclaw": ">=2026.8.1"
   }
 }
