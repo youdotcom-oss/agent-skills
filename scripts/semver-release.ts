@@ -31,12 +31,14 @@ const pluginManifests = [
   '.codex-plugin/plugin.json',
   '.cursor-plugin/plugin.json',
   '.kimi-plugin/plugin.json',
+  '.grok-plugin/plugin.json',
 ]
 const pluginMarketplaces = [
   '.claude-plugin/marketplace.json',
   '.agents/plugins/marketplace.json',
   '.cursor-plugin/marketplace.json',
   '.github/plugin/marketplace.json',
+  '.grok-plugin/marketplace.json',
 ]
 const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces]
 const npmPackages = {

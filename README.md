@@ -6,7 +6,7 @@ This repo is for developers who want to:
 
 - add You.com MCP tools and skills to their coding agent quickly
 - use `you-discover` to find the right You.com API, MCP server, SDK, or docs path for an agentic project
-- package the same You.com skills for agent platforms such as Claude Code, Cursor, Codex, Copilot CLI, Kimi Code, OpenCode, OpenClaw, Pi, and Hermes
+- package the same You.com skills for agent platforms such as Claude Code, Cursor, Codex, Copilot CLI, Kimi Code, Grok Build, OpenCode, OpenClaw, Pi, and Hermes
 
 ## Start Here
 
@@ -43,6 +43,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | Codex                           | `codex plugin marketplace add youdotcom-oss/agent-skills --sparse .agents/plugins`                    |
 | Cursor                          | Install this repository from the Cursor plugin UI or CLI                                              |
 | Kimi Code                       | `/plugins install <repo url>`                                                                         |
+| Grok Build                      | `grok plugin marketplace add youdotcom-oss/agent-skills` then `grok plugin install you --trust`       |
 | OpenCode                        | `opencode plugin @youdotcom-oss/opencode`                                                             |
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
 | Pi                              | `pi install npm:@youdotcom-oss/pi`                                                                    |
@@ -123,6 +124,7 @@ See each package README for host-specific details.
 | `.codex-plugin/`     | Codex and ChatGPT plugin manifest               |
 | `.plugin/`           | GitHub Copilot CLI plugin manifest              |
 | `.kimi-plugin/`      | Kimi Code plugin manifest                       |
+| `.grok-plugin/`      | Grok Build plugin manifest                      |
 | `packages/opencode/` | OpenCode package                                |
 | `packages/openclaw/` | OpenClaw package                                |
 | `packages/pi/`       | Pi package                                      |
