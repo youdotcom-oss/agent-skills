@@ -57,7 +57,13 @@ describe('plugin', () => {
     })
     expect(input.mcp?.['you-finance']).toEqual({
       type: 'remote',
-      url: 'https://api.you.com/mcp?tools=you-finance',
+      url: 'https://api.you.com/mcp/finance',
+      enabled: true,
+      oauth: {},
+    })
+    expect(input.mcp?.['you-research']).toEqual({
+      type: 'remote',
+      url: 'https://api.you.com/mcp/research',
       enabled: true,
       oauth: {},
     })

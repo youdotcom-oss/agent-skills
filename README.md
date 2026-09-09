@@ -92,8 +92,8 @@ The shared skills route agents to the lightest You.com surface that fits the tas
 | -------------- | --------------------------------------------------------------------------------------------------------------- |
 | `you-web`      | Current web search, URL reading, cited synthesis, and general You.com MCP tool routing.                         |
 | `you-free`     | Keyless basic web search with `you-search` only.                                                                |
-| `you-research` | Routing research tasks between agent-led search, Research API scripts, and managed `you-research` MCP fallback. |
-| `you-finance`  | Routing finance questions to an existing script, a new Finance Research API call, or an MCP fallback.           |
+| `you-research` | Routing research tasks between agent-led search and one-shot cited synthesis with the `you-research` MCP tool. |
+| `you-finance`  | Answering finance questions through the `you-finance` MCP tool with payment-aware fallbacks.                    |
 | `you-discover` | Finding how to integrate You.com APIs, MCP servers, SDKs, docs, and tools into agentic projects.                |
 
 `you-discover` is the best starting point when your goal is to build with You.com rather than just search with it. Ask it questions like:

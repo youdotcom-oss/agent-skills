@@ -17,7 +17,14 @@ const YOU_COM_FREE_MCP: McpRemoteConfig = {
 
 const YOU_COM_FINANCE_MCP: McpRemoteConfig = {
   type: 'remote',
-  url: 'https://api.you.com/mcp?tools=you-finance',
+  url: 'https://api.you.com/mcp/finance',
+  enabled: true,
+  oauth: {},
+}
+
+const YOU_COM_RESEARCH_MCP: McpRemoteConfig = {
+  type: 'remote',
+  url: 'https://api.you.com/mcp/research',
   enabled: true,
   oauth: {},
 }
@@ -45,6 +52,7 @@ const YouComPlugin: Plugin = async () => ({
     input.mcp.you = { ...YOU_COM_MCP }
     input.mcp['you-free'] = { ...YOU_COM_FREE_MCP }
     input.mcp['you-finance'] = { ...YOU_COM_FINANCE_MCP }
+    input.mcp['you-research'] = { ...YOU_COM_RESEARCH_MCP }
     input.mcp['you-docs'] = { ...YOU_COM_DOCS_MCP }
   },
 })

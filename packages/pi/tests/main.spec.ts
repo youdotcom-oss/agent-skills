@@ -193,8 +193,11 @@ describe('Pi extension', () => {
       // Finance server returns only you-finance
       expect(names).toContain('you-finance')
 
+      // Research server returns only you-research
+      expect(names).toContain('you-research')
+
       // Base server returns you-search, you-contents, you-balance, you-discover (and NOT
-      // you-finance, which is scoped to its own query-param endpoint)
+      // you-finance or you-research, which are scoped to their own endpoints)
       expect(names).toContain('you-search')
       expect(names).toContain('you-contents')
       expect(names).toContain('you-balance')
@@ -262,10 +265,11 @@ describe('Pi extension', () => {
       expect(result.systemPrompt).toContain('existing system prompt')
       expect(result.systemPrompt).toContain('@youdotcom-oss/pi')
       expect(result.systemPrompt).toContain('Pi has no separate MCP configuration mechanism')
-      // All four configs identified
+      // All five configs identified
       expect(result.systemPrompt).toContain('`you-search-free` (free profile, no auth)')
       expect(result.systemPrompt).toContain('https://api.you.com/mcp?profile=free')
-      expect(result.systemPrompt).toContain('https://api.you.com/mcp?tools=you-finance')
+      expect(result.systemPrompt).toContain('https://api.you.com/mcp/finance')
+      expect(result.systemPrompt).toContain('https://api.you.com/mcp/research')
       expect(result.systemPrompt).toContain('https://api.you.com/mcp')
       expect(result.systemPrompt).toContain('https://you.com/docs/_mcp/server')
     })

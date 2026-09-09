@@ -267,8 +267,12 @@ const SERVER_CONFIGS: McpServerConfig[] = [
     promptGuidelines: ['Use you-search-free for keyless, rate-limited You.com search.'],
   },
   {
-    url: `${MCP_URL}?tools=you-finance`,
+    url: `${MCP_URL}/finance`,
     promptGuidelines: ['Use you-finance for financial research.'],
+  },
+  {
+    url: `${MCP_URL}/research`,
+    promptGuidelines: ['Use you-research for one-shot cited research synthesis.'],
   },
   {
     url: MCP_URL,
@@ -295,7 +299,8 @@ const HOST_CONTEXT = [
   '',
   'Tool config:',
   '- `you-search-free` (free profile, no auth): https://api.you.com/mcp?profile=free',
-  '- `you-finance` (YDC_API_KEY, OAuth, or MPP/x402): https://api.you.com/mcp?tools=you-finance',
+  '- `you-finance` (YDC_API_KEY, OAuth, or MPP/x402): https://api.you.com/mcp/finance',
+  '- `you-research` (YDC_API_KEY, OAuth, or MPP/x402): https://api.you.com/mcp/research',
   '- `you-search` / `you-contents` / `you-balance` / `you-discover` (YDC_API_KEY or OAuth): https://api.you.com/mcp',
   '- `searchDocs` (no auth): https://you.com/docs/_mcp/server',
 ].join('\n')

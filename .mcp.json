@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "you": {
+      "type": "http",
+      "url": "https://api.you.com/mcp"
+    },
+    "you-finance": {
+      "type": "http",
+      "url": "https://api.you.com/mcp/finance"
+    },
+    "you-research": {
+      "type": "http",
+      "url": "https://api.you.com/mcp/research"
+    }
+  }
+}
