@@ -188,7 +188,7 @@ describe('skills validation', () => {
 
   test('skill directories contain only SKILL.md files and approved support directories', async () => {
     const skillFiles = await loadSkillFiles()
-    const skillsWithReferences = new Set(['you-finance', 'you-research', 'you-web'])
+    const skillsWithReferences = new Set(['you-finance', 'you-research'])
 
     for (const skillFile of skillFiles) {
       const entries = await readdir(dirname(skillFile.path))

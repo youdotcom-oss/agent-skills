@@ -90,7 +90,7 @@ The shared skills route agents to the lightest You.com surface that fits the tas
 
 | Skill          | Use it for                                                                                                      |
 | -------------- | --------------------------------------------------------------------------------------------------------------- |
-| `you-web`      | Current web search, URL reading, cited synthesis, and general You.com MCP tool routing.                         |
+| `you-web`      | Current web search and URL reading with a source-reading, citation-first pipeline.                              |
 | `you-free`     | Keyless basic web search with `you-search` only.                                                                |
 | `you-research` | Routing research tasks between agent-led search and one-shot cited synthesis with the `you-research` MCP tool. |
 | `you-finance`  | Answering finance questions through the `you-finance` MCP tool with payment-aware fallbacks.                    |
