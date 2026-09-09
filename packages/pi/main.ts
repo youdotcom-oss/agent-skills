@@ -28,8 +28,11 @@ type McpServerConfig = {
   /** Custom fetch for the Streamable HTTP transport — proxies, tests, non-standard runtimes. */
   fetch?: FetchLike
   promptGuidelines: string[]
-  /** Override the name the tool is registered under in Pi. The MCP callTool still uses the original server tool name. */
-  registerAs?: (tool: McpTool) => string
+  /**
+   * Override the name the tool is registered under in Pi. The MCP callTool still uses the
+   * original server tool name. Return null to skip registering that tool.
+   */
+  registerAs?: (tool: McpTool) => string | null
 }
 
 const MCP_URL = 'https://api.you.com/mcp'
@@ -238,7 +241,8 @@ const registerMcpTool = (pi: ExtensionAPI, definition: McpBridgeConfig & { tool:
 
 const registerMcpServerTools = async (pi: ExtensionAPI, server: McpServerConfig) => {
   for (const tool of await discoverTools(server)) {
-    const registeredName = server.registerAs?.(tool) ?? tool.name
+    const registeredName = server.registerAs ? server.registerAs(tool) : tool.name
+    if (registeredName === null) continue
     registerMcpTool(pi, {
       description: server.promptGuidelines[0] ?? `Use ${tool.name} for You.com MCP calls.`,
       authenticated: server.authenticated,
@@ -257,7 +261,9 @@ const SERVER_CONFIGS: McpServerConfig[] = [
   {
     url: `${MCP_URL}?profile=free`,
     authenticated: false,
-    registerAs: () => 'you-search-free',
+    // The free profile also exposes you-discover; the free profile exists for
+    // keyless search, so only you-search is bridged (as you-search-free).
+    registerAs: (tool) => (tool.name === 'you-search' ? 'you-search-free' : null),
     promptGuidelines: ['Use you-search-free for keyless, rate-limited You.com search.'],
   },
   {
@@ -290,7 +296,7 @@ const HOST_CONTEXT = [
   'Tool config:',
   '- `you-search-free` (free profile, no auth): https://api.you.com/mcp?profile=free',
   '- `you-finance` (YDC_API_KEY, OAuth, or MPP/x402): https://api.you.com/mcp?tools=you-finance',
-  '- `you-search` / `you-contents` / `you-research` (YDC_API_KEY or OAuth): https://api.you.com/mcp',
+  '- `you-search` / `you-contents` / `you-balance` / `you-discover` (YDC_API_KEY or OAuth): https://api.you.com/mcp',
   '- `searchDocs` (no auth): https://you.com/docs/_mcp/server',
 ].join('\n')
 

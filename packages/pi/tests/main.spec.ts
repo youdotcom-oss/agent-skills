@@ -186,16 +186,19 @@ describe('Pi extension', () => {
 
       const names = tools.map((tool) => tool.name)
 
-      // Free-profile server returns only you-search (keyless)
+      // Free-profile server exposes you-search and you-discover; only you-search is
+      // bridged, registered as you-search-free (keyless)
       expect(names).toContain('you-search-free')
 
       // Finance server returns only you-finance
       expect(names).toContain('you-finance')
 
-      // Base server returns you-contents, you-research (and NOT you-search or you-finance, which
-      // are scoped to their own query-param endpoints)
+      // Base server returns you-search, you-contents, you-balance, you-discover (and NOT
+      // you-finance, which is scoped to its own query-param endpoint)
+      expect(names).toContain('you-search')
       expect(names).toContain('you-contents')
-      expect(names).toContain('you-research')
+      expect(names).toContain('you-balance')
+      expect(names).toContain('you-discover')
 
       // Docs server returns searchDocs
       expect(names).toContain('searchDocs')
