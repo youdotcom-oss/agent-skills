@@ -6,7 +6,7 @@ compatibility: Requires network access and a You.com MCP host using `YDC_API_KEY
 metadata:
   mcp_servers: '{"you-finance":{"url":"https://api.you.com/mcp/finance"}}'
   author: youdotcom-oss
-  version: 0.3.0
+  version: 0.4.0
   category: finance
   keywords: you.com,mcp,finance,market-data,tickers,earnings,company-financials
 ---
