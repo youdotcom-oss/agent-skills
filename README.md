@@ -111,7 +111,7 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 | `@youdotcom-oss/opencode` | OpenCode plugin that registers You.com skills and remote MCP server configs.  |
 | `@youdotcom-oss/openclaw` | OpenClaw plugin with You.com skills and `YDC_API_KEY` setup metadata.         |
 | `@youdotcom-oss/pi`       | Pi package that registers You.com skills and bridges You.com MCP tools.       |
-| `hermes-youdotcom`        | Hermes package that ships You.com skills through a Python entry-point plugin. |
+| `hermes-youdotcom`        | Hermes package that ships You.com skills through a Python entry-point plugin. Install the repo as a portable package with `hermes plugins install youdotcom-oss/agent-skills` to also wire the You.com MCP servers. |
 
 See each package README for host-specific details.
 
