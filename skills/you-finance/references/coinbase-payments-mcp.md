@@ -10,7 +10,7 @@ On-demand reference for the MCP-composition path to paid You.com endpoints: the 
 - Fund the wallet through the Payments MCP sign-in flow. No `YDC_API_KEY` is required; payment is keyless x402 settled from the wallet.
 - The agent reasons across both servers: it calls You.com tools, and when a tool returns `402 payment-required`, it uses the Payments MCP to pay and the host retries with payment headers. The free allotment draws down first; once exhausted, `402` triggers a pay-from-wallet retry and the result flows back through the You.com tool.
 
-## When to choose this over the direct client
+## When to choose this path
 
 Choose the MCP-composition path when:
 

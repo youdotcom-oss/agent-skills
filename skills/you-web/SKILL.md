@@ -63,7 +63,7 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 ## Tool Budget and Recovery
 
 - Use no more than 10 total tool calls.
-- If you have not found a complete answer after 12 calls, synthesize the best partial answer.
+- If you have not found a complete answer after 10 calls, synthesize the best partial answer.
 - Never finish with an empty response.
 
 ## Output Format
