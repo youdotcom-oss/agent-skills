@@ -17,9 +17,8 @@ Use this skill to choose the right You.com research path for the user's goal: ag
 
 ## Prerequisites
 
-The You.com MCP endpoints must be reachable from the host:
+The You.com MCP endpoint must be reachable from the host:
 
-- Base tools (`you-search`, `you-contents`): `https://api.you.com/mcp` with `YDC_API_KEY` bearer auth or OAuth. Declared by the `you-web` skill, which owns the agent-led pipeline.
 - Managed research (`you-research`): `https://api.you.com/mcp/research` with `YDC_API_KEY` bearer auth, OAuth, or an MPP/x402-aware MCP client.
 
 MPP/x402-aware MCP clients may receive HTTP `402` payment challenges from You.com tools, then retry with payment headers. Let the host client handle external payment and retry; do not add wallet signing logic to this skill.
