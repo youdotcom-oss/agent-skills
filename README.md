@@ -47,7 +47,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | OpenCode                        | `opencode plugin @youdotcom-oss/opencode`                                                             |
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
 | Pi                              | `pi install npm:@youdotcom-oss/pi`                                                                    |
-| Hermes                          | `pip install hermes-youdotcom`                                                                        |
+| Hermes                          | `hermes plugins install youdotcom-oss/agent-skills`                                                                        |
 
 The top-level plugin manifests reuse the shared `skills/` directory when the host supports it. Packages under `packages/` include host-specific metadata, copied skills, or runtime adapters where needed.
 
@@ -111,7 +111,6 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 | `@youdotcom-oss/opencode` | OpenCode plugin that registers You.com skills and remote MCP server configs.  |
 | `@youdotcom-oss/openclaw` | OpenClaw plugin with You.com skills and `YDC_API_KEY` setup metadata.         |
 | `@youdotcom-oss/pi`       | Pi package that registers You.com skills and bridges You.com MCP tools.       |
-| `hermes-youdotcom`        | Hermes package that ships You.com skills through a Python entry-point plugin. Install the repo as a portable package with `hermes plugins install youdotcom-oss/agent-skills` to also wire the You.com MCP servers. |
 
 See each package README for host-specific details.
 
@@ -130,7 +129,6 @@ See each package README for host-specific details.
 | `packages/opencode/` | OpenCode package                                |
 | `packages/openclaw/` | OpenClaw package                                |
 | `packages/pi/`       | Pi package                                      |
-| `packages/hermes/`   | Hermes package                                  |
 | `skills.sh.json`     | skills.sh display grouping for top-level skills |
 
 ## Development
@@ -149,7 +147,6 @@ Package-level checks:
 bun run --filter '@youdotcom-oss/opencode' test
 bun run --filter '@youdotcom-oss/openclaw' test
 bun run --filter '@youdotcom-oss/pi' test
-bun run --filter '@youdotcom-oss/hermes' test
 ```
 
 Validate shared skill metadata and structure:
