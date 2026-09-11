@@ -32,5 +32,10 @@ describe('plugin manifest', () => {
       additionalProperties: false,
       properties: {},
     })
+    expect(manifest.mcpServers).toEqual({
+      you: { transport: 'streamable-http', url: 'https://api.you.com/mcp' },
+      'you-finance': { transport: 'streamable-http', url: 'https://api.you.com/mcp/finance' },
+      'you-research': { transport: 'streamable-http', url: 'https://api.you.com/mcp/research' },
+    })
   })
 })

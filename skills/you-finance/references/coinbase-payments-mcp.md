@@ -5,12 +5,12 @@ On-demand reference for the MCP-composition path to paid You.com endpoints: the 
 ## How it works
 
 - Connect two MCP servers in the host:
-  - **You.com MCP** at `https://api.you.com/mcp` for search, contents, research, and finance tools.
+  - **You.com MCP** at `https://api.you.com/mcp/finance` for the `you-finance` tool.
   - **Coinbase Payments MCP** (https://github.com/coinbase/payments-mcp) for wallet sign-in and on-chain USDC payment on Base.
 - Fund the wallet through the Payments MCP sign-in flow. No `YDC_API_KEY` is required; payment is keyless x402 settled from the wallet.
 - The agent reasons across both servers: it calls You.com tools, and when a tool returns `402 payment-required`, it uses the Payments MCP to pay and the host retries with payment headers. The free allotment draws down first; once exhausted, `402` triggers a pay-from-wallet retry and the result flows back through the You.com tool.
 
-## When to choose this over the direct client
+## When to choose this path
 
 Choose the MCP-composition path when:
 
@@ -18,7 +18,7 @@ Choose the MCP-composition path when:
 - The host already runs MCP servers and can orchestrate both.
 - You prefer the host to handle payment settlement end to end.
 
-Trade-off: this requires a host that runs both MCP servers and tolerates long finance/research resolution times (reports are async and can take minutes). For a single self-contained script with no MCP host, use the [direct x402 client](x402-direct-client.md) reference instead.
+Trade-off: this requires a host that runs both MCP servers and tolerates long finance/research resolution times (reports are async and can take minutes).
 
 ## Pointers
 

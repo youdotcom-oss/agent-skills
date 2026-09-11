@@ -1,3 +1,12 @@
 name: youdotcom
 version: 0.5.0
 description: Bundles You.com MCP setup skills for web search, research, finance, and discovery
+manifest_version: 2
+api_version: 1
+license: MIT
+homepage: https://github.com/youdotcom-oss/agent-skills
+tags:
+  - mcp
+  - search
+  - research
+  - finance
