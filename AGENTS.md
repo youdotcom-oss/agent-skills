@@ -7,8 +7,8 @@ This repo packages You.com skills and plugin manifests for multiple coding-agent
 
 - Prefer Bun for TypeScript, scripts, orchestration, and running checks. Use Bun to trigger Python and TypeScript tooling unless an existing script says otherwise.
 - Bun MCP docs: https://bun.com/docs/mcp
-- Before choosing commands, scan `package.json`, `biome.json`, `ruff.toml`, and relevant `packages/*/package.json` scripts. Do not guess command names.
-- Root checks currently flow through Bun: `bun test`, `bun run check`, `bun run check:types`, `bun run check:ts`, `bun run check:py`, `bun run check:package`.
+- Before choosing commands, scan `package.json`, `biome.json`, and relevant `packages/*/package.json` scripts. Do not guess command names.
+- Root checks currently flow through Bun: `bun test`, `bun run check`, `bun run check:types`, `bun run check:ts`, `bun run check:package`.
 - Package checks often differ. Use the package script in `packages/<name>/package.json` for package-scoped work.
 
 ## Minimal-implementation directive
@@ -37,7 +37,6 @@ Mark deliberate shortcuts with a `MINIMAL:` comment naming the ceiling and the u
 ## Style enforcement
 
 - TypeScript, JSON, and Markdown formatting/linting are governed by `biome.json` plus `tsc`.
-- Python formatting/linting is governed by `ruff.toml` plus Hermes package checks.
 - Read these config files before changing style rules. Keep only conventions not enforced by tools in this file.
 
 ## Workflow
@@ -55,15 +54,14 @@ The GitHub Actions UI runs **Semantic Release** manually:
 
 1. Open **Actions** -> **Semantic Release** -> **Run workflow**.
 2. First run with `apply_versions=false` and `publish_artifacts=false`; inspect the `release-plan` artifact.
-3. Set `base_ref` to the intended comparison point. `HEAD~1` only sees the last commit; an older base may bump every changed skill, plugin, npm package, PyPI package, and ClawHub package since that ref.
+3. Set `base_ref` to the intended comparison point. `HEAD~1` only sees the last commit; an older base may bump every changed skill, plugin, npm package, and ClawHub package since that ref.
 4. Run again with `apply_versions=true` and `publish_artifacts=false` to commit version bumps.
 5. After the version-bump commit lands on the branch, run publish-only with `apply_versions=false` and `publish_artifacts=true`.
-6. If a registry already succeeded and a retry should skip it, disable the matching publish toggle: `publish_npm`, `publish_pypi`, or `publish_clawhub`.
+6. If a registry already succeeded and a retry should skip it, disable the matching publish toggle: `publish_npm` or `publish_clawhub`.
 
 ## Verification
 
 - Non-trivial TypeScript/script change: at least `bun test <target>` and `bun run check:types`.
-- Python/Hermes change: use `packages/hermes/package.json` scripts, usually `bun run --cwd packages/hermes check:python`.
-- Formatting/linting: `bun run check:ts` for Biome, `bun run check:package` for package manifests, `bun run check:py` for Python.
+- Formatting/linting: `bun run check:ts` for Biome, `bun run check:package` for package manifests.
 - Skill content: `bun test tests/validate-skills.spec.ts`; use `bunx @plaited/development-skills validate-skill <path>` when validating one skill.
 - Before final handoff after edits, run the smallest relevant checks plus any requested full checks. Report known pre-existing warnings separately.

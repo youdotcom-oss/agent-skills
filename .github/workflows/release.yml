@@ -18,17 +18,12 @@ on:
         type: boolean
         default: false
       publish_artifacts:
-        description: "Publish npm, PyPI, and ClawHub artifacts; with apply_versions=false, publish the current workflow ref"
+        description: "Publish npm and ClawHub artifacts; with apply_versions=false, publish the current workflow ref"
         required: false
         type: boolean
         default: false
       publish_npm:
         description: "Publish changed npm packages when publish_artifacts is enabled"
-        required: false
-        type: boolean
-        default: true
-      publish_pypi:
-        description: "Publish changed PyPI packages when publish_artifacts is enabled"
         required: false
         type: boolean
         default: true
@@ -48,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has_npm: ${{ steps.outputs.outputs.has_npm }}
-      has_pypi: ${{ steps.outputs.outputs.has_pypi }}
       has_clawhub: ${{ steps.outputs.outputs.has_clawhub }}
     steps:
       - name: Checkout repository
@@ -74,7 +68,6 @@ jobs:
         run: |
           {
             echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)"
-            echo "has_pypi=$(jq -r 'any(.units.pypi[]?; .bump != "none")' release-plan.json)"
             echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)"
           } >> "$GITHUB_OUTPUT"
 
@@ -109,7 +102,7 @@ jobs:
           curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL https://app.factory.ai/cli | sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           export PATH="$HOME/.local/bin:$PATH"
-          droid exec --auto medium "Review release-plan.json and the current git diff. Recommend any semver changes needed for cohesive releases across skills, plugins, npm packages, PyPI, and ClawHub. Do not edit files. Return concise markdown."
+          droid exec --auto medium "Review release-plan.json and the current git diff. Recommend any semver changes needed for cohesive releases across skills, plugins, npm packages, and ClawHub. Do not edit files. Return concise markdown."
         env:
           FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
 
@@ -140,10 +133,6 @@ jobs:
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Setup uv
-        if: ${{ inputs.apply_versions }}
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
       - name: Install dependencies
         if: ${{ inputs.apply_versions }}
@@ -239,46 +228,6 @@ jobs:
               npm publish --provenance --access public "./$directory"
             fi
           done
-
-  publish-pypi:
-    name: Publish PyPI packages
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_pypi && needs.plan.outputs.has_pypi == 'true' }}
-    needs: [plan, apply]
-    runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout release commit
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.apply.outputs.release_sha }}
-
-      - name: Download release plan
-        uses: actions/download-artifact@v8
-        with:
-          name: release-plan
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Build Hermes distribution
-        run: bun run build:dist
-        working-directory: packages/hermes
-
-      - name: Publish Hermes to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: packages/hermes/dist
 
   publish-clawhub:
     name: Publish ClawHub package

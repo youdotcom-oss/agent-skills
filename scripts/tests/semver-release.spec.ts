@@ -44,7 +44,6 @@ describe('semver release', () => {
               },
             },
             npm: {},
-            pypi: {},
             clawhub: {},
           },
         }),
@@ -119,7 +118,6 @@ describe('semver release', () => {
             },
             plugins: {},
             npm: {},
-            pypi: {},
             clawhub: {},
           },
         }),
@@ -128,50 +126,6 @@ describe('semver release', () => {
       const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
 
       expect(updates).toEqual([])
-    } finally {
-      await rm(repoRoot, { force: true, recursive: true })
-    }
-  })
-
-  test('bumps Hermes PyPI package and plugin versions together', async () => {
-    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
-
-    try {
-      await writeFile(
-        join(repoRoot, 'plan.json'),
-        JSON.stringify({
-          schemaVersion: 1,
-          baseRef: 'HEAD~1',
-          headRef: 'HEAD',
-          generatedAt: '2026-07-22T00:00:00.000Z',
-          changes: ['packages/hermes/plugin.yaml'],
-          units: {
-            skills: {},
-            plugins: {},
-            npm: {},
-            pypi: {
-              'hermes-youdotcom': {
-                bump: 'minor',
-                paths: ['packages/hermes/plugin.yaml'],
-                rationale: ['Hermes package changed'],
-              },
-            },
-            clawhub: {},
-          },
-        }),
-      )
-
-      await mkdir(join(repoRoot, 'packages/hermes'), { recursive: true })
-      await writeFile(join(repoRoot, 'packages/hermes/pyproject.toml'), 'version = "1.2.3"\n')
-      await writeFile(join(repoRoot, 'packages/hermes/package.json'), `${JSON.stringify({ version: '1.2.3' })}\n`)
-      await writeFile(join(repoRoot, 'packages/hermes/plugin.yaml'), 'name: youdotcom\nversion: 1.2.3\n')
-
-      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
-      const updatedByPath = new Map(updates.map((update) => [update.path, update.content]))
-
-      expect(updatedByPath.get('packages/hermes/pyproject.toml')).toContain('version = "1.3.0"')
-      expect(JSON.parse(updatedByPath.get('packages/hermes/package.json') ?? '{}').version).toBe('1.3.0')
-      expect(updatedByPath.get('packages/hermes/plugin.yaml')).toContain('version: 1.3.0')
     } finally {
       await rm(repoRoot, { force: true, recursive: true })
     }

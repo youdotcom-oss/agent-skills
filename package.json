@@ -10,20 +10,18 @@
   ],
   "scripts": {
     "build": "bun run --filter '*' build",
-    "check": "bun run check:ts && bun run check:py && bun run check:package && bun run check:types",
+    "check": "bun run check:ts && bun run check:package && bun run check:types",
     "check:package": "format-package --check",
-    "check:py": "bun run --cwd packages/hermes check:python",
     "check:ts": "biome check",
     "check:types": "tsc --noEmit",
-    "check:write": "bun run check:write-js && bun run check:write-py && bun run check:write-package",
+    "check:write": "bun run check:write-js && bun run check:write-package",
     "check:write-js": "biome check --write",
     "check:write-package": "format-package --write",
-    "check:write-py": "uv tool run ruff check --fix packages/hermes && uv tool run ruff format packages/hermes",
     "prepare": "git config core.hooksPath .hooks",
     "release:apply": "bun scripts/semver-release.ts apply --plan /tmp/agent-skills-release-plan.json",
     "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
     "release:plan": "bun scripts/semver-release.ts plan",
-    "test": "bun test && bun run --cwd packages/hermes test:python",
+    "test": "bun test",
     "validate:skills": "bun test tests/validate-skills.spec.ts"
   },
   "lint-staged": {
@@ -32,10 +30,6 @@
     ],
     "*.{json,md}": [
       "biome format --write --no-errors-on-unmatched"
-    ],
-    "*.py": [
-      "uv tool run ruff check --fix",
-      "uv tool run ruff format"
     ],
     "package.json": [
       "format-package --write"

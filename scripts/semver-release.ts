@@ -19,7 +19,6 @@ type ReleasePlan = {
     skills: Record<string, ReleaseUnit>
     plugins: Record<string, ReleaseUnit>
     npm: Record<string, ReleaseUnit>
-    pypi: Record<string, ReleaseUnit>
     clawhub: Record<string, ReleaseUnit>
   }
 }
@@ -48,10 +47,7 @@ const npmPackages = {
   '@youdotcom-oss/pi': 'packages/pi/package.json',
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
 } as const
-const pypiPackages = {
-  'hermes-youdotcom': 'packages/hermes/pyproject.toml',
-} as const
-const packageBuildDirectories = ['packages/hermes', 'packages/opencode', 'packages/openclaw', 'packages/pi']
+const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi']
 const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major']
 
 const maxBump = (left: Bump, right: Bump): Bump => (bumpOrder.indexOf(left) > bumpOrder.indexOf(right) ? left : right)
@@ -156,7 +152,6 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
       skills: {},
       plugins: {},
       npm: {},
-      pypi: {},
       clawhub: {},
     },
   }
@@ -189,12 +184,6 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
         path,
         `bundled skill ${skillMatch[1]} changed`,
       )
-      plan.units.pypi['hermes-youdotcom'] = updateReleaseUnit(
-        plan.units.pypi['hermes-youdotcom'],
-        bump,
-        path,
-        `bundled skill ${skillMatch[1]} changed`,
-      )
       plan.units.clawhub.you = updateReleaseUnit(
         plan.units.clawhub.you,
         bump,
@@ -216,15 +205,6 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
           plan.units.clawhub.you = updateReleaseUnit(plan.units.clawhub.you, 'patch', path, 'OpenClaw package changed')
         }
       }
-    }
-
-    if (path.startsWith('packages/hermes/')) {
-      plan.units.pypi['hermes-youdotcom'] = updateReleaseUnit(
-        plan.units.pypi['hermes-youdotcom'],
-        'patch',
-        path,
-        'Hermes package changed',
-      )
     }
   }
 
@@ -269,7 +249,6 @@ const readReleasePlan = async ({ repoRoot, path }: { repoRoot: string; path: str
       skills: validateReleaseUnitGroup(parsed.units.skills, 'units.skills'),
       plugins: validateReleaseUnitGroup(parsed.units.plugins, 'units.plugins'),
       npm: validateReleaseUnitGroup(parsed.units.npm, 'units.npm'),
-      pypi: validateReleaseUnitGroup(parsed.units.pypi, 'units.pypi'),
       clawhub: validateReleaseUnitGroup(parsed.units.clawhub, 'units.clawhub'),
     },
   }
@@ -335,32 +314,6 @@ const bumpSkillVersion = async ({ repoRoot, skillName, bump }: { repoRoot: strin
   return { path, content: updated }
 }
 
-const bumpPyprojectVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
-  const content = await Bun.file(resolve(repoRoot, path)).text()
-  const current = /^version = "(\d+\.\d+\.\d+)"/m.exec(content)?.[1]
-  if (!current) {
-    throw new TypeError(`${path} must contain a project version`)
-  }
-
-  return {
-    path,
-    content: content.replace(/^version = "\d+\.\d+\.\d+"/m, `version = "${bumpVersion(current, bump)}"`),
-  }
-}
-
-const bumpYamlVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
-  const content = await Bun.file(resolve(repoRoot, path)).text()
-  const current = /^version:\s*["']?(\d+\.\d+\.\d+)["']?\s*$/m.exec(content)?.[1]
-  if (!current) {
-    throw new TypeError(`${path} must contain a version`)
-  }
-
-  return {
-    path,
-    content: content.replace(/^version:\s*["']?\d+\.\d+\.\d+["']?\s*$/m, `version: ${bumpVersion(current, bump)}`),
-  }
-}
-
 const writeUpdates = async (updates: { path: string; content: string }[]) => {
   for (const update of updates) {
     await Bun.write(resolve(defaultRepoRoot, update.path), update.content)
@@ -407,15 +360,6 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
           await bumpJsonVersion({ repoRoot, path: 'packages/openclaw/openclaw.plugin.json', bump: unit.bump }),
         )
       }
-    }
-  }
-
-  for (const [name, unit] of Object.entries(plan.units.pypi)) {
-    const path = pypiPackages[name as keyof typeof pypiPackages]
-    if (path && unit.bump !== 'none') {
-      updates.push(await bumpPyprojectVersion({ repoRoot, path, bump: unit.bump }))
-      updates.push(await bumpJsonVersion({ repoRoot, path: 'packages/hermes/package.json', bump: unit.bump }))
-      updates.push(await bumpYamlVersion({ repoRoot, path: 'packages/hermes/plugin.yaml', bump: unit.bump }))
     }
   }
 
