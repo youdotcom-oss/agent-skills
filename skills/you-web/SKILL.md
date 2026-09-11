@@ -4,7 +4,7 @@ description: Use You.com search and contents tools when a task needs external fa
 compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-contents`; use `YDC_API_KEY`, OAuth, or an x402-aware client for paid/keyless retries.
 license: MIT
 metadata:
-  mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp","auth":"YDC_API_KEY OAuth x402","tools":["you-search","you-contents"]}}'
+  mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp"}}'
   author: youdotcom-oss
   version: 0.3.0
   category: web-search

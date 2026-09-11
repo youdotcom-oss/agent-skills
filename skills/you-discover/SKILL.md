@@ -4,7 +4,7 @@ description: Route You.com integration planning through the you-discover MCP too
 compatibility: Requires network access. Prefer the standard You.com MCP server exposing `you-discover` and Docs MCP `searchDocs`.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server","auth":"none","tools":["searchDocs"]},"you":{"url":"https://api.you.com/mcp","auth":"YDC_API_KEY OAuth","tools":["you-discover"],"resources":true,"prompts":true}}'
+  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you":{"url":"https://api.you.com/mcp"}}'
   author: youdotcom-oss
   version: 0.3.0
   category: discovery

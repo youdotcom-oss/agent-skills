@@ -4,7 +4,7 @@ description: Route research tasks between a cost-conscious agentic search workfl
 compatibility: Requires network access and You.com MCP tools with `YDC_API_KEY`, OAuth, or MPP/x402 payment support.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server","auth":"none","tools":["searchDocs"]},"you-research":{"url":"https://api.you.com/mcp/research","auth":"YDC_API_KEY OAuth MPP/x402","tools":["you-research"]}}'
+  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-research":{"url":"https://api.you.com/mcp/research"}}'
   author: youdotcom-oss
   version: 0.3.0
   category: research

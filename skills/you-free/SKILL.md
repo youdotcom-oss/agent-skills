@@ -4,7 +4,7 @@ description: Use the free You.com MCP profile for unauthenticated basic web sear
 compatibility: Requires network access and the You.com free MCP profile exposing `you-search`. Does not require `YDC_API_KEY` or OAuth.
 license: MIT
 metadata:
-  mcp_servers: '{"you-free":{"url":"https://api.you.com/mcp?profile=free","auth":"none","tools":["you-search"],"avoidTools":["you-contents","you-research","you-finance"]}}'
+  mcp_servers: '{"you-free":{"url":"https://api.you.com/mcp?profile=free"}}'
   author: youdotcom-oss
   version: 0.1.2
   category: web-search
