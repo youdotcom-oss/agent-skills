@@ -31,18 +31,16 @@ Call the `you-research` MCP tool when the user wants a synthesized answer with c
 
 For keyless payment with no API key and no manual signing, compose the You.com MCP server with the Coinbase Payments MCP server; see [Coinbase Payments MCP path](references/coinbase-payments-mcp.md) for setup and when to choose it.
 
-If the `you-research` tool is unavailable or the client cannot tolerate its response time, fall back to the agent-led workflow below and say which path was used.
+If the `you-research` tool is unavailable or the client cannot tolerate its response time, fall back to agent-led search with `you-search` and `you-contents` and say which path was used.
 
 ## Decision Tree
 
-- User is cost-conscious or wants to develop/fine-tune a research skill -> follow the [agent-led deep-search workflow](references/agent-led-deep-search.md).
+- User is cost-conscious or wants to develop/fine-tune a research skill -> use agent-led search with `you-search` and `you-contents`; the `you-web` skill carries the search pipeline to reuse.
 - User needs a one-shot synthesized answer with citations -> call the `you-research` MCP tool.
 - User needs OAuth or MPP/x402 payment handling -> use the `you-research` MCP tool with a payment-aware MCP client or the Coinbase Payments MCP composition.
 - Required MCP tools are unavailable -> tell the user what is missing, provide the setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-search` once, answer directly.
 - URL provided -> use `you-contents` on those URLs.
-- Everything else -> use the base agent-led workflow.
+- Everything else -> use agent-led search with `you-search` and `you-contents`.
 
-## Agent-led workflow reference
-
-When choosing the cost-conscious skill-building path, open and follow the [agent-led deep-search workflow](references/agent-led-deep-search.md). Adapt its tool budget, source policy, and output format to the user's agent environment. Preserve its core requirements: read sources before relying on exact claims, cross-check key facts, cite real URLs, and finish with the best supported answer even when evidence is incomplete.
+Preserve the core research requirements regardless of path: read sources before relying on exact claims, cross-check key facts, cite real URLs, and finish with the best supported answer even when evidence is incomplete.
