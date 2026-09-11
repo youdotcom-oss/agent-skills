@@ -4,7 +4,7 @@ description: Route research tasks between a cost-conscious agentic search workfl
 compatibility: Requires network access and You.com MCP tools with `YDC_API_KEY`, OAuth, or MPP/x402 payment support.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-research":{"url":"https://api.you.com/mcp/research"}}'
+  mcp_servers: '{"you-research":{"url":"https://api.you.com/mcp/research"}}'
   author: youdotcom-oss
   version: 0.3.0
   category: research
@@ -21,7 +21,6 @@ The You.com MCP endpoints must be reachable from the host:
 
 - Base tools (`you-search`, `you-contents`): `https://api.you.com/mcp` with `YDC_API_KEY` bearer auth or OAuth. Declared by the `you-web` skill, which owns the agent-led pipeline.
 - Managed research (`you-research`): `https://api.you.com/mcp/research` with `YDC_API_KEY` bearer auth, OAuth, or an MPP/x402-aware MCP client.
-- Docs MCP (`searchDocs`): `https://you.com/docs/_mcp/server`, no auth.
 
 MPP/x402-aware MCP clients may receive HTTP `402` payment challenges from You.com tools, then retry with payment headers. Let the host client handle external payment and retry; do not add wallet signing logic to this skill.
 

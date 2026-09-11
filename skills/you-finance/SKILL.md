@@ -4,7 +4,7 @@ description: Answer finance questions through the You.com you-finance MCP tool, 
 license: MIT
 compatibility: Requires network access and a You.com MCP host using `YDC_API_KEY`, OAuth, or MPP/x402 payment support.
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-finance":{"url":"https://api.you.com/mcp/finance"}}'
+  mcp_servers: '{"you-finance":{"url":"https://api.you.com/mcp/finance"}}'
   author: youdotcom-oss
   version: 0.3.0
   category: finance
