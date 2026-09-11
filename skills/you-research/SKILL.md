@@ -31,16 +31,16 @@ Call the `you-research` MCP tool when the user wants a synthesized answer with c
 
 For keyless payment with no API key and no manual signing, compose the You.com MCP server with the Coinbase Payments MCP server; see [Coinbase Payments MCP path](references/coinbase-payments-mcp.md) for setup and when to choose it.
 
-If the `you-research` tool is unavailable or the client cannot tolerate its response time, fall back to agent-led search with `you-search` and `you-contents` and say which path was used.
+If the `you-research` tool is unavailable or the client cannot tolerate its response time, fall back to the agent-led search pipeline in the `you-web` skill and say which path was used.
 
 ## Decision Tree
 
-- User is cost-conscious or wants to develop/fine-tune a research skill -> use agent-led search with `you-search` and `you-contents`; the `you-web` skill carries the search pipeline to reuse.
+- User is cost-conscious or wants to develop/fine-tune a research skill -> use the agent-led search pipeline in the `you-web` skill.
 - User needs a one-shot synthesized answer with citations -> call the `you-research` MCP tool.
 - User needs OAuth or MPP/x402 payment handling -> use the `you-research` MCP tool with a payment-aware MCP client or the Coinbase Payments MCP composition.
 - Required MCP tools are unavailable -> tell the user what is missing, provide the setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-search` once, answer directly.
 - URL provided -> use `you-contents` on those URLs.
-- Everything else -> use agent-led search with `you-search` and `you-contents`.
+- Everything else -> use the agent-led search pipeline in the `you-web` skill.
 
 Preserve the core research requirements regardless of path: read sources before relying on exact claims, cross-check key facts, cite real URLs, and finish with the best supported answer even when evidence is incomplete.
