@@ -21,6 +21,7 @@
     "release:apply": "bun scripts/semver-release.ts apply --plan /tmp/agent-skills-release-plan.json",
     "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
     "release:plan": "bun scripts/semver-release.ts plan",
+    "test": "bun test",
     "validate:skills": "bun test tests/validate-skills.spec.ts"
   },
   "lint-staged": {
