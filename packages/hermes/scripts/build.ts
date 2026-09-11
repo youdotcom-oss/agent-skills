@@ -1,13 +1,19 @@
-import { cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readdir, rm, stat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 
 const repoRoot = resolve(import.meta.dir, '../../..')
 const sourceSkillsDir = join(repoRoot, 'skills')
 const targetSkillsDir = resolve(import.meta.dir, '..', 'skills')
+const portableManifests = ['plugin.json', 'mcp.json'] as const
 
 type CopySkillsOptions = {
   sourceSkillsDir: string
   targetSkillsDir: string
+}
+
+type CopyPortableManifestOptions = {
+  repoRoot: string
+  targetDir: string
 }
 
 const isDirectory = async (path: string) =>
@@ -45,6 +51,14 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir }: CopySkill
   return copied
 }
 
+export const copyPortableManifests = async ({ repoRoot, targetDir }: CopyPortableManifestOptions) => {
+  await mkdir(targetDir, { recursive: true })
+  for (const name of portableManifests) {
+    await copyFile(join(repoRoot, name), join(targetDir, name))
+  }
+}
+
 if (import.meta.main) {
   await copySkills({ sourceSkillsDir, targetSkillsDir })
+  await copyPortableManifests({ repoRoot, targetDir: resolve(import.meta.dir, '..') })
 }

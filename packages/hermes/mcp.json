@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "you": {
+      "type": "streamable-http",
+      "url": "https://api.you.com/mcp"
+    },
+    "you-finance": {
+      "type": "streamable-http",
+      "url": "https://api.you.com/mcp/finance"
+    },
+    "you-research": {
+      "type": "streamable-http",
+      "url": "https://api.you.com/mcp/research"
+    }
+  }
+}

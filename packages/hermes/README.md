@@ -10,6 +10,8 @@ Hermes plugin that bundles You.com MCP setup skills for web search, research, fi
 - `you-discover`: guidance for integrating You.com APIs, MCP, and SDKs into agentic projects
 - `you-free`: no-auth web search setup
 
+The wheel also ships the portable Agent Plugins manifests (`plugin.json` and `mcp.json`) next to `plugin.yaml`, so the packaged You.com MCP server declarations (`https://api.you.com/mcp`, `/mcp/finance`, `/mcp/research`) travel with the installed package. Hermes reads MCP servers from `mcp_servers` in `~/.hermes/config.yaml`; use the bundled `mcp.json` as the ready-made server definitions.
+
 ## Install
 
 ```sh
