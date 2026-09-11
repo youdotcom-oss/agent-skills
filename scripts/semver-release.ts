@@ -26,6 +26,7 @@ type ReleasePlan = {
 
 const defaultRepoRoot = resolve(import.meta.dir, '..')
 const pluginManifests = [
+  'plugin.json',
   '.plugin/plugin.json',
   '.claude-plugin/plugin.json',
   '.codex-plugin/plugin.json',

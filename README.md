@@ -80,13 +80,14 @@ Useful tool profiles:
 | ------------------------------------------- | ------------------------------- |
 | `https://api.you.com/mcp`                   | Authenticated You.com MCP tools |
 | `https://api.you.com/mcp?profile=free`      | Keyless basic `you-search`      |
-| `https://api.you.com/mcp?tools=you-finance` | Finance-only MCP setup          |
+| `https://api.you.com/mcp/finance`           | Finance-only MCP setup          |
+| `https://api.you.com/mcp/research`          | Research-only MCP setup         |
 
 Some clients use OAuth instead of a static API key. The skills are written to guide the agent through the best available auth path for the current host.
 
 ## Skills
 
-The shared skills route agents to the lightest You.com surface that fits the task. MCP tools are the default for web search and URL reading, while slower managed research and finance workflows prefer reusable local scripts or direct API calls when an API key is available.
+The shared skills route agents to the lightest You.com surface that fits the task. MCP tools are the default for web search and URL reading; managed research (`you-research`) and finance (`you-finance`) answers go through their dedicated single-tool MCP endpoints.
 
 | Skill          | Use it for                                                                                                      |
 | -------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -119,6 +120,7 @@ See each package README for host-specific details.
 | Path                 | Purpose                                         |
 | -------------------- | ----------------------------------------------- |
 | `skills/`            | Shared You.com skills                           |
+| `plugin.json`        | Agent Plugins (portable) manifest               |
 | `.claude-plugin/`    | Claude Code plugin manifest                     |
 | `.cursor-plugin/`    | Cursor plugin manifest                          |
 | `.codex-plugin/`     | Codex and ChatGPT plugin manifest               |
