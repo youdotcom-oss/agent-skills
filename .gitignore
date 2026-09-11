@@ -19,10 +19,12 @@ node_modules/
 .venv/
 venv/
 
-# Generated package skill bundles
+# Generated package skill bundles and copied portable manifests
 packages/*/skills/**
 !packages/*/skills/
 !packages/*/skills/.gitkeep
+packages/*/plugin.json
+packages/*/mcp.json
 
 # Python
 __pycache__/

@@ -7,6 +7,8 @@ import { createVersionUpdates, isPluginReleasePath } from '../semver-release.ts'
 describe('semver release', () => {
   test('classifies plugin manifests and marketplaces as plugin release paths', () => {
     expect(isPluginReleasePath('plugin.json')).toBe(true)
+    expect(isPluginReleasePath('mcp.json')).toBe(true)
+    expect(isPluginReleasePath('.mcp.json')).toBe(true)
     expect(isPluginReleasePath('.claude-plugin/plugin.json')).toBe(true)
     expect(isPluginReleasePath('.claude-plugin/marketplace.json')).toBe(true)
     expect(isPluginReleasePath('.codex-plugin/plugin.json')).toBe(true)

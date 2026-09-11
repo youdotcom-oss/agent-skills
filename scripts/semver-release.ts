@@ -41,7 +41,8 @@ const pluginMarketplaces = [
   '.github/plugin/marketplace.json',
   '.grok-plugin/marketplace.json',
 ]
-const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces]
+const pluginMcpConfigs = ['mcp.json', '.mcp.json']
+const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces, ...pluginMcpConfigs]
 const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',
   '@youdotcom-oss/pi': 'packages/pi/package.json',
