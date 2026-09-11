@@ -25,6 +25,17 @@
   "homepage": "https://docs.you.com",
   "license": "MIT",
   "skills": "./skills/",
+  "mcpServers": {
+    "you": {
+      "url": "https://api.you.com/mcp"
+    },
+    "you-finance": {
+      "url": "https://api.you.com/mcp/finance"
+    },
+    "you-research": {
+      "url": "https://api.you.com/mcp/research"
+    }
+  },
   "interface": {
     "displayName": "You.com",
     "shortDescription": "You.com web search, research, finance, and discovery skills",
