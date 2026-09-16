@@ -1,5 +1,5 @@
 {
-  "name": "@youdotcom-oss/dsh",
+  "name": "@youdotcom-oss/dsh-skills",
   "version": "0.0.0",
   "description": "You.com agent skill provider and MCP setup for DeepSeek Harness (dsh), registered via ctx.skills",
   "license": "MIT",
