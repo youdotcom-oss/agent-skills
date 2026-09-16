@@ -219,6 +219,7 @@ jobs:
             "@youdotcom-oss/opencode=packages/opencode"
             "@youdotcom-oss/pi=packages/pi"
             "@youdotcom-oss/openclaw=packages/openclaw"
+            "@youdotcom-oss/dsh-plugin=packages/dsh-plugin"
           )
 
           for entry in "${packages[@]}"; do

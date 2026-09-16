@@ -46,8 +46,9 @@ const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',
   '@youdotcom-oss/pi': 'packages/pi/package.json',
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
+  '@youdotcom-oss/dsh-plugin': 'packages/dsh-plugin/package.json',
 } as const
-const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi']
+const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi', 'packages/dsh-plugin']
 const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major']
 
 const maxBump = (left: Bump, right: Bump): Bump => (bumpOrder.indexOf(left) > bumpOrder.indexOf(right) ? left : right)
@@ -180,6 +181,12 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
       )
       plan.units.npm['@youdotcom-oss/openclaw'] = updateReleaseUnit(
         plan.units.npm['@youdotcom-oss/openclaw'],
+        bump,
+        path,
+        `bundled skill ${skillMatch[1]} changed`,
+      )
+      plan.units.npm['@youdotcom-oss/dsh-plugin'] = updateReleaseUnit(
+        plan.units.npm['@youdotcom-oss/dsh-plugin'],
         bump,
         path,
         `bundled skill ${skillMatch[1]} changed`,
