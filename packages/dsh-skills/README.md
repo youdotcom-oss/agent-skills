@@ -2,9 +2,9 @@
 
 You.com agent skills and MCP setup for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
-This is a native dsh plugin. It registers the bundled You.com skills into dsh's skill registry (`ctx.skills`) through the official local filesystem provider, and mounts one `dsh-mcp-client` instance per You.com MCP server so the corresponding tools are available under `mcp__<serverName>__<rawName>` names.
+Registers the bundled You.com skills into dsh's skill registry (`ctx.skills`) through the official local filesystem provider, and mounts one `dsh-mcp-client` instance per You.com MCP server so the corresponding tools are available under `mcp__<serverName>__<rawName>` names.
 
-This is separate from [`@youdotcom-oss/dsh-plugin-youcom`](https://github.com/youdotcom-oss/dsh-plugin-youcom), which registers a `WebSearchProvider`/`WebFetchProvider` against dsh's `ctx.web` seam to replace the built-in `web_search`/`web_fetch` tools. That package covers search and fetch only. This one adds research, finance, docs, and integration-discovery coverage on top, and doesn't touch `web_search`/`web_fetch` at all — install either or both.
+This package covers skills, research, finance, docs, and integration discovery. It does not touch dsh's built-in `web_search`/`web_fetch` tools. For a `WebSearchProvider`/`WebFetchProvider` against dsh's `ctx.web` seam, see [`@youdotcom-oss/dsh-plugin-youcom`](https://github.com/youdotcom-oss/dsh-plugin-youcom).
 
 ## Install
 
@@ -42,5 +42,3 @@ DeepSeek Harness is in developer preview and ships `cordis` / `dsh-mcp-client` /
 ```sh
 bun test
 ```
-
-Verified end-to-end inside a real dsh install (`npx @deepseek-ai/dsh --profile headless` on `deepseek-flash`): the agent sees all 9 `mcp__you__*` / `mcp__you-free__*` / `mcp__you-finance__*` / `mcp__you-research__*` / `mcp__you-docs__*` tools and all 5 bundled skills, and a `mcp__you__you-search` call returns live You.com results.

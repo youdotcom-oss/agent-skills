@@ -46,9 +46,9 @@ const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',
   '@youdotcom-oss/pi': 'packages/pi/package.json',
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
-  '@youdotcom-oss/dsh-skills': 'packages/dsh/package.json',
+  '@youdotcom-oss/dsh-skills': 'packages/dsh-skills/package.json',
 } as const
-const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi', 'packages/dsh']
+const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi', 'packages/dsh-skills']
 const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major']
 
 const maxBump = (left: Bump, right: Bump): Bump => (bumpOrder.indexOf(left) > bumpOrder.indexOf(right) ? left : right)

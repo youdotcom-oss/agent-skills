@@ -9,7 +9,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
-    "directory": "packages/dsh"
+    "directory": "packages/dsh-skills"
   },
   "author": {
     "name": "You.com",
