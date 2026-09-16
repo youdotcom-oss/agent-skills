@@ -1,4 +1,4 @@
-# @youdotcom-oss/dsh
+# @youdotcom-oss/dsh-skills
 
 You.com agent skills and MCP setup for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
@@ -9,7 +9,7 @@ This is separate from [`@youdotcom-oss/dsh-plugin-youcom`](https://github.com/yo
 ## Install
 
 ```sh
-dsh plugin --profile <your-profile> add @youdotcom-oss/dsh
+dsh plugin --profile <your-profile> add @youdotcom-oss/dsh-skills
 ```
 
 Or mount it directly in a `cordis.patch.yml`. This package ships one (see [`cordis.patch.yml`](./cordis.patch.yml)) that inserts a row referencing this package by name.
