@@ -48,7 +48,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
 | Pi                              | `pi install npm:@youdotcom-oss/pi`                                                                    |
 | Hermes                          | `hermes plugins install youdotcom-oss/agent-skills`                                                                        |
-| DeepSeek Harness                | `dsh plugin add @youdotcom-oss/dsh-skills`                                                            |
+| DeepSeek Harness                | `dsh plugin add @youdotcom-oss/dsh-plugin`                                                            |
 
 The top-level plugin manifests reuse the shared `skills/` directory when the host supports it. Packages under `packages/` include host-specific metadata, copied skills, or runtime adapters where needed.
 
@@ -112,7 +112,7 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 | `@youdotcom-oss/opencode` | OpenCode plugin that registers You.com skills and remote MCP server configs.  |
 | `@youdotcom-oss/openclaw` | OpenClaw plugin with You.com skills and `YDC_API_KEY` setup metadata.         |
 | `@youdotcom-oss/pi`       | Pi package that registers You.com skills and bridges You.com MCP tools.       |
-| `@youdotcom-oss/dsh-skills` | DeepSeek Harness plugin with You.com skills and MCP server mounts.          |
+| `@youdotcom-oss/dsh-plugin` | DeepSeek Harness plugin with You.com skills and MCP server mounts.          |
 
 See each package README for host-specific details.
 
@@ -131,7 +131,7 @@ See each package README for host-specific details.
 | `packages/opencode/` | OpenCode package                                |
 | `packages/openclaw/` | OpenClaw package                                |
 | `packages/pi/`       | Pi package                                      |
-| `packages/dsh-skills/` | DeepSeek Harness package                      |
+| `packages/dsh-plugin/` | DeepSeek Harness package                      |
 | `skills.sh.json`     | skills.sh display grouping for top-level skills |
 
 ## Development
@@ -150,7 +150,7 @@ Package-level checks:
 bun run --filter '@youdotcom-oss/opencode' test
 bun run --filter '@youdotcom-oss/openclaw' test
 bun run --filter '@youdotcom-oss/pi' test
-bun run --filter '@youdotcom-oss/dsh-skills' test
+bun run --filter '@youdotcom-oss/dsh-plugin' test
 ```
 
 Validate shared skill metadata and structure:

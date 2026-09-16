@@ -6,7 +6,7 @@
  * (`ctx.skills`) via the official local filesystem provider, and mounts one
  * `dsh-mcp-client` instance per You.com MCP server so the corresponding tools
  * are available under `mcp__<serverName>__<rawName>` names.
- * @module @youdotcom-oss/dsh-skills
+ * @module @youdotcom-oss/dsh-plugin
  */
 
 import { fileURLToPath } from 'node:url'

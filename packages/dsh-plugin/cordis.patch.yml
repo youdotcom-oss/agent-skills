@@ -1,4 +1,4 @@
-# @youdotcom-oss/dsh-skills bundle patch: mounts the You.com skill provider and MCP
+# @youdotcom-oss/dsh-plugin bundle patch: mounts the You.com skill provider and MCP
 # clients by inserting a new row. The composition must NOT already have a
 # `youcom-skills` row — `insert:` adds one, the top-level `- id: ... / name: ...`
 # shape OVERRIDES an existing row (silently rejected if the id is absent).
@@ -6,4 +6,4 @@
 # `@deepseek-ai/dsh-mcp-client` (every shipped profile does).
 - insert:
     - id: youcom-skills
-      name: '@youdotcom-oss/dsh-skills'
+      name: '@youdotcom-oss/dsh-plugin'

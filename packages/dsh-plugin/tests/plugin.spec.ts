@@ -77,7 +77,7 @@ describe('applySkills', () => {
     })
     const config = mounted[0]?.config as { customSkillDirs: string[] }
     expect(config.customSkillDirs).toHaveLength(1)
-    expect(config.customSkillDirs[0]).toMatch(/packages[/\\]dsh-skills[/\\]skills$/)
+    expect(config.customSkillDirs[0]).toMatch(/packages[/\\]dsh-plugin[/\\]skills$/)
   })
 })
 

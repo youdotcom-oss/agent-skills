@@ -1,12 +1,12 @@
 {
-  "name": "@youdotcom-oss/dsh-skills",
+  "name": "@youdotcom-oss/dsh-plugin",
   "version": "0.0.0",
   "description": "You.com agent skill provider and MCP setup for DeepSeek Harness (dsh), registered via ctx.skills",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
-    "directory": "packages/dsh-skills"
+    "directory": "packages/dsh-plugin"
   },
   "author": {
     "name": "You.com",

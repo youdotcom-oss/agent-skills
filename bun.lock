@@ -14,8 +14,8 @@
         "typescript": "^7.0.2",
       },
     },
-    "packages/dsh-skills": {
-      "name": "@youdotcom-oss/dsh-skills",
+    "packages/dsh-plugin": {
+      "name": "@youdotcom-oss/dsh-plugin",
       "version": "0.0.0",
       "devDependencies": {
         "@deepseek-ai/cordis": "^4.0.2",
@@ -526,7 +526,7 @@
 
     "@ubjs/node-win32-x64-msvc": ["@ubjs/node-win32-x64-msvc@0.31.0-3", "", { "os": "win32", "cpu": "x64" }, "sha512-wevs+Y+szwcCUT8IJFbB4/1nfxyRv/51l8oG7FGUPWD1xLPyuHfJBG27C+PDeC7KRzes/2n6aLo4DGZbr/LYTw=="],
 
-    "@youdotcom-oss/dsh-skills": ["@youdotcom-oss/dsh-skills@workspace:packages/dsh-skills"],
+    "@youdotcom-oss/dsh-plugin": ["@youdotcom-oss/dsh-plugin@workspace:packages/dsh-plugin"],
 
     "@youdotcom-oss/openclaw": ["@youdotcom-oss/openclaw@workspace:packages/openclaw"],
 

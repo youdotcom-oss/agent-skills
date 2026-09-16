@@ -6,7 +6,7 @@ import { copySkills } from '../build.ts'
 
 describe('copySkills', () => {
   test('copies skill directories and removes stale generated skills', async () => {
-    const tempDir = await mkdtemp(join(tmpdir(), 'dsh-skills-build-'))
+    const tempDir = await mkdtemp(join(tmpdir(), 'dsh-plugin-build-'))
     const sourceDir = join(tempDir, 'source')
     const targetDir = join(tempDir, 'target')
 
