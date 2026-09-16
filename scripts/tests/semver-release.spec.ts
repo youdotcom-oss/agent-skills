@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { createVersionUpdates, isPluginReleasePath } from '../semver-release.ts'
+import { createVersionUpdates, isInitialPackage, isPluginReleasePath } from '../semver-release.ts'
 
 describe('semver release', () => {
   test('classifies plugin manifests and marketplaces as plugin release paths', () => {
@@ -91,6 +91,61 @@ describe('semver release', () => {
       expect(updatedByPath.get('.cursor-plugin/marketplace.json')?.plugins[0].version).toBe('1.2.4')
       expect(updatedByPath.get('.github/plugin/marketplace.json')?.plugins[0].version).toBe('1.2.4')
       expect(updatedByPath.get('.grok-plugin/marketplace.json')?.plugins[0].version).toBe('1.2.4')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('classifies all-added package paths as an initial release', () => {
+    const statuses = [
+      { status: 'A', path: 'packages/dsh-plugin/package.json' },
+      { status: 'A', path: 'packages/dsh-plugin/src/index.ts' },
+      { status: 'M', path: 'packages/pi/src/index.ts' },
+      { status: 'M', path: 'README.md' },
+    ]
+
+    expect(isInitialPackage(statuses, 'packages/dsh-plugin')).toBe(true)
+    expect(isInitialPackage(statuses, 'packages/pi')).toBe(false)
+    expect(isInitialPackage(statuses, 'packages/openclaw')).toBe(false)
+    expect(isInitialPackage(statuses, 'packages/missing')).toBe(false)
+  })
+
+  test('leaves initial-release package versions untouched when applying a plan', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-09-16T00:00:00.000Z',
+          changes: ['packages/dsh-plugin/src/index.ts'],
+          units: {
+            skills: {},
+            plugins: {},
+            npm: {
+              '@youdotcom-oss/dsh-plugin': {
+                bump: 'initial',
+                paths: ['packages/dsh-plugin/src/index.ts'],
+                rationale: ['new package: publish declared version as-is'],
+              },
+            },
+            clawhub: {},
+          },
+        }),
+      )
+
+      await mkdir(join(repoRoot, 'packages/dsh-plugin'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/dsh-plugin/package.json'),
+        `${JSON.stringify({ name: '@youdotcom-oss/dsh-plugin', version: '0.1.0' })}\n`,
+      )
+
+      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+
+      expect(updates).toEqual([])
     } finally {
       await rm(repoRoot, { force: true, recursive: true })
     }
