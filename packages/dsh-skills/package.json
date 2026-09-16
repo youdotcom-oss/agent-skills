@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "You.com agent skill provider and MCP setup for DeepSeek Harness (dsh), registered via ctx.skills",
   "license": "MIT",
-  "engines": {
-    "node": "^22.19.0 || >=24.0.0"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
@@ -60,14 +57,14 @@
   "types": "./lib/types/index.d.ts",
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-mcp-client": "^0.0.1-rc.1",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.0.1-rc.3"
+    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-mcp-client": "^0.0.1-rc.1",
-    "@deepseek-ai/dsh-skill": "^0.0.1-rc.1",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.0.1-rc.3",
+    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-skill": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.2",
     "@types/bun": "1.4.2"
   }
 }
