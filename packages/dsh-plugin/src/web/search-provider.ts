@@ -14,7 +14,7 @@ import { WebError } from '@deepseek-ai/dsh-web'
 import { buildClientInfoHeader } from './attribution.ts'
 import { extractYouComErrorMessage } from './error-message.ts'
 import { fetchWithOneRetry, isAbortError, isValidBaseUrl, resolveApiUrl } from './shared.ts'
-import type { YouComSearchResponse, YouComSearchResultEntry } from './types.ts'
+import type { YouComKnowledgeEntry, YouComSearchResponse, YouComSearchResultEntry } from './types.ts'
 
 /** Stable id this provider registers under. */
 export const YOUCOM_PROVIDER_ID = 'youcom'
@@ -51,6 +51,8 @@ export interface YouComSearchProviderOptions {
   numResults?: number
   /** Whether `results.news[]` is merged into `sources[]` alongside `results.web[]`. */
   includeNews: boolean
+  /** Request licensed knowledge results alongside web and news (`results.knowledge[]`). */
+  knowledge?: 'core'
 }
 
 /** One MCP tool-result content block — a search or tool-error message arrives as its `text`. */
@@ -158,6 +160,26 @@ export function mapYouComResult(entry: YouComSearchResultEntry): WebSearchSource
 }
 
 /**
+ * Assemble `content` from `results.knowledge[]`: the answer prose of each
+ * `type: "answer"` entry, deduplicated by exact string and joined with a space.
+ * You.com can return several `answer` entries carrying the same prose but
+ * different attribution credits, so duplication is removed rather than repeated.
+ * Entries of an unrecognized `type` are skipped (the docs say to ignore rather
+ * than fail on a future kind), and a blank description is skipped.
+ */
+function mapKnowledgeContent(knowledge: readonly YouComKnowledgeEntry[] | undefined): string | undefined {
+  if (knowledge === undefined || knowledge.length === 0) return undefined
+  const parts: string[] = []
+  for (const entry of knowledge) {
+    if (entry.type !== 'answer') continue
+    const description = entry.description
+    if (description === undefined || description.trim().length === 0) continue
+    if (!parts.includes(description)) parts.push(description)
+  }
+  return parts.length === 0 ? undefined : parts.join(' ')
+}
+
+/**
  * Map a You.com search response envelope to a normalized search result.
  *
  * @param response - the parsed `POST /v1/search` response body.
@@ -167,9 +189,11 @@ export function mapYouComResult(entry: YouComSearchResultEntry): WebSearchSource
 export function mapYouComSearchResponse(response: YouComSearchResponse, includeNews: boolean): WebSearchResult {
   const entries = [...(response.results?.web ?? []), ...(includeNews ? (response.results?.news ?? []) : [])]
   const sources = entries.map(mapYouComResult).filter((source): source is WebSearchSource => source !== undefined)
-  // You.com's search endpoint returns no generated answer, so `content` is omitted. The web
-  // service owns the final `maxResults` truncation, so this provider reports `truncated: false`.
-  return { sources, truncated: false }
+  const content = mapKnowledgeContent(response.results?.knowledge)
+  // `content` carries the licensed answer text when knowledge results are present; otherwise it
+  // is omitted (You.com's search endpoint returns no generated answer). The web service owns the
+  // final `maxResults` truncation, so this provider reports `truncated: false`.
+  return { sources, ...(content === undefined ? {} : { content }), truncated: false }
 }
 
 /** The You.com-backed search provider. */
@@ -207,6 +231,7 @@ export class YouComSearchProvider implements WebSearchProvider {
         body: JSON.stringify({
           query: request.query,
           ...(numResults === undefined ? {} : { count: numResults }),
+          ...(this.options.knowledge === undefined ? {} : { knowledge: this.options.knowledge }),
         }),
         ...(signal === undefined ? {} : { signal }),
       })
@@ -279,6 +304,7 @@ export class YouComSearchProvider implements WebSearchProvider {
             arguments: {
               query: request.query,
               ...(numResults === undefined ? {} : { count: numResults }),
+              ...(this.options.knowledge === undefined ? {} : { knowledge: this.options.knowledge }),
             },
           },
         }),

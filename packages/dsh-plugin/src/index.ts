@@ -132,6 +132,8 @@ export interface PluginConfig {
   numResults?: number
   /** Merge `results.news[]` into search sources alongside `results.web[]`. Defaults to `true`. */
   includeNews?: boolean
+  /** Request licensed knowledge results alongside web and news, surfaced as the search result's `content`. Defaults to off. */
+  knowledge?: 'core'
 }
 
 /**
@@ -148,6 +150,7 @@ export const Config = z.object({
   freeSearchURL: z.string(),
   numResults: z.number().step(1).min(1),
   includeNews: z.boolean(),
+  knowledge: z.const('core'),
 })
 
 /** Resolve the API key from the launch environment, falling back to `process.env`. */
@@ -174,6 +177,7 @@ export function applyWebProviders(ctx: Context, config: PluginConfig): void {
       freeSearchURL: config.freeSearchURL ?? YOUCOM_FREE_MCP_URL,
       pluginVersion,
       includeNews: config.includeNews ?? true,
+      ...(config.knowledge === undefined ? {} : { knowledge: config.knowledge }),
       ...(config.numResults === undefined ? {} : { numResults: config.numResults }),
     }),
   )

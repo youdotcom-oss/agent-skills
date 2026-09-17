@@ -19,11 +19,25 @@ export interface YouComSearchResultEntry {
   page_age?: string
 }
 
+/**
+ * One entry of `results.knowledge[]` in a search response. Only the fields the
+ * mapping consumes are modeled — `title`, `attribution`, and `as_of` are dropped
+ * because `WebSearchResult` has no slot for them (the credits carry no URL, and
+ * `content` is a single answer-text string).
+ */
+export interface YouComKnowledgeEntry {
+  /** Kind of knowledge result; `answer` is the only value currently returned. */
+  type: string
+  /** Answer prose; present on `type: "answer"` entries. */
+  description?: string
+}
+
 /** You.com's search response envelope (`POST /v1/search`). */
 export interface YouComSearchResponse {
   results?: {
     web?: YouComSearchResultEntry[]
     news?: YouComSearchResultEntry[]
+    knowledge?: YouComKnowledgeEntry[]
   }
 }
 

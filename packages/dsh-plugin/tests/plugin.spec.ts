@@ -23,6 +23,7 @@ import {
   YouComFetchProvider,
   YouComSearchProvider,
 } from '../src/index.ts'
+import type { YouComSearchResponse } from '../src/web/types.ts'
 
 describe('YOUCOM_MCP_SERVERS', () => {
   test('lists the four You.com MCP servers with the right auth requirement', () => {
@@ -335,6 +336,55 @@ describe('You.com result mapping', () => {
   test('tolerates a missing results object', () => {
     expect(mapYouComSearchResponse({}, true).sources).toEqual([])
   })
+
+  test('maps knowledge answer prose into content', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [{ type: 'answer', description: 'NVIDIA reported $81.6B in revenue.' }],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe('NVIDIA reported $81.6B in revenue.')
+  })
+
+  test('joins distinct knowledge answers with a space', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [
+          { type: 'answer', description: 'First answer.' },
+          { type: 'answer', description: 'Second answer.' },
+        ],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe('First answer. Second answer.')
+  })
+
+  test('deduplicates identical knowledge descriptions (same prose, different attribution)', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [
+          { type: 'answer', description: 'The capital of France is Paris.' },
+          { type: 'answer', description: 'The capital of France is Paris.' },
+        ],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe('The capital of France is Paris.')
+  })
+
+  test('ignores non-answer knowledge entries (forward-compatible with future kinds)', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [{ type: 'table', description: 'ignored' }],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBeUndefined()
+  })
+
+  test('omits content when every knowledge description is blank', () => {
+    const response: YouComSearchResponse = {
+      results: { knowledge: [{ type: 'answer', description: '   ' }] },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBeUndefined()
+  })
 })
 
 describe('YouComSearchProvider availability', () => {
@@ -412,6 +462,22 @@ describe('YouComSearchProvider request mapping', () => {
     await new YouComSearchProvider(options).search({ query: 'q' })
     const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit]
     expect(JSON.parse(init.body as string)).not.toHaveProperty('count')
+  })
+
+  test('sends knowledge=core when configured', async () => {
+    const fetchMock = mock(async () => jsonResponse({ results: {} }))
+    spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch)
+    await new YouComSearchProvider({ ...options, knowledge: 'core' }).search({ query: 'q' })
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit]
+    expect(JSON.parse(init.body as string)).toMatchObject({ knowledge: 'core' })
+  })
+
+  test('omits knowledge when not configured', async () => {
+    const fetchMock = mock(async () => jsonResponse({ results: {} }))
+    spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch)
+    await new YouComSearchProvider(options).search({ query: 'q' })
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit]
+    expect(JSON.parse(init.body as string)).not.toHaveProperty('knowledge')
   })
 
   test('forwards the abort signal', async () => {
@@ -565,6 +631,39 @@ describe('YouComSearchProvider keyless (MCP) search', () => {
     expect(headers).not.toHaveProperty('x-api-key')
     expect(headers.accept).toBe('application/json, text/event-stream')
     expect(headers['x-client-info']).toContain('client=dsh-plugin/0.1.0')
+  })
+
+  test('threads knowledge into the keyless tools/call arguments when configured', async () => {
+    const fetchMock = mock(async () =>
+      sseToolCallResponse(1, {
+        structuredContent: { results: {} },
+        content: [{ type: 'text', text: '{"results":{}}' }],
+      }),
+    )
+    spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch)
+
+    await new YouComSearchProvider({ ...options, apiKey: '', knowledge: 'core' }).search({ query: 'hello' })
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    expect(JSON.parse(init.body as string)).toMatchObject({
+      params: { name: 'you-search', arguments: { query: 'hello', knowledge: 'core' } },
+    })
+  })
+
+  test('omits knowledge from the keyless arguments when not configured', async () => {
+    const fetchMock = mock(async () =>
+      sseToolCallResponse(1, {
+        structuredContent: { results: {} },
+        content: [{ type: 'text', text: '{"results":{}}' }],
+      }),
+    )
+    spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch)
+
+    await new YouComSearchProvider({ ...options, apiKey: '' }).search({ query: 'hello' })
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
+    const body = JSON.parse(init.body as string)
+    expect(body.params.arguments).not.toHaveProperty('knowledge')
   })
 
   test('prefers structuredContent when present', async () => {
@@ -841,6 +940,20 @@ describe('dsh-plugin search registration', () => {
     await fiber.dispose()
   })
 
+  test('carries knowledge from config into the provider request', async () => {
+    const fetchMock = mock(async () => jsonResponse({ results: {} }))
+    spyOn(globalThis, 'fetch').mockImplementation(fetchMock as unknown as typeof fetch)
+    const ctx = new Context()
+    await ctx.plugin(WebRuntime, { searchProvider: YOUCOM_PROVIDER_ID })
+    const fiber = await ctx.plugin(youcomPlugin, { apiKey: 'youcom-key', knowledge: 'core' })
+
+    await ctx.web.search({ query: 'q' })
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit]
+    expect(JSON.parse(init.body as string)).toMatchObject({ knowledge: 'core' })
+
+    await fiber.dispose()
+  })
+
   test('falls back to the keyless MCP profile when neither config nor env supplies a key', async () => {
     const prev = process.env.YDC_API_KEY
     delete process.env.YDC_API_KEY
@@ -1088,8 +1201,19 @@ describe('Config schema (schemastery)', () => {
         freeSearchURL: YOUCOM_FREE_MCP_URL,
         numResults: 5,
         includeNews: true,
+        knowledge: 'core',
       }),
     ).not.toThrow()
+  })
+
+  test('accepts knowledge=core (the only documented value)', () => {
+    expect(() => Config({ knowledge: 'core' })).not.toThrow()
+  })
+
+  test('rejects a knowledge value that is not core', () => {
+    // A config row from YAML is untyped at the trust boundary, so a non-`core`
+    // string reaches the schema at runtime; the cast mirrors that untrusted input.
+    expect(() => Config({ knowledge: 'advanced' as 'core' })).toThrow()
   })
 })
 

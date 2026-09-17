@@ -55,6 +55,7 @@ The plugin takes an optional config. Every field defaults when omitted, so the s
 | `freeSearchURL` | string | `https://api.you.com/mcp?profile=free` | Keyless MCP endpoint used when `apiKey` is empty. No fetch equivalent exists. |
 | `numResults` | number | server default | Default result count when a request carries no `maxResults`. |
 | `includeNews` | boolean | `true` | Merge `results.news[]` into search sources alongside `results.web[]`. |
+| `knowledge` | `core` | off | Request licensed knowledge results alongside web and news, surfaced as the search result's answer `content`. Only `core` is accepted. |
 
 ## Auth
 
