@@ -61,18 +61,20 @@ export interface YouComMcpServer {
 
 /**
  * The You.com MCP servers this package mounts, one `dsh-mcp-client` instance each.
- * `you-free` and `you-docs` are keyless; the rest need `$YDC_API_KEY`. `you` and
- * `you-free` both expose `you-search`, but `dsh-mcp-client` namespaces tools as
- * `mcp__<serverName>__<rawName>`, so `mcp__you__you-search` and
- * `mcp__you-free__you-search` coexist without collision.
+ * `you-discover` and `you-docs` are keyless; the rest need `$YDC_API_KEY`.
  *
- * The `you-free` URL is shared with `web/search-provider.ts` as the keyless
- * fallback the search provider POSTs to directly when no `apiKey` is configured,
- * so it lives in one place (`YOUCOM_FREE_MCP_URL`) and is imported here.
+ * The keyed `you` server is deliberately not mounted: its `you-search` and
+ * `you-contents` duplicate the `ctx.web` providers (searchProvider/fetchProvider
+ * `youcom`), and mounting both invites tool-selection drift. Discovery stays
+ * available keyless via the dedicated `profile=discover` profile.
+ *
+ * The free-profile URL is shared with `web/search-provider.ts` as the keyless
+ * fallback the search provider POSTs to directly when no `apiKey` is
+ * configured, so it lives in one place (`YOUCOM_FREE_MCP_URL`) and is imported
+ * here.
  */
 export const YOUCOM_MCP_SERVERS: readonly YouComMcpServer[] = [
-  { serverName: 'you', url: 'https://api.you.com/mcp', authenticated: true },
-  { serverName: 'you-free', url: YOUCOM_FREE_MCP_URL, authenticated: false },
+  { serverName: 'you-discover', url: 'https://api.you.com/mcp?profile=discover', authenticated: false },
   { serverName: 'you-finance', url: 'https://api.you.com/mcp/finance', authenticated: true },
   { serverName: 'you-research', url: 'https://api.you.com/mcp/research', authenticated: true },
   { serverName: 'you-docs', url: 'https://you.com/docs/_mcp/server', authenticated: false },

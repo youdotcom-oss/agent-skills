@@ -2,7 +2,7 @@
 
 You.com agent skills, MCP setup, and `web_search` provider for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
-With no API key, you get a working `web_search` tool (keyless, anonymous MCP), the five bundled skills (`you-web`, `you-research`, `you-finance`, `you-discover`, `you-free`), and the no-auth `you-free` MCP server's tools. With `YDC_API_KEY` set, the keyed MCP servers and the keyed search provider activate.
+With no API key, you get a working `web_search` tool (keyless, anonymous MCP), the four bundled skills (`you-web`, `you-research`, `you-finance`, `you-discover`), and the no-auth `you-discover` MCP server's tools. With `YDC_API_KEY` set, the keyed MCP servers and the keyed search provider activate.
 
 ## Why
 
@@ -27,9 +27,8 @@ Set `YDC_API_KEY` in the environment for the authenticated servers (get one at [
 
 ## What it configures
 
-- Skills from `./skills`: `you-web`, `you-research`, `you-finance`, `you-discover`, and `you-free`, registered under the `youcom` skill provider name
-- MCP server `you`: authenticated You.com MCP tools (`you-search`, `you-contents`, `you-balance`, `you-discover`)
-- MCP server `you-free`: no-auth web search
+- Skills from `./skills`: `you-web`, `you-research`, `you-finance`, and `you-discover`, registered under the `youcom` skill provider name. `you-web` is a dsh-specific variant that targets the native `web_search`/`web_fetch` tools (the keyed `you` MCP server is not mounted — its search/fetch tools duplicate the providers)
+- MCP server `you-discover`: no-auth discovery (`profile=discover`)
 - MCP server `you-finance`: finance tools
 - MCP server `you-research`: one-shot cited research synthesis
 - MCP server `you-docs`: You.com docs search
@@ -59,10 +58,10 @@ The plugin takes an optional config. Every field defaults when omitted, so the s
 
 ## Auth
 
-- `you-free` and `you-docs` do not require `$YDC_API_KEY`.
-- `you`, `you-finance`, and `you-research` send `Authorization: Bearer $YDC_API_KEY` when the variable is set. An authenticated server with no key still mounts — `failOnStartupError: false` degrades a failed connection to zero tools from that server rather than blocking the rest of the profile.
-- `you` and `you-free` both expose a `you-search` tool, but `dsh-mcp-client` namespaces tools per server, so `mcp__you__you-search` and `mcp__you-free__you-search` coexist without collision.
-- The keyed search provider activates when `YDC_API_KEY` is present; without it, the keyless MCP profile handles `web_search`. The keyed `fetchProvider` (`youcom`) is opt-in — see `cordis.patch.yml` for how to add `fetchProvider: youcom` to the `web` row's `config`.
+- `you-discover` and `you-docs` do not require `$YDC_API_KEY`.
+- `you-finance` and `you-research` send `Authorization: Bearer $YDC_API_KEY` when the variable is set. An authenticated server with no key still mounts — `failOnStartupError: false` degrades a failed connection to zero tools from that server rather than blocking the rest of the profile.
+- Search and page contents go through the native `web_search`/`web_fetch` tools (provider-backed), not through mounted MCP tools — there is no duplicate search surface.
+- The keyed search path activates when `YDC_API_KEY` is present; without it, the keyless free MCP profile handles `web_search`. The keyed `fetchProvider` (`youcom`) is opt-in — see `cordis.patch.yml` for how to add `fetchProvider: youcom` to the `web` row's `config` (note: patch `config` is a whole-row replacement; restate `fetchProvider: http` unless you intend to change it).
 
 ## Requirements
 

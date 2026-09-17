@@ -4,10 +4,14 @@
 # `@deepseek-ai/dsh-web` (every shipped profile does).
 #
 # `searchProvider: youcom` opts the web seam into our keyed search provider.
-# `fetchProvider` is intentionally left at its base value (`http`) because a
-# keyless fetch would hard-throw WEB_PROVIDER_CONFIGURED_UNAVAILABLE — to opt
-# into You.com for `web_fetch` add `fetchProvider: youcom` here. See README.
-#
+# NOTE: patch `config` is a whole-row replacement (see DSH plugin-anatomy docs,
+# §6) — every key of the base `web` row's config must be restated here. The
+# base row (dsh-base 0.1.6-alpha.x) sets `fetchProvider: http`; omitting it
+# would silently change fetch provider selection.
+# `fetchProvider: http` is intentional: a keyless fetch has no equivalent (the
+# free/discover MCP profiles expose no contents tool), and the keyed REST
+# fetch provider is opt-in — add `fetchProvider: youcom` to opt into You.com
+# for `web_fetch`. See README.
 # The `youcom-skills` row uses `ctx.inject(['web'])` internally, so the keyed
 # web registration activates only when the `web` service is provided.
 # Profiles that omit `dsh-web` (rare) keep skills + MCP but skip the web
@@ -16,6 +20,7 @@
 - id: web
   config:
     searchProvider: youcom
+    fetchProvider: http
 
 - insert:
     - id: youcom-skills
