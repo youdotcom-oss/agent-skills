@@ -2,7 +2,7 @@
  * Build the `X-Client-Info` attribution header value for outbound You.com API
  * requests:
  *
- *     sdk; client=dsh-plugin/<version>; ua=node/<version>
+ *     plugin; client=dsh-plugin/<version>; ua=node/<version>
  *
  * The runtime version segment reports the actual Node.js runtime version. The
  * plugin version is read from `package.json` at module load.
@@ -10,7 +10,7 @@
  */
 
 /** Leading literal that identifies the traffic source (the channel). */
-const SOURCE_TOKEN = 'sdk'
+const SOURCE_TOKEN = 'plugin'
 
 /** This package's name, used in the `client=` segment. */
 const PLUGIN_NAME = 'dsh-plugin'
