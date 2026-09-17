@@ -1,7 +1,7 @@
 {
   "name": "@youdotcom-oss/dsh-plugin",
   "version": "0.1.0",
-  "description": "You.com agent skill provider and MCP setup for DeepSeek Harness (dsh), registered via ctx.skills",
+  "description": "You.com agent skills, MCP setup, and web search/fetch providers for DeepSeek Harness (dsh)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -55,16 +55,23 @@
     }
   },
   "types": "./lib/types/index.d.ts",
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.2"
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.2",
     "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.2",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.2"
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-web": "^0.1.5-rc.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.2",
     "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.2",
     "@deepseek-ai/dsh-skill": "^0.1.5-rc.2",
     "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-web": "^0.1.5-rc.2",
     "@types/bun": "1.4.2",
     "@types/node": "^22.20.3"
   }
