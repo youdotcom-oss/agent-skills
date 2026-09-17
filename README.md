@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="You.com Agent Skills and Plugins logo" width="100%">
+</p>
+
 # You.com Agent Skills and Plugins
 
 Use You.com from coding agents for current web search, URL content extraction, cited research, finance research, and developer integration discovery.
