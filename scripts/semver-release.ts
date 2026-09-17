@@ -1,7 +1,7 @@
 import { dirname, resolve } from 'node:path'
 import { $ } from 'bun'
 
-type Bump = 'none' | 'patch' | 'minor' | 'major'
+type Bump = 'none' | 'patch' | 'minor' | 'major' | 'initial'
 
 type ReleaseUnit = {
   bump: Bump
@@ -49,7 +49,9 @@ const npmPackages = {
   '@youdotcom-oss/dsh-plugin': 'packages/dsh-plugin/package.json',
 } as const
 const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi', 'packages/dsh-plugin']
-const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major']
+// 'initial' outranks semantic bumps: a brand-new package publishes its declared
+// version as-is regardless of any other changes in the same diff.
+const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major', 'initial']
 
 const maxBump = (left: Bump, right: Bump): Bump => (bumpOrder.indexOf(left) > bumpOrder.indexOf(right) ? left : right)
 
@@ -57,7 +59,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const isBump = (value: unknown): value is Bump =>
-  value === 'none' || value === 'patch' || value === 'minor' || value === 'major'
+  value === 'none' || value === 'patch' || value === 'minor' || value === 'major' || value === 'initial'
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string')
@@ -73,6 +75,10 @@ const bumpVersion = (version: string, bump: Bump) => {
   const major = Number(match[1])
   const minor = Number(match[2])
   const patch = Number(match[3])
+
+  if (bump === 'initial') {
+    return version
+  }
 
   if (bump === 'major') {
     return `${major + 1}.0.0`
@@ -102,6 +108,11 @@ const updateReleaseUnit = (
 
 export const isPluginReleasePath = (path: string) =>
   pluginReleasePaths.some((releasePath) => path === releasePath || path.startsWith(`${dirname(releasePath)}/`))
+
+export const isInitialPackage = (statuses: { status: string; path: string }[], directory: string): boolean => {
+  const packageChanges = statuses.filter((item) => item.path.startsWith(`${directory}/`))
+  return packageChanges.length > 0 && packageChanges.every((item) => item.status.startsWith('A'))
+}
 
 const readChangedPaths = async (baseRef: string) => {
   const names = await $`git -C ${defaultRepoRoot} diff --name-only ${baseRef}`.text()
@@ -206,10 +217,22 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
     }
 
     for (const [name, packagePath] of Object.entries(npmPackages)) {
-      if (path.startsWith(dirname(packagePath))) {
-        plan.units.npm[name] = updateReleaseUnit(plan.units.npm[name], 'patch', path, 'package implementation changed')
+      const directory = dirname(packagePath)
+      if (path.startsWith(directory)) {
+        const isInitial = isInitialPackage(statuses, directory)
+        plan.units.npm[name] = updateReleaseUnit(
+          plan.units.npm[name],
+          isInitial ? 'initial' : 'patch',
+          path,
+          isInitial ? 'new package: publish declared version as-is' : 'package implementation changed',
+        )
         if (name === '@youdotcom-oss/openclaw') {
-          plan.units.clawhub.you = updateReleaseUnit(plan.units.clawhub.you, 'patch', path, 'OpenClaw package changed')
+          plan.units.clawhub.you = updateReleaseUnit(
+            plan.units.clawhub.you,
+            isInitial ? 'initial' : 'patch',
+            path,
+            isInitial ? 'new package: publish declared version as-is' : 'OpenClaw package changed',
+          )
         }
       }
     }
@@ -360,7 +383,7 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
 
   for (const [name, unit] of Object.entries(plan.units.npm)) {
     const path = npmPackages[name as keyof typeof npmPackages]
-    if (path && unit.bump !== 'none') {
+    if (path && unit.bump !== 'none' && unit.bump !== 'initial') {
       updates.push(await bumpJsonVersion({ repoRoot, path, bump: unit.bump }))
       if (name === '@youdotcom-oss/openclaw') {
         updates.push(

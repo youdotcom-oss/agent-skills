@@ -264,11 +264,20 @@ jobs:
           jq '.name = "you"' "${CLAWHUB_PACKAGE_DIR}/package.json" > "${CLAWHUB_PACKAGE_DIR}/package.json.tmp"
           mv "${CLAWHUB_PACKAGE_DIR}/package.json.tmp" "${CLAWHUB_PACKAGE_DIR}/package.json"
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
-          bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
-            --source-path packages/openclaw \
-            --source-repo youdotcom-oss/agent-skills \
-            --family bundle-plugin \
-            --owner youdotcom-oss \
-            --name you \
-            --version "${VERSION}" \
-            --source-commit "${SOURCE_COMMIT}"
+          for attempt in 1 2 3; do
+            if bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
+              --source-path packages/openclaw \
+              --source-repo youdotcom-oss/agent-skills \
+              --family bundle-plugin \
+              --owner youdotcom-oss \
+              --name you \
+              --version "${VERSION}" \
+              --source-commit "${SOURCE_COMMIT}"; then
+              break
+            fi
+            if [[ "${attempt}" == 3 ]]; then
+              exit 1
+            fi
+            echo "ClawHub publish failed (attempt ${attempt}/3); retrying in 30s"
+            sleep 30
+          done
