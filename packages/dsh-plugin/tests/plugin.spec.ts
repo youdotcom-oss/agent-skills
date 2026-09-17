@@ -55,13 +55,26 @@ describe('buildMcpClientConfig', () => {
 /** Records `ctx.plugin()` calls without mounting anything real — no network, no Cordis. */
 const fakeContext = () => {
   const mounted: { plugin: unknown; config: unknown }[] = []
+  const injected: { names: string[]; cb: (ctx: Context) => void }[] = []
   const ctx = {
     plugin: (plugin: unknown, config?: unknown) => {
       mounted.push({ plugin, config })
       return { dispose: async () => {} }
     },
+    // `launchEnvironmentOf` calls `ctx.get('launchEnvironment')` and falls
+    // back to a process.env snapshot when the slot is empty — returning
+    // undefined here preserves that fallback.
+    get: (_key: string) => undefined,
+    // `apply` defers web-provider registration via `ctx.inject(['web'], …)`.
+    // The real Cordis Context only invokes the callback once the named
+    // services are available; here we just record it so tests can verify
+    // the deferral (or invoke it manually with a fake web seam).
+    inject: (names: string[], cb: (ctx: Context) => void) => {
+      injected.push({ names: Array.isArray(names) ? names : [names], cb })
+      return { dispose: async () => {} }
+    },
   }
-  return { ctx: ctx as unknown as Context, mounted }
+  return { ctx: ctx as unknown as Context, mounted, injected }
 }
 
 describe('applySkills', () => {
@@ -115,12 +128,27 @@ describe('apply', () => {
     expect(mounted).toHaveLength(1 + YOUCOM_MCP_SERVERS.length)
   })
 
+  test('passes a configured apiKey through to the MCP servers, over the environment', () => {
+    const prev = process.env.YDC_API_KEY
+    process.env.YDC_API_KEY = 'env-key'
+    try {
+      const { ctx, mounted } = fakeContext()
+      youcomPlugin.apply(ctx, { apiKey: 'config-key' })
+      const youConfig = mounted.find((entry) => (entry.config as { serverName: string }).serverName === 'you')
+        ?.config as { headers: Record<string, string> }
+      expect(youConfig.headers).toEqual({ Authorization: 'Bearer config-key' })
+    } finally {
+      if (prev === undefined) delete process.env.YDC_API_KEY
+      else process.env.YDC_API_KEY = prev
+    }
+  })
+
   test('has no default export (namespace plugin export shape)', () => {
     expect('default' in youcomPlugin).toBe(false)
   })
 })
 
-describe('dsh-youcom skill registration (real ctx.skills, no network)', () => {
+describe('dsh-plugin skill registration (real ctx.skills, no network)', () => {
   test('registers the five bundled You.com skills under the youcom provider', async () => {
     const ctx = new Context()
     await ctx.plugin(SkillRegistry)
