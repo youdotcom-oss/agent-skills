@@ -8,6 +8,8 @@ const targetSkillsDir = resolve(import.meta.dir, '..', 'skills')
 type CopySkillsOptions = {
   sourceSkillsDir: string
   targetSkillsDir: string
+  /** Skill directory names to skip from the shared source. */
+  exclude?: readonly string[]
 }
 
 const isDirectory = async (path: string) =>
@@ -15,7 +17,7 @@ const isDirectory = async (path: string) =>
     .then((stats) => stats.isDirectory())
     .catch(() => false)
 
-export const copySkills = async ({ sourceSkillsDir, targetSkillsDir }: CopySkillsOptions) => {
+export const copySkills = async ({ sourceSkillsDir, targetSkillsDir, exclude = [] }: CopySkillsOptions) => {
   if (!(await isDirectory(sourceSkillsDir))) {
     throw new Error(`Missing source skills directory: ${sourceSkillsDir}`)
   }
@@ -28,8 +30,10 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir }: CopySkill
     }
   }
 
+  const excluded = new Set(exclude)
   let copied = 0
   for (const entry of await readdir(sourceSkillsDir, { withFileTypes: true })) {
+    if (exclude !== undefined && excluded.has(entry.name)) continue
     const sourceSkillDir = join(sourceSkillsDir, entry.name)
     const sourceSkillFile = join(sourceSkillDir, 'SKILL.md')
     if (entry.isDirectory() && (await Bun.file(sourceSkillFile).exists())) {
@@ -46,6 +50,12 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir }: CopySkill
 }
 
 if (import.meta.main) {
-  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir })
+  // `you-web` teaches the MCP tool names `you-search`/`you-contents`; this
+  // plugin surfaces search via the native `web_search`/`web_fetch` providers
+  // and does not mount the keyed `you` server, so the shared skill's guidance
+  // (and its `mcp_servers` metadata) would point at tools that don't exist
+  // here. `you-free` duplicates the keyless fallback built into the search
+  // provider.
+  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir, exclude: ['you-free', 'you-web'] })
   process.stdout.write(`Copied ${copied} skills to ${targetSkillsDir}\n`)
 }

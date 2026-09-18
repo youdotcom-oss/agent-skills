@@ -1,9 +1,27 @@
-# @youdotcom-oss/dsh-plugin bundle patch: mounts the You.com skill provider and MCP
-# clients by inserting a new row. The composition must NOT already have a
-# `youcom-skills` row — `insert:` adds one, the top-level `- id: ... / name: ...`
-# shape OVERRIDES an existing row (silently rejected if the id is absent).
-# Requires the composition already loads `@deepseek-ai/dsh-skill` and
-# `@deepseek-ai/dsh-mcp-client` (every shipped profile does).
+# @youdotcom-oss/dsh-plugin bundle patch: mounts the You.com skill provider, MCP
+# clients, and web search provider. Requires the composition already loads
+# `@deepseek-ai/dsh-skill`, `@deepseek-ai/dsh-mcp-client`, and
+# `@deepseek-ai/dsh-web` (every shipped profile does).
+#
+# `searchProvider: youcom` opts the web seam into our keyed search provider.
+# NOTE: patch `config` is a whole-row replacement (see DSH plugin-anatomy docs,
+# §6) — every key of the base `web` row's config must be restated here. The
+# base row (dsh-base 0.1.6-alpha.x) sets `fetchProvider: http`; omitting it
+# would silently change fetch provider selection.
+# `fetchProvider: http` is intentional: a keyless fetch has no equivalent (the
+# free/discover MCP profiles expose no contents tool), and the keyed REST
+# fetch provider is opt-in — add `fetchProvider: youcom` to opt into You.com
+# for `web_fetch`. See README.
+# The `youcom-skills` row uses `ctx.inject(['web'])` internally, so the keyed
+# web registration activates only when the `web` service is provided.
+# Profiles that omit `dsh-web` (rare) keep skills + MCP but skip the web
+# override.
+
+- id: web
+  config:
+    searchProvider: youcom
+    fetchProvider: http
+
 - insert:
     - id: youcom-skills
       name: '@youdotcom-oss/dsh-plugin'
