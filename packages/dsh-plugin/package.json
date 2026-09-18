@@ -1,6 +1,6 @@
 {
   "name": "@youdotcom-oss/dsh-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "You.com agent skills, MCP setup, and web search/fetch providers for DeepSeek Harness (dsh)",
   "license": "MIT",
   "repository": {
