@@ -161,22 +161,34 @@ export function mapYouComResult(entry: YouComSearchResultEntry): WebSearchSource
 
 /**
  * Assemble `content` from `results.knowledge[]`: the answer prose of each
- * `type: "answer"` entry, deduplicated by exact string and joined with a space.
- * You.com can return several `answer` entries carrying the same prose but
- * different attribution credits, so duplication is removed rather than repeated.
+ * `type: "answer"` entry, deduplicated by exact string and joined with a space,
+ * followed by the data-provider credits when any are present. You.com can return
+ * several `answer` entries carrying the same prose but different attribution
+ * credits, so duplication is removed rather than repeated. The credits are
+ * appended to `content` because each names a provider and carries no URL and so cannot
+ * be a `sources[]` entry, and `WebSearchResult` has no other slot for them.
  * Entries of an unrecognized `type` are skipped (the docs say to ignore rather
- * than fail on a future kind), and a blank description is skipped.
+ * than fail on a future kind), and a blank description is skipped along with its
+ * credits.
  */
 function mapKnowledgeContent(knowledge: readonly YouComKnowledgeEntry[] | undefined): string | undefined {
   if (knowledge === undefined || knowledge.length === 0) return undefined
   const parts: string[] = []
+  const credits: string[] = []
   for (const entry of knowledge) {
     if (entry.type !== 'answer') continue
     const description = entry.description
     if (description === undefined || description.trim().length === 0) continue
+    const providers = entry.attribution ?? []
+    for (const provider of providers) {
+      const name = provider.name?.trim()
+      if (name !== undefined && name.length > 0 && !credits.includes(name)) credits.push(name)
+    }
     if (!parts.includes(description)) parts.push(description)
   }
-  return parts.length === 0 ? undefined : parts.join(' ')
+  if (parts.length === 0) return undefined
+  const prose = parts.join(' ')
+  return credits.length === 0 ? prose : `${prose} (Data: ${credits.join(', ')})`
 }
 
 /**

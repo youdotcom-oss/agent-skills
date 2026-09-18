@@ -385,6 +385,45 @@ describe('You.com result mapping', () => {
     }
     expect(mapYouComSearchResponse(response, true).content).toBeUndefined()
   })
+
+  test('appends provider credits to the knowledge content', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [{ type: 'answer', description: 'NVIDIA reported $81.6B.', attribution: [{ name: 'Fiscal.ai' }] }],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe('NVIDIA reported $81.6B. (Data: Fiscal.ai)')
+  })
+
+  test('deduplicates credits and keeps credits from a duplicate-prose entry', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [
+          { type: 'answer', description: 'The capital of France is Paris.', attribution: [{ name: 'Tako' }] },
+          {
+            type: 'answer',
+            description: 'The capital of France is Paris.',
+            attribution: [{ name: 'Tako' }, { name: 'Wikidata' }],
+          },
+        ],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe(
+      'The capital of France is Paris. (Data: Tako, Wikidata)',
+    )
+  })
+
+  test('does not credit an entry whose description is blank', () => {
+    const response: YouComSearchResponse = {
+      results: {
+        knowledge: [
+          { type: 'answer', description: '   ', attribution: [{ name: 'Tako' }] },
+          { type: 'answer', description: 'Paris is the capital.', attribution: [{ name: 'Wikidata' }] },
+        ],
+      },
+    }
+    expect(mapYouComSearchResponse(response, true).content).toBe('Paris is the capital. (Data: Wikidata)')
+  })
 })
 
 describe('YouComSearchProvider availability', () => {

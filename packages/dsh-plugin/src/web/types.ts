@@ -21,15 +21,21 @@ export interface YouComSearchResultEntry {
 
 /**
  * One entry of `results.knowledge[]` in a search response. Only the fields the
- * mapping consumes are modeled — `title`, `attribution`, and `as_of` are dropped
- * because `WebSearchResult` has no slot for them (the credits carry no URL, and
- * `content` is a single answer-text string).
+ * mapping consumes are modeled — `title` and `as_of` are dropped because
+ * `WebSearchResult` has no slot for them (`title` prefixes `description`, and
+ * `as_of` is optional and typically restated in the prose).
  */
 export interface YouComKnowledgeEntry {
   /** Kind of knowledge result; `answer` is the only value currently returned. */
   type: string
   /** Answer prose; present on `type: "answer"` entries. */
   description?: string
+  /**
+   * Display credits for the licensed data behind the result. These are credits
+   * rather than citations — each names a provider and carries no URL — so they
+   * cannot be `WebSearchSource` entries and are appended to `content` instead.
+   */
+  attribution?: readonly { name?: string }[]
 }
 
 /** You.com's search response envelope (`POST /v1/search`). */
