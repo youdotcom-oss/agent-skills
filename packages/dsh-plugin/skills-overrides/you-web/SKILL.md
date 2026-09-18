@@ -5,7 +5,7 @@ compatibility: Requires this dsh plugin's You.com web provider (`web_search` is 
 license: MIT
 metadata:
   author: youdotcom-oss
-  version: 0.5.0
+  version: 0.5.1
   category: web-search
   keywords: you.com,dsh,web-search,search,content-extraction,source-reading,citations
 ---
@@ -79,6 +79,16 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 - Every claim must have a citation.
 - Citations must be real URLs.
 - Do not cite sources that don't support the claim.
+
+## Data-Provider Credits
+
+When the host enables the plugin's `knowledge` option, `web_search` may return `content` carrying a
+licensed answer that ends in a `(Data: Provider, ...)` credit. Those credits name data providers and
+have no URL, so the citation rules above do not apply to them:
+
+- Carry a credit through into your answer verbatim. Do not drop it and do not invent a URL for it.
+- A credit is attribution, not a citation. It never replaces the source URLs you cite.
+- `knowledge` is off unless the host configured it, so most searches return no `content` credit.
 
 ## Safety
 
