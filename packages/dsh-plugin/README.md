@@ -2,7 +2,7 @@
 
 You.com agent skills, MCP setup, and `web_search` provider for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
-With no API key, you get a working `web_search` tool (keyless, anonymous MCP), the four bundled skills (`you-web`, `you-research`, `you-finance`, `you-discover`), and the no-auth `you-discover` MCP server's tools. With `YDC_API_KEY` set, the keyed MCP servers and the keyed search provider activate.
+With no API key, you get a working `web_search` tool (keyless, anonymous MCP), the three bundled skills (`you-research`, `you-finance`, `you-discover`), and the no-auth `you-discover` MCP server's tools. With `YDC_API_KEY` set, the keyed MCP servers and the keyed search provider activate.
 
 ## Why
 
@@ -27,7 +27,7 @@ Set `YDC_API_KEY` in the environment for the authenticated servers (get one at [
 
 ## What it configures
 
-- Skills from `./skills`: `you-web`, `you-research`, `you-finance`, and `you-discover`, registered under the `youcom` skill provider name. `you-web` is a dsh-specific variant that targets the native `web_search`/`web_fetch` tools (the keyed `you` MCP server is not mounted — its search/fetch tools duplicate the providers)
+- Skills from `./skills`: `you-research`, `you-finance`, and `you-discover`, registered under the `youcom` skill provider name. `you-web` and `you-free` are excluded at build time: `you-web` teaches the MCP tool names `you-search`/`you-contents`, which don't exist here (the keyed `you` MCP server is not mounted — its search/fetch tools duplicate the native `web_search`/`web_fetch` providers), and `you-free` duplicates the keyless fallback built into the search provider.
 - MCP server `you-discover`: no-auth discovery (`profile=discover`)
 - MCP server `you-finance`: finance tools
 - MCP server `you-research`: one-shot cited research synthesis

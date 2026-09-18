@@ -170,14 +170,14 @@ describe('apply', () => {
 })
 
 describe('dsh-plugin skill registration (real ctx.skills, no network)', () => {
-  test('registers the four bundled You.com skills under the youcom provider', async () => {
+  test('registers the bundled You.com skills under the youcom provider', async () => {
     const ctx = new Context()
     await ctx.plugin(SkillRegistry)
     const fiber = await ctx.plugin({ name, apply: applySkills })
 
     const summaries = await ctx.skills.list()
     expect(summaries.map((summary) => summary.name).sort()).toEqual(
-      ['you-discover', 'you-finance', 'you-research', 'you-web'].sort(),
+      ['you-discover', 'you-finance', 'you-research'].sort(),
     )
     for (const summary of summaries) {
       expect(summary.provider).toBe(SKILL_PROVIDER_NAME)
@@ -191,10 +191,20 @@ describe('dsh-plugin skill registration (real ctx.skills, no network)', () => {
     await ctx.plugin(SkillRegistry)
     const fiber = await ctx.plugin({ name, apply: applySkills })
 
-    const skill = await ctx.skills.get('you-web')
-    expect(skill?.content).toContain('web_search')
-    expect(skill?.content).not.toContain('you-search')
+    const skill = await ctx.skills.get('you-research')
+    expect(skill?.content).toContain('you-research')
     expect(skill?.content.length).toBeGreaterThan(0)
+
+    await fiber.dispose()
+  })
+
+  test('does not bundle the shared you-web skill (native web_search/web_fetch replace it)', async () => {
+    const ctx = new Context()
+    await ctx.plugin(SkillRegistry)
+    const fiber = await ctx.plugin({ name, apply: applySkills })
+
+    const summaries = await ctx.skills.list()
+    expect(summaries.map((summary) => summary.name)).not.toContain('you-web')
 
     await fiber.dispose()
   })
@@ -1334,7 +1344,7 @@ describe('resolveApiKey / apply() with no API key', () => {
       const fiber = await ctx.plugin(apply)
       // applySkills registers skills via the filesystem provider; listing them confirms apply ran.
       const summaries = await ctx.skills.list()
-      expect(summaries.map((s) => s.name).sort()).toEqual(['you-discover', 'you-finance', 'you-research', 'you-web'])
+      expect(summaries.map((s) => s.name).sort()).toEqual(['you-discover', 'you-finance', 'you-research'])
       await fiber.dispose()
     } finally {
       if (prev !== undefined) process.env.YDC_API_KEY = prev

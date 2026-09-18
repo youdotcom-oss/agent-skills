@@ -8,7 +8,7 @@ const targetSkillsDir = resolve(import.meta.dir, '..', 'skills')
 type CopySkillsOptions = {
   sourceSkillsDir: string
   targetSkillsDir: string
-  /** Skill directory names to skip from the shared source (e.g. skills this package replaces with an override). */
+  /** Skill directory names to skip from the shared source. */
   exclude?: readonly string[]
 }
 
@@ -49,31 +49,13 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir, exclude = [
   return copied
 }
 
-/**
- * Apply per-package skill overrides on top of the shared tree: each override
- * directory replaces the same-named shared skill (overrides never ADD a skill
- * the shared copy doesn't already provide — use `exclude` to drop one).
- * A missing overrides directory is a no-op.
- */
-export const overlaySkills = async ({ skillsDir, overridesDir }: { skillsDir: string; overridesDir: string }) => {
-  if (!(await isDirectory(overridesDir))) return 0
-
-  let overlaid = 0
-  for (const entry of await readdir(overridesDir, { withFileTypes: true })) {
-    const overrideSkillFile = join(overridesDir, entry.name, 'SKILL.md')
-    const sharedSkillDir = join(skillsDir, entry.name)
-    if (entry.isDirectory() && (await isDirectory(sharedSkillDir)) && (await Bun.file(overrideSkillFile).exists())) {
-      await rm(sharedSkillDir, { force: true, recursive: true })
-      await cp(join(overridesDir, entry.name), sharedSkillDir, { recursive: true })
-      overlaid += 1
-    }
-  }
-  return overlaid
-}
-
 if (import.meta.main) {
-  const overridesDir = resolve(import.meta.dir, '..', 'skills-overrides')
-  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir, exclude: ['you-free'] })
-  const overridden = await overlaySkills({ skillsDir: targetSkillsDir, overridesDir })
-  process.stdout.write(`Copied ${copied} skills (plus ${overridden} overrides) to ${targetSkillsDir}\n`)
+  // `you-web` teaches the MCP tool names `you-search`/`you-contents`; this
+  // plugin surfaces search via the native `web_search`/`web_fetch` providers
+  // and does not mount the keyed `you` server, so the shared skill's guidance
+  // (and its `mcp_servers` metadata) would point at tools that don't exist
+  // here. `you-free` duplicates the keyless fallback built into the search
+  // provider.
+  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir, exclude: ['you-free', 'you-web'] })
+  process.stdout.write(`Copied ${copied} skills to ${targetSkillsDir}\n`)
 }
