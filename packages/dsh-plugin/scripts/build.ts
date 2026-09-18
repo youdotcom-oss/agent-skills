@@ -51,11 +51,6 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir, exclude = [
 
 /**
  * Apply per-package skill overrides on top of the shared tree: each override
- * directory replaces (or adds) the same-named skill. A missing overrides
- * directory is a no-op.
- */
-/**
- * Apply per-package skill overrides on top of the shared tree: each override
  * directory replaces the same-named shared skill (overrides never ADD a skill
  * the shared copy doesn't already provide — use `exclude` to drop one).
  * A missing overrides directory is a no-op.
