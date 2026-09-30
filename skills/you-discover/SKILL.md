@@ -1,10 +1,10 @@
 ---
 name: you-discover
 description: Route You.com integration planning through the you-discover MCP tool, Docs MCP, and direct API options.
-compatibility: Requires network access. Prefer the standard You.com MCP server exposing `you-discover` and Docs MCP `searchDocs`.
+compatibility: Requires network access. Uses the keyless You.com discover MCP profile exposing `you-discover` and Docs MCP `searchDocs`; no `YDC_API_KEY` or OAuth required.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you":{"url":"https://api.you.com/mcp"}}'
+  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-discover":{"url":"https://api.you.com/mcp?profile=discover"}}'
   author: youdotcom-oss
   version: 0.4.0
   category: discovery
@@ -17,7 +17,7 @@ Use this skill while planning how to integrate You.com with an agent SDK, IDE, a
 
 ## Required resources
 
-1. Check whether the standard You.com MCP server exposes `you-discover` at `https://api.you.com/mcp`.
+1. Check whether the keyless You.com discover MCP profile exposes `you-discover` at `https://api.you.com/mcp?profile=discover` (no `YDC_API_KEY` or OAuth required).
 2. Check whether the You.com Docs MCP tool `searchDocs` is available at `https://you.com/docs/_mcp/server`.
 3. If either server is missing, connect or install the missing MCP server(s): provide the server name, URL, and auth requirement from the `metadata.mcp_servers` field in the frontmatter above; point to the MCP setup mechanism for the current agent or MCP client; do not connect or install or modify configuration without approval.
 4. Once both `you-discover` and Docs MCP are available, enter the planning loop: use `you-discover` to explore candidate resources for the target, draft a plan naming the selected resource and why it fits, then return to Docs MCP to verify auth, install, and setup steps before recommending.
