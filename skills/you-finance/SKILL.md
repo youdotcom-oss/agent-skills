@@ -1,6 +1,6 @@
 ---
 name: you-finance
-description: Answer finance questions through the You.com you-finance MCP tool, with payment-aware fallbacks for keyless hosts.
+description: "Answer finance and market-data questions with the You.com `you-finance` MCP tool: stock prices, tickers, earnings, company financials, and market trends, with payment-aware fallbacks for keyless hosts."
 license: MIT
 compatibility: Requires network access and a You.com MCP host using `YDC_API_KEY`, OAuth, or MPP/x402 payment support.
 metadata:

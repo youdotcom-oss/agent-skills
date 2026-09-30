@@ -1,6 +1,6 @@
 ---
 name: you-research
-description: Route research tasks between a cost-conscious agentic search workflow and the You.com you-research MCP tool for one-shot cited synthesis.
+description: "Multi-source research with citations using You.com. Use for questions that need several sources compared and synthesized, such as library or framework comparisons, tool and vendor evaluations, market research, or deep-dive reports. Routes between a cost-conscious agentic search loop and the one-shot `you-research` MCP tool."
 compatibility: Requires network access and You.com MCP tools with `YDC_API_KEY`, OAuth, or MPP/x402 payment support.
 license: MIT
 metadata:

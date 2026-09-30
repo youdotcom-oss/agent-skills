@@ -1,6 +1,6 @@
 ---
 name: you-free
-description: Use the free You.com MCP profile for unauthenticated basic web search with `you-search` only.
+description: "Keyless live web search through the free You.com MCP profile (`you-search` only, no API key or OAuth). Use for quick lookups of current docs, error messages, package versions, or news when no You.com credentials are configured."
 compatibility: Requires network access and the You.com free MCP profile exposing `you-search`. Does not require `YDC_API_KEY` or OAuth.
 license: MIT
 metadata:
