@@ -6,7 +6,7 @@ license: MIT
 metadata:
   mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-discover":{"url":"https://api.you.com/mcp?profile=discover"}}'
   author: youdotcom-oss
-  version: 0.4.0
+  version: 0.5.0
   category: discovery
   keywords: you.com,mcp,agentic-resource-discovery,ai-catalog,integration-discovery,agent-sdk
 ---
