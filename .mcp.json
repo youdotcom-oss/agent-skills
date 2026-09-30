@@ -11,6 +11,10 @@
     "you-research": {
       "type": "http",
       "url": "https://api.you.com/mcp/research"
+    },
+    "you-discover": {
+      "type": "http",
+      "url": "https://api.you.com/mcp?profile=discover"
     }
   }
 }

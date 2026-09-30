@@ -1,9 +1,11 @@
-import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test'
+import { afterEach, beforeAll, describe, expect, mock, spyOn, test } from 'bun:test'
+import { join, resolve } from 'node:path'
 import { Context } from '@deepseek-ai/cordis'
 import * as McpClientPlugin from '@deepseek-ai/dsh-mcp-client'
 import SkillRegistry from '@deepseek-ai/dsh-skill'
 import * as SkillFilesystemPlugin from '@deepseek-ai/dsh-skill-filesystem'
 import WebRuntime from '@deepseek-ai/dsh-web'
+import { copySkills } from '../scripts/build.ts'
 import * as youcomPlugin from '../src/index.ts'
 import {
   apply,
@@ -24,6 +26,19 @@ import {
   YouComSearchProvider,
 } from '../src/index.ts'
 import type { YouComSearchResponse } from '../src/web/types.ts'
+
+const repoRoot = resolve(import.meta.dir, '../../..')
+
+// The bundled skills under `skills/` are a gitignored build artifact and the
+// suites below read them through the real skill registry. Regenerate them
+// here because `bun test` bypasses package.json scripts (no pretest hook).
+beforeAll(async () => {
+  await copySkills({
+    sourceSkillsDir: join(repoRoot, 'skills'),
+    targetSkillsDir: resolve(import.meta.dir, '..', 'skills'),
+    exclude: ['you-web'],
+  })
+})
 
 describe('YOUCOM_MCP_SERVERS', () => {
   test('lists the four You.com MCP servers with the right auth requirement', () => {

@@ -32,7 +32,7 @@ Research NVIDIA's latest earnings and cite the numbers.
 /plugin install you@you-com
 ```
 
-Basic web search works without an account through the free profile (`you-free`). For full search, content extraction, research, and finance, sign in with OAuth when prompted or set an API key from [you.com/platform/api-keys](https://you.com/platform/api-keys).
+Basic web search works without an account through the free MCP profile. For full search, content extraction, research, and finance, sign in with OAuth when prompted or set an API key from [you.com/platform/api-keys](https://you.com/platform/api-keys).
 
 ## What this plugin connects to
 
@@ -50,7 +50,6 @@ Requests are handled under the [You.com privacy policy](https://you.com/legal/pr
 | Skill          | Use it for |
 | -------------- | ---------- |
 | `you-web`      | Live web search plus full-page reading, with a citation-first pipeline. |
-| `you-free`     | Keyless basic web search with `you-search` only. |
 | `you-research` | Multi-source research, routed between agent-led search and one-shot cited synthesis. |
 | `you-finance`  | Stock, earnings, and company financial questions through the `you-finance` MCP tool. |
 | `you-discover` | Finding how to integrate You.com APIs, MCP servers, SDKs, and docs into your own project. |
