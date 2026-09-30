@@ -32,6 +32,7 @@ const pluginManifests = [
   '.cursor-plugin/plugin.json',
   '.kimi-plugin/plugin.json',
   '.grok-plugin/plugin.json',
+  'marketplace/openai/plugin.json',
 ]
 const pluginMarketplaces = [
   '.claude-plugin/marketplace.json',
@@ -40,7 +41,7 @@ const pluginMarketplaces = [
   '.github/plugin/marketplace.json',
   '.grok-plugin/marketplace.json',
 ]
-const pluginMcpConfigs = ['mcp.json', '.mcp.json']
+const pluginMcpConfigs = ['mcp.json', '.mcp.json', 'marketplace/openai/mcp.json']
 const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces, ...pluginMcpConfigs]
 const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',

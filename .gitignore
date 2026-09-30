@@ -45,5 +45,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Codex marketplace submission archive
+# OpenAI marketplace submission archive
 dist/
