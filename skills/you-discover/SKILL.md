@@ -45,7 +45,7 @@ Use `you-discover` and Docs MCP as part of the integration planning loop, not as
 
 Agentic Resource Discovery (ARD) is useful here because You.com publishes multiple agentic resources and may link to partner catalogs. ARD is discovery only: use it to choose a resource, then invoke that resource through MCP, an API, a skill, an SDK, or a plugin.
 
-- Discovery tool: `you-discover` on `https://api.you.com/mcp`.
+- Discovery tool: `you-discover` on `https://api.you.com/mcp?profile=discover` (keyless).
 - Catalog entries can include MCP servers, SDK docs, Skills, OpenAPI specs, plugins, agents, and integration guides.
 - Linked catalogs can expand discovery beyond You.com-owned resources when the discovery tool supports them.
 
