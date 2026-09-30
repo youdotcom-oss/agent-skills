@@ -1,6 +1,6 @@
 ---
 name: you-discover
-description: Route You.com integration planning through the you-discover MCP tool, Docs MCP, and direct API options.
+description: "Plan how to build with You.com. Use when adding web search, content extraction, or research to an app or agent: finds the right You.com API, MCP server, SDK, or docs path (for example Vercel AI SDK, LangChain, Python SDK, or REST) through the `you-discover` tool and Docs MCP."
 compatibility: Requires network access. Uses the keyless You.com discover MCP profile exposing `you-discover` and Docs MCP `searchDocs`; no `YDC_API_KEY` or OAuth required.
 license: MIT
 metadata:

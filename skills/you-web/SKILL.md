@@ -1,6 +1,6 @@
 ---
 name: you-web
-description: Use You.com search and contents tools when a task needs external facts, current information, source reading, factual verification, or cited synthesis.
+description: "Search the live web and read full pages with You.com. Use whenever a task needs information newer than training data or from outside the codebase: current library docs and API references, changelogs and release notes, breaking changes, error messages, package versions, pricing, news, or any claim to verify with cited sources. Works keyless through the free MCP profile when no You.com credentials are configured."
 compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-contents`; use `YDC_API_KEY`, OAuth, or an x402-aware client for paid/keyless retries. With no credentials, the free MCP profile (`profile=free`) provides keyless `you-search` only — see `references/free-profile.md`.
 license: MIT
 metadata:
