@@ -49,7 +49,7 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 
 ## Free profile (no auth)
 
-If the environment has no `YDC_API_KEY` and no OAuth sign-in, or the connected You.com MCP server exposes `you-search` but not `you-contents`, load `references/free-profile.md` before searching. It covers switching the `you-web` MCP entry to the keyless free profile (`profile=free`) and how this pipeline changes when only `you-search` is available.
+If the environment has no `YDC_API_KEY` and no OAuth sign-in, or the connected You.com MCP server exposes `you-search` but not `you-contents`, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the keyless free profile (`profile=free`) and how this pipeline changes when only `you-search` is available.
 
 ## Evidence Rules
 
