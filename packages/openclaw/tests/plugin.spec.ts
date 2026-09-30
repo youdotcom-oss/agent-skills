@@ -36,6 +36,7 @@ describe('plugin manifest', () => {
       you: { transport: 'streamable-http', url: 'https://api.you.com/mcp' },
       'you-finance': { transport: 'streamable-http', url: 'https://api.you.com/mcp/finance' },
       'you-research': { transport: 'streamable-http', url: 'https://api.you.com/mcp/research' },
+      'you-discover': { transport: 'streamable-http', url: 'https://api.you.com/mcp?profile=discover' },
     })
   })
 })

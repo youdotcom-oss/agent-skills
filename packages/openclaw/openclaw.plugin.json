@@ -16,6 +16,10 @@
     "you-research": {
       "transport": "streamable-http",
       "url": "https://api.you.com/mcp/research"
+    },
+    "you-discover": {
+      "transport": "streamable-http",
+      "url": "https://api.you.com/mcp?profile=discover"
     }
   },
   "setup": {

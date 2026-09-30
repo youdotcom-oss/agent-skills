@@ -1,10 +1,6 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { createMcpHandler, fromJsonSchema, McpServer } from '@modelcontextprotocol/server'
 
-type RegisteredTool = {
-  name: string
-  execute: (_toolCallId: string, params: unknown) => Promise<unknown>
-}
+type McpServerConfig = Record<string, unknown>
 
 type RegisteredEvent = {
   eventName: string
@@ -15,7 +11,7 @@ const loadExtension = async () => (await import(`../main.ts?test=${Date.now()}-$
 
 const createPiMock = () => {
   const events: RegisteredEvent[] = []
-  const tools: RegisteredTool[] = []
+  const servers: [string, McpServerConfig][] = []
 
   return {
     events,
@@ -23,13 +19,20 @@ const createPiMock = () => {
       on: mock((eventName: string, handler: () => unknown) => {
         events.push({ eventName, handler })
       }),
-      registerTool: mock((tool: RegisteredTool) => {
-        tools.push(tool)
+      registerMcpServer: mock((name: string, config: McpServerConfig) => {
+        servers.push([name, config])
       }),
     },
-    tools,
+    servers,
   }
 }
+
+const originalApiKey = process.env.YDC_API_KEY
+
+afterEach(() => {
+  if (originalApiKey === undefined) delete process.env.YDC_API_KEY
+  else process.env.YDC_API_KEY = originalApiKey
+})
 
 const callBeforeAgentStart = async (
   events: RegisteredEvent[],
@@ -50,373 +53,109 @@ const callBeforeAgentStart = async (
   return result
 }
 
-/** Real in-process MCP server: the extension's transport fetch is wired straight to handler.fetch. */
-const createTestServer = () => {
-  let closeWhileToolCallActive = 0
-  let initializeCount = 0
-  let failNextToolCall = false
-  let slowToolCallActive = false
-  let resolveSlowCallRelease: () => void = () => {}
-  let resolveSlowCallStarted: () => void = () => {}
-  const slowCallRelease = new Promise<void>((resolve) => {
-    resolveSlowCallRelease = resolve
-  })
-  const slowCallStarted = new Promise<void>((resolve) => {
-    resolveSlowCallStarted = resolve
-  })
-
-  const handler = createMcpHandler(() => {
-    const server = new McpServer({ name: 'fixture', version: '1.0.0' })
-    server.registerTool(
-      'echo',
-      {
-        description: 'Echo the query back',
-        inputSchema: fromJsonSchema<{ query: string }>({
-          type: 'object',
-          properties: { query: { type: 'string' } },
-          required: ['query'],
-        }),
-      },
-      async ({ query }) => {
-        if (query === 'slow') {
-          slowToolCallActive = true
-          resolveSlowCallStarted()
-          await slowCallRelease
-          slowToolCallActive = false
-        }
-        return { content: [{ type: 'text' as const, text: `echo:${query}` }] }
-      },
-    )
-    server.registerTool(
-      'structured-echo',
-      {
-        description: 'Echo the query back as structured content',
-        inputSchema: fromJsonSchema<{ query: string }>({
-          type: 'object',
-          properties: { query: { type: 'string' } },
-          required: ['query'],
-        }),
-        outputSchema: fromJsonSchema<{ echo: string }>({
-          type: 'object',
-          properties: { echo: { type: 'string' } },
-          required: ['echo'],
-        }),
-      },
-      async ({ query }) => {
-        const output = { echo: query }
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify(output) }],
-          structuredContent: output,
-        }
-      },
-    )
-    return server
-  })
-
-  const fetchHandler = async (url: string | URL, init?: RequestInit) => {
-    const request = new Request(String(url), init)
-    if (request.method === 'DELETE' && slowToolCallActive) {
-      closeWhileToolCallActive += 1
-    }
-    if (request.method === 'POST') {
-      const body = (await request.clone().json()) as { method?: string }
-      if (body.method === 'initialize') initializeCount += 1
-      if (body.method === 'tools/call' && failNextToolCall) {
-        failNextToolCall = false
-        throw new TypeError('fetch failed')
-      }
-    }
-    return handler.fetch(request)
-  }
-
-  return {
-    close: () => handler.close(),
-    closeWhileToolCallActive: () => closeWhileToolCallActive,
-    failNextToolCall: () => {
-      failNextToolCall = true
-    },
-    initializeCount: () => initializeCount,
-    releaseSlowCall: () => resolveSlowCallRelease(),
-    serverConfig: {
-      url: 'http://fixture.local/mcp',
-      authenticated: false,
-      fetch: fetchHandler,
-      promptGuidelines: ['fixture server'],
-    },
-    waitForSlowCall: () => slowCallStarted,
-  }
-}
-
-const findTool = (tools: RegisteredTool[], name: string) => {
-  const tool = tools.find((registeredTool) => registeredTool.name === name)
-  expect(tool).toBeDefined()
-  if (!tool) throw new Error(`${name} tool was not registered`)
-  return tool
-}
-
-const YDC_API_KEY = process.env.YDC_API_KEY ?? ''
-
-describe('Pi extension', () => {
-  afterEach(() => {
+describe('MCP server registration', () => {
+  test('registers the six You.com MCP servers with urls and direct exposure', async () => {
     delete process.env.YDC_API_KEY
-  })
+    const { pi, servers } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
 
-  describe('tool registration', () => {
-    test('registers bundled skills via resources_discover', async () => {
-      const extension = await loadExtension()
-      const { events, pi } = createPiMock()
-
-      await extension(pi)
-
-      const resourcesDiscover = events.find((event) => event.eventName === 'resources_discover')
-      expect(resourcesDiscover).toBeDefined()
-      if (!resourcesDiscover) throw new Error('resources_discover was not registered')
-
-      expect(resourcesDiscover.handler()).toEqual({
-        skillPaths: [expect.stringContaining('/packages/pi/skills')],
-      })
-    })
-
-    test('registers all You.com MCP tool variants from real endpoints', async () => {
-      const extension = await loadExtension()
-      const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = YDC_API_KEY
-
-      await extension(pi)
-
-      const names = tools.map((tool) => tool.name)
-
-      // Free-profile server exposes you-search and you-discover; only you-search is
-      // bridged, registered as you-search-free (keyless)
-      expect(names).toContain('you-search-free')
-
-      // Finance server returns only you-finance
-      expect(names).toContain('you-finance')
-
-      // Research server returns only you-research
-      expect(names).toContain('you-research')
-
-      // Base server returns you-search, you-contents, you-balance, you-discover (and NOT
-      // you-finance or you-research, which are scoped to their own endpoints)
-      expect(names).toContain('you-search')
-      expect(names).toContain('you-contents')
-      expect(names).toContain('you-balance')
-      expect(names).toContain('you-discover')
-
-      // Docs server returns searchDocs
-      expect(names).toContain('searchDocs')
-
-      // No duplicate registrations across endpoints
-      const duplicates = names.filter((name, i) => names.indexOf(name) !== i)
-      expect(duplicates).toEqual([])
-    })
-
-    test('passes successful structured content to the model without JSON-wrapping the full result', async () => {
-      const extension = await loadExtension()
-      const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = YDC_API_KEY
-
-      await extension(pi)
-      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search-free')
-      expect(tool).toBeDefined()
-      if (!tool) throw new Error('you-search-free tool was not registered')
-
-      const result = (await tool.execute('call-1', { query: 'OpenAI' })) as {
-        content: Array<{ type: string; text: string }>
-        details: unknown
-      }
-
-      // Model-facing content is structuredContent, not JSON.stringify(result)
-      expect(result.content.length).toBeGreaterThan(0)
-      expect(result.content.every((block) => block.type === 'text')).toBe(true)
-      const firstBlock = result.content[0]
-      expect(firstBlock).toBeDefined()
-      if (!firstBlock) throw new Error('content block missing')
-      // The text must not be a JSON wrapper of the entire MCP response (which would include structuredContent)
-      expect(firstBlock.text).not.toContain('structuredContent')
-      expect(firstBlock.text).not.toMatch(/^\{"content":/)
-      expect(result.details).toBeDefined()
-    })
-
-    test('rejects invalid tool input before crossing the MCP boundary', async () => {
-      const extension = await loadExtension()
-      const { pi, tools } = createPiMock()
-      process.env.YDC_API_KEY = YDC_API_KEY
-
-      await extension(pi)
-      const tool = tools.find((registeredTool) => registeredTool.name === 'you-search-free')
-      expect(tool).toBeDefined()
-      if (!tool) throw new Error('you-search-free tool was not registered')
-
-      await expect(tool.execute('call-1', [])).rejects.toThrow('params must be an object')
+    expect(Object.fromEntries(servers)).toEqual({
+      you: {
+        url: 'https://api.you.com/mcp',
+        exposure: 'direct',
+      },
+      'you-finance': {
+        url: 'https://api.you.com/mcp/finance',
+        exposure: 'direct',
+      },
+      'you-research': {
+        url: 'https://api.you.com/mcp/research',
+        exposure: 'direct',
+      },
+      'you-free': {
+        url: 'https://api.you.com/mcp?profile=free',
+        exposure: 'direct',
+        toolExposure: { 'you-discover': 'hidden' },
+      },
+      'you-discover': {
+        url: 'https://api.you.com/mcp?profile=discover',
+        exposure: 'direct',
+      },
+      'you-docs': {
+        url: 'https://you.com/docs/_mcp/server',
+        exposure: 'direct',
+      },
     })
   })
 
-  describe('host context', () => {
-    test('appends static host context identifying the MCP adapter config in before_agent_start', async () => {
-      const extension = await loadExtension()
-      const { pi, events } = createPiMock()
-      process.env.YDC_API_KEY = YDC_API_KEY
+  test('sends no Authorization header without YDC_API_KEY so Pi offers OAuth', async () => {
+    delete process.env.YDC_API_KEY
+    const { pi, servers } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
 
-      await extension(pi)
-
-      const result = await callBeforeAgentStart(events, 'existing system prompt')
-
-      expect(result.systemPrompt).toContain('existing system prompt')
-      expect(result.systemPrompt).toContain('@youdotcom-oss/pi')
-      expect(result.systemPrompt).toContain('Pi has no separate MCP configuration mechanism')
-      // All five configs identified
-      expect(result.systemPrompt).toContain('`you-search-free` (free profile, no auth)')
-      expect(result.systemPrompt).toContain('https://api.you.com/mcp?profile=free')
-      expect(result.systemPrompt).toContain('https://api.you.com/mcp/finance')
-      expect(result.systemPrompt).toContain('https://api.you.com/mcp/research')
-      expect(result.systemPrompt).toContain('https://api.you.com/mcp')
-      expect(result.systemPrompt).toContain('https://you.com/docs/_mcp/server')
-    })
+    for (const [, config] of servers) {
+      expect(config.headers).toBeUndefined()
+    }
   })
 
-  describe('MCP connection lifecycle', () => {
-    test('pretty-prints structured content for successful tool calls', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { pi, tools } = createPiMock()
+  test('sends YDC_API_KEY as a bearer token on the keyed servers only', async () => {
+    process.env.YDC_API_KEY = 'test-key'
+    const { pi, servers } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
 
-        await extension(pi, [server.serverConfig])
-
-        const tool = findTool(tools, 'structured-echo')
-        const result = (await tool.execute('call-1', { query: 'one' })) as {
-          content: Array<{ text: string }>
-          details: unknown
-        }
-
-        expect(result.content[0]?.text).toBe('{\n  "echo": "one"\n}')
-        expect(result.details).toEqual({ echo: 'one' })
-      } finally {
-        await server.close()
+    const keyed = ['you', 'you-finance', 'you-research']
+    const keyless = ['you-free', 'you-discover', 'you-docs']
+    for (const [serverName, config] of servers) {
+      if (keyed.includes(serverName)) {
+        expect(config.headers).toEqual({ Authorization: 'Bearer test-key' })
       }
-    })
-
-    test('throws MCP tool execution errors so Pi marks the tool result as failed', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { pi, tools } = createPiMock()
-
-        await extension(pi, [server.serverConfig])
-
-        const tool = findTool(tools, 'structured-echo')
-
-        await expect(tool.execute('call-1', { query: 1 })).rejects.toThrow('Input validation error')
-      } finally {
-        await server.close()
+      if (keyless.includes(serverName)) {
+        expect(config.headers).toBeUndefined()
       }
-    })
+    }
+  })
+})
 
-    test('reuses one MCP connection across tool executions', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { pi, tools } = createPiMock()
+describe('skill resources', () => {
+  test('registers bundled skills via resources_discover', async () => {
+    const { pi, events } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
 
-        await extension(pi, [server.serverConfig])
-        // Tool discovery pays its own one-shot handshake; start counting from here.
-        const afterDiscovery = server.initializeCount()
+    const handler = events.find((e) => e.eventName === 'resources_discover')
+    expect(handler).toBeDefined()
+    if (!handler) throw new Error('resources_discover handler not registered')
 
-        const tool = findTool(tools, 'echo')
-        const first = (await tool.execute('call-1', { query: 'one' })) as { content: Array<{ text: string }> }
-        const second = (await tool.execute('call-2', { query: 'two' })) as { content: Array<{ text: string }> }
+    const result = (await handler.handler()) as { skillPaths: string[] }
+    expect(result.skillPaths).toHaveLength(1)
+    expect(result.skillPaths[0]).toMatch(/skills$/)
+  })
+})
 
-        expect(first.content[0]?.text).toBe('echo:one')
-        expect(second.content[0]?.text).toBe('echo:two')
-        expect(server.initializeCount()).toBe(afterDiscovery + 1)
-      } finally {
-        await server.close()
-      }
-    })
+describe('host context', () => {
+  test('appends the server map, naming scheme, and override mechanism to the system prompt', async () => {
+    const { pi, events } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
 
-    test('reconnects and retries once when the connection drops', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { pi, tools } = createPiMock()
-
-        await extension(pi, [server.serverConfig])
-        const afterDiscovery = server.initializeCount()
-
-        const tool = findTool(tools, 'echo')
-        await tool.execute('call-1', { query: 'one' })
-        expect(server.initializeCount()).toBe(afterDiscovery + 1)
-
-        server.failNextToolCall()
-        const result = (await tool.execute('call-2', { query: 'two' })) as { content: Array<{ text: string }> }
-
-        expect(result.content[0]?.text).toBe('echo:two')
-        // The dropped pooled client was replaced: one new handshake, then success.
-        expect(server.initializeCount()).toBe(afterDiscovery + 2)
-      } finally {
-        await server.close()
-      }
-    })
-
-    test('defers closing a dropped pooled client until concurrent calls drain', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { pi, tools } = createPiMock()
-
-        await extension(pi, [server.serverConfig])
-        const afterDiscovery = server.initializeCount()
-
-        const tool = findTool(tools, 'echo')
-        const slowResultPromise = tool.execute('call-slow', { query: 'slow' }) as Promise<{
-          content: Array<{ text: string }>
-        }>
-        await server.waitForSlowCall()
-
-        server.failNextToolCall()
-        const retryResult = (await tool.execute('call-fail', { query: 'fail' })) as {
-          content: Array<{ text: string }>
-        }
-
-        expect(retryResult.content[0]?.text).toBe('echo:fail')
-        expect(server.initializeCount()).toBe(afterDiscovery + 2)
-        expect(server.closeWhileToolCallActive()).toBe(0)
-
-        server.releaseSlowCall()
-        const slowResult = await slowResultPromise
-        expect(slowResult.content[0]?.text).toBe('echo:slow')
-        expect(server.closeWhileToolCallActive()).toBe(0)
-      } finally {
-        server.releaseSlowCall()
-        await server.close()
-      }
-    })
-
-    test('closes pooled clients on session_shutdown', async () => {
-      const server = createTestServer()
-      try {
-        const extension = await loadExtension()
-        const { events, pi, tools } = createPiMock()
-
-        await extension(pi, [server.serverConfig])
-        const afterDiscovery = server.initializeCount()
-
-        const tool = findTool(tools, 'echo')
-        await tool.execute('call-1', { query: 'one' })
-        expect(server.initializeCount()).toBe(afterDiscovery + 1)
-
-        const shutdown = events.find((event) => event.eventName === 'session_shutdown')
-        expect(shutdown).toBeDefined()
-        if (!shutdown) throw new Error('session_shutdown handler was not registered')
-        await shutdown.handler()
-
-        await tool.execute('call-2', { query: 'two' })
-        // Shutdown dropped the pooled client: the next execution reconnects.
-        expect(server.initializeCount()).toBe(afterDiscovery + 2)
-      } finally {
-        await server.close()
-      }
-    })
+    const { systemPrompt } = await callBeforeAgentStart(events, 'BASE PROMPT')
+    expect(systemPrompt).toContain('BASE PROMPT')
+    expect(systemPrompt).toContain('mcp__<server>__<tool>')
+    for (const url of [
+      'https://api.you.com/mcp',
+      'https://api.you.com/mcp/finance',
+      'https://api.you.com/mcp/research',
+      'https://api.you.com/mcp?profile=free',
+      'https://api.you.com/mcp?profile=discover',
+      'https://you.com/docs/_mcp/server',
+    ]) {
+      expect(systemPrompt).toContain(url)
+    }
+    expect(systemPrompt).toContain('/mcp')
+    expect(systemPrompt).toContain('mcp.json')
+    expect(systemPrompt).toContain('untrusted external data')
   })
 })

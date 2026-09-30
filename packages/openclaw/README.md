@@ -24,7 +24,7 @@ openclaw plugins install npm:@youdotcom-oss/openclaw
 ## What it includes
 
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
-  `you-discover`, and `you-free`
+  `you-discover`
 - Setup metadata for the You.com provider and `YDC_API_KEY`
 - A runtime-free plugin entry point, because skills and setup metadata do the
   work
@@ -34,7 +34,8 @@ how to use them safely.
 
 ## Auth
 
-- `you-free` can use keyless You.com search.
+- Keyless You.com search is available through the free MCP profile; the
+  `you-web` skill's free-profile reference covers it.
 - Authenticated You.com MCP tools require `YDC_API_KEY`.
 
 ## Test

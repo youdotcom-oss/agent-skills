@@ -23,7 +23,7 @@ Or add the plugin to your `opencode.json`:
 ## What it configures
 
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
-  `you-discover`, and `you-free`
+  `you-discover`
 - MCP server `you`: authenticated You.com MCP tools
 - MCP server `you-free`: no-auth web search
 - MCP server `you-finance`: finance tools
