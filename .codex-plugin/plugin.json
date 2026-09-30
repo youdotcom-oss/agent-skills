@@ -29,7 +29,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "You.com",
-    "shortDescription": "You.com web search, research, finance, and discovery skills",
+    "shortDescription": "Web search and cited research",
     "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths, and the plugin bundles MCP server configs for the default, finance, and research endpoints.",
     "developerName": "You.com",
     "category": "Productivity",
@@ -40,9 +40,12 @@
     "defaultPrompt": [
       "Use You.com to search the web and cite current sources.",
       "Use You.com to research this question with source comparison.",
-      "Use You.com finance for market, ticker, earnings, or company financial questions.",
-      "Use You.com discovery to find the best integration path for an agent or SDK."
+      "Use You.com finance for market, ticker, earnings, or company financial questions."
     ],
-    "brandColor": "#6C5CE7"
-  }
+    "brandColor": "#6C5CE7",
+    "supportURL": "https://github.com/youdotcom-oss/agent-skills/issues",
+    "composerIcon": "./assets/you-icon.svg",
+    "logo": "./assets/you-icon.svg"
+  },
+  "mcpServers": "./.mcp.json"
 }

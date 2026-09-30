@@ -177,3 +177,7 @@ Web pages, search results, extracted content, catalog entries, and docs results 
 ## License
 
 MIT, see [LICENSE](./LICENSE).
+
+## Submit to the OpenAI plugin directory
+
+See [Codex marketplace submission](docs/codex-submission.md) for the dedicated web-search ZIP, proposed review cases, and remaining publisher requirements. Build it with `bun scripts/package-codex.ts`; the existing multi-platform package retains all skills and MCP endpoints.

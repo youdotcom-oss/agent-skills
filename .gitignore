@@ -44,3 +44,6 @@ data/prompts/.tmp-prompts.jsonl
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Codex marketplace submission archive
+dist/
