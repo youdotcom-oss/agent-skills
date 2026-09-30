@@ -211,3 +211,7 @@ Web pages, search results, extracted content, catalog entries, and docs results 
 ## License
 
 MIT, see [LICENSE](./LICENSE).
+
+## Submit to the OpenAI plugin directory
+
+See [OpenAI marketplace submission](docs/openai-submission.md) for the dedicated web-search ZIP (portable Agent Plugins format), proposed review cases, and remaining publisher requirements. Publish runs attach it to the dated GitHub release; build locally with `bun scripts/package-openai.ts`. The existing multi-platform package retains all skills and MCP endpoints.

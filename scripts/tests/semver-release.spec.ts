@@ -19,6 +19,8 @@ describe('semver release', () => {
     expect(isPluginReleasePath('.github/plugin/marketplace.json')).toBe(true)
     expect(isPluginReleasePath('.grok-plugin/plugin.json')).toBe(true)
     expect(isPluginReleasePath('.grok-plugin/marketplace.json')).toBe(true)
+    expect(isPluginReleasePath('marketplace/openai/plugin.json')).toBe(true)
+    expect(isPluginReleasePath('marketplace/openai/mcp.json')).toBe(true)
     expect(isPluginReleasePath('skills/you-web/SKILL.md')).toBe(false)
   })
 
@@ -57,6 +59,7 @@ describe('semver release', () => {
         '.plugin/plugin.json',
         '.kimi-plugin/plugin.json',
         '.grok-plugin/plugin.json',
+        'marketplace/openai/plugin.json',
       ]) {
         await mkdir(dirname(join(repoRoot, path)), { recursive: true })
         await writeFile(join(repoRoot, path), `${JSON.stringify({ name: 'you', version: '1.2.3' })}\n`)
@@ -86,6 +89,7 @@ describe('semver release', () => {
       expect(updatedByPath.get('.plugin/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.kimi-plugin/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.grok-plugin/plugin.json')?.version).toBe('1.2.4')
+      expect(updatedByPath.get('marketplace/openai/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.claude-plugin/marketplace.json')?.plugins[0].version).toBe('1.2.4')
       expect(updatedByPath.get('.agents/plugins/marketplace.json')?.plugins[0].version).toBe('1.2.4')
       expect(updatedByPath.get('.cursor-plugin/marketplace.json')?.plugins[0].version).toBe('1.2.4')
