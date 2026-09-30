@@ -12,6 +12,10 @@
     "you-research": {
       "type": "streamable-http",
       "url": "https://api.you.com/mcp/research"
+    },
+    "you-discover": {
+      "type": "streamable-http",
+      "url": "https://api.you.com/mcp?profile=discover"
     }
   }
 }

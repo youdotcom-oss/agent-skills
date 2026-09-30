@@ -1,8 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "you",
+  "displayName": "You.com Web Search & Research",
   "version": "0.6.0",
-  "description": "You.com skills for search, contents, research, finance, and integration discovery with MCP, ARD, API-key, OAuth, and MPP/x402 payment guidance.",
+  "description": "Live web search, full-page content extraction, and cited research for Claude. Look up current docs, API references, changelogs, error fixes, and web data while you code, plus finance data and guided You.com API integration.",
   "author": {
     "name": "You.com",
     "email": "support@you.com",
@@ -13,17 +14,25 @@
   "license": "MIT",
   "keywords": [
     "you.com",
-    "claude-code",
-    "agent-skills",
-    "mcp",
     "web-search",
+    "web-data",
+    "live-web",
+    "search-api",
     "content-extraction",
+    "web-scraping",
+    "documentation-lookup",
+    "developer-tools",
+    "coding",
     "research",
-    "finance",
+    "deep-research",
     "citations",
-    "ard",
-    "ai-catalog",
-    "x402",
-    "mpp"
+    "fact-checking",
+    "grounding",
+    "rag",
+    "finance",
+    "market-data",
+    "mcp",
+    "agent-skills",
+    "x402"
   ]
 }

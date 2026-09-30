@@ -54,8 +54,7 @@ if (import.meta.main) {
   // plugin surfaces search via the native `web_search`/`web_fetch` providers
   // and does not mount the keyed `you` server, so the shared skill's guidance
   // (and its `mcp_servers` metadata) would point at tools that don't exist
-  // here. `you-free` duplicates the keyless fallback built into the search
-  // provider.
-  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir, exclude: ['you-free', 'you-web'] })
+  // here.
+  const copied = await copySkills({ sourceSkillsDir, targetSkillsDir, exclude: ['you-web'] })
   process.stdout.write(`Copied ${copied} skills to ${targetSkillsDir}\n`)
 }

@@ -4,12 +4,13 @@
     "name": "You.com",
     "email": "support@you.com"
   },
-  "description": "You.com Claude Code plugins for web search, research, finance, and integration discovery skills.",
+  "description": "You.com plugins for live web search, content extraction, cited research, and developer integration.",
   "plugins": [
     {
       "name": "you",
+      "displayName": "You.com Web Search & Research",
       "source": "./",
-      "description": "You.com skills for search, contents, research, finance, and integration discovery.",
+      "description": "Live web search, full-page content extraction, and cited research for Claude. Look up current docs, API references, changelogs, error fixes, and web data while you code, plus finance data and guided You.com API integration.",
       "version": "0.6.0"
     }
   ]
