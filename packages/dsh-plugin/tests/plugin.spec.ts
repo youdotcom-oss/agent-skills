@@ -36,7 +36,7 @@ beforeAll(async () => {
   await copySkills({
     sourceSkillsDir: join(repoRoot, 'skills'),
     targetSkillsDir: resolve(import.meta.dir, '..', 'skills'),
-    exclude: ['you-free', 'you-web'],
+    exclude: ['you-web'],
   })
 })
 

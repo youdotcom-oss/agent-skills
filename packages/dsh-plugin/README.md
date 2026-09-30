@@ -27,7 +27,7 @@ Set `YDC_API_KEY` in the environment for the authenticated servers (get one at [
 
 ## What it configures
 
-- Skills from `./skills`: `you-research`, `you-finance`, and `you-discover`, registered under the `youcom` skill provider name. `you-web` and `you-free` are excluded at build time: `you-web` teaches the MCP tool names `you-search`/`you-contents`, which don't exist here (the keyed `you` MCP server is not mounted — its search/fetch tools duplicate the native `web_search`/`web_fetch` providers), and `you-free` duplicates the keyless fallback built into the search provider.
+- Skills from `./skills`: `you-research`, `you-finance`, and `you-discover`, registered under the `youcom` skill provider name. `you-web` is excluded at build time: it teaches the MCP tool names `you-search`/`you-contents`, which don't exist here (the keyed `you` MCP server is not mounted — its search/fetch tools duplicate the native `web_search`/`web_fetch` providers).
 - MCP server `you-discover`: no-auth discovery (`profile=discover`)
 - MCP server `you-finance`: finance tools
 - MCP server `you-research`: one-shot cited research synthesis

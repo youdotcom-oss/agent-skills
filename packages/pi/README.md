@@ -15,14 +15,14 @@ pi install npm:@youdotcom-oss/pi
 ## What it includes
 
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
-  `you-discover`, and `you-free`
+  `you-discover`
 - Keyless `you-search` from the You.com free MCP profile
 - Authenticated You.com MCP tools for content, research, and finance
 - You.com Docs MCP tools for platform and API documentation
 
 ## Auth
 
-- `you-free` and You.com Docs MCP do not require auth.
+- The You.com free MCP profile and You.com Docs MCP do not require auth.
 - Authenticated You.com MCP tools require `YDC_API_KEY`.
 
 ## Test
