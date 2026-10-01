@@ -34,12 +34,15 @@
     },
     "you-research": {
       "url": "https://api.you.com/mcp/research"
+    },
+    "you-discover": {
+      "url": "https://api.you.com/mcp?profile=discover"
     }
   },
   "interface": {
     "displayName": "You.com",
     "shortDescription": "You.com web search, research, finance, and discovery skills",
-    "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths, and the plugin bundles MCP server configs for the default, finance, and research endpoints.",
+    "longDescription": "Use You.com skills for current web search, URL content extraction, cited research, finance-specific answers, and integration discovery. The skills guide agents through free, API-key, OAuth, and MPP/x402 access paths, and the plugin bundles MCP server configs for the default, finance, research, and discover endpoints.",
     "developerName": "You.com",
     "websiteURL": "https://you.com"
   }
