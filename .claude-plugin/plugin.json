@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "you",
   "displayName": "You.com Web Search & Research",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Live web search, full-page content extraction, and cited research for Claude. Look up current docs, API references, changelogs, error fixes, and web data while you code, plus finance data and guided You.com API integration.",
   "author": {
     "name": "You.com",
