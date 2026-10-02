@@ -11,7 +11,7 @@
       "displayName": "You.com Web Search & Research",
       "source": "./",
       "description": "Live web search, full-page content extraction, and cited research for Claude. Look up current docs, API references, changelogs, error fixes, and web data while you code, plus finance data and guided You.com API integration.",
-      "version": "0.7.2"
+      "version": "0.7.3"
     }
   ]
 }
