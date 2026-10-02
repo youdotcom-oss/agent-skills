@@ -34,5 +34,13 @@
     "mcp",
     "agent-skills",
     "x402"
-  ]
+  ],
+  "userConfig": {
+    "ydc_api_key": {
+      "type": "string",
+      "title": "You.com API key",
+      "description": "YDC_API_KEY for paid search, contents, research, and finance tools. Leave empty for OAuth or keyless free-profile usage.",
+      "sensitive": true
+    }
+  }
 }
