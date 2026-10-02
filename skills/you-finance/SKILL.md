@@ -20,7 +20,7 @@ Use this skill to answer finance-specific questions through the You.com `you-fin
 The You.com finance MCP endpoint must be reachable from the host:
 
 - Server URL: `https://api.you.com/mcp/finance`
-- Auth: either `YDC_API_KEY` bearer auth, OAuth login into the server, or an MPP/x402-aware MCP client. For bearer auth, set `Authorization: Bearer ${YDC_API_KEY}` in the host MCP client.
+- Auth: OAuth login into the server (preferred), `YDC_API_KEY` bearer auth, or an MPP/x402-aware MCP client. For bearer auth, configure the host MCP client to send the key from the standard `YDC_API_KEY` environment variable as a Bearer token.
 - Required tool: `you-finance`
 
 ## Workflow
