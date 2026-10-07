@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="You.com Agent Skills and Plugins logo" width="100%">
+  <img src="assets/banner.png" alt="You.com Agent Skills and Plugins logo" width="100%">
 </p>
 
 # You.com Web Search & Research
