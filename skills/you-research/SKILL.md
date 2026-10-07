@@ -6,7 +6,7 @@ license: MIT
 metadata:
   mcp_servers: '{"you-research":{"url":"https://api.you.com/mcp/research"}}'
   author: youdotcom-oss
-  version: 0.5.0
+  version: 0.5.1
   category: research
   keywords: you.com,mcp,web-search,content-extraction,deep-research,citations
 ---
@@ -19,7 +19,7 @@ Use this skill to choose the right You.com research path for the user's goal: ag
 
 The You.com MCP endpoint must be reachable from the host:
 
-- Managed research (`you-research`): `https://api.you.com/mcp/research` with `YDC_API_KEY` bearer auth, OAuth, or an MPP/x402-aware MCP client.
+- Managed research (`you-research`): `https://api.you.com/mcp/research` with OAuth (preferred), `YDC_API_KEY` bearer auth, or an MPP/x402-aware MCP client.
 
 MPP/x402-aware MCP clients may receive HTTP `402` payment challenges from You.com tools, then retry with payment headers. Let the host client handle external payment and retry; do not add wallet signing logic to this skill.
 
