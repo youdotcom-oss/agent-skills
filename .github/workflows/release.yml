@@ -329,7 +329,7 @@ jobs:
     # workflow syncs the mirrors, bumps the shared version, and publishes to
     # PyPI and npm. Runs only on real releases that applied versions — a plan-
     # only or publish-current-ref run would sync content without a version bump.
-    # Tokens: STRANDS_RELEASE_TOKEN needs workflow+contents write on
+    # Tokens: PUBLISH_TOKEN needs workflow+contents write on
     # youdotcom-oss/strands-agents — a plain GITHUB_TOKEN cannot reach another
     # repository.
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && needs.plan.outputs.has_strands == 'true' }}
@@ -345,9 +345,9 @@ jobs:
 
       - name: Dispatch strands-agents release
         env:
-          # gh reads credentials from GH_TOKEN; the secret name stays
-          # STRANDS_RELEASE_TOKEN for clarity about its scope.
-          GH_TOKEN: ${{ secrets.STRANDS_RELEASE_TOKEN }}
+          # gh reads credentials from GH_TOKEN only; PUBLISH_TOKEN is the
+          # existing cross-repo token used by the publish jobs.
+          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
           RELEASE_SHA: ${{ needs.apply.outputs.release_sha }}
         run: |
           BUMP=$(jq -r '.units.strands.youdotcom.bump // "none"' release-plan.json)
