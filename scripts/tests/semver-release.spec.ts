@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -184,6 +185,101 @@ describe('semver release', () => {
 
       const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
 
+      expect(updates).toEqual([])
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('plans bump the strands unit for skill and mcp.json changes', async () => {
+    const { createReleasePlan } = await import('../semver-release.ts')
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-plan-'))
+    const git = (...args: string[]) => execFileSync('git', ['-C', repoRoot, ...args])
+    const planFromWorkingTree = async () => {
+      // git diff HEAD covers staged changes but not untracked files, so stage
+      // everything before planning — mirroring the committed-tree usage.
+      git('add', '-A')
+      return createReleasePlan('HEAD', repoRoot)
+    }
+
+    try {
+      await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
+      await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
+      await writeFile(join(repoRoot, 'mcp.json'), '{}\n')
+      git('init', '-q')
+      git('config', 'user.email', 'test@example.com')
+      git('config', 'user.name', 'Test')
+      git('add', '-A')
+      git('commit', '-q', '-m', 'base')
+
+      // No changes: no strands unit.
+      expect((await planFromWorkingTree()).units.strands).toEqual({})
+
+      // Skill instruction change: patch.
+      await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nnew body\n')
+      const patchPlan = await planFromWorkingTree()
+      expect(patchPlan.units.strands.youdotcom?.bump).toBe('patch')
+
+      git('commit', '-aqm', 'after-patch')
+
+      // New skill: minor.
+      await mkdir(join(repoRoot, 'skills/you-new'), { recursive: true })
+      await writeFile(join(repoRoot, 'skills/you-new/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nnew\n')
+      const minorPlan = await planFromWorkingTree()
+      expect(minorPlan.units.strands.youdotcom?.bump).toBe('minor')
+
+      git('commit', '-aqm', 'after-minor')
+
+      // mcp.json change: patch.
+      await writeFile(join(repoRoot, 'mcp.json'), '{"mcpServers":{}}\n')
+      const mcpPlan = await planFromWorkingTree()
+      expect(mcpPlan.units.strands.youdotcom?.bump).toBe('patch')
+
+      git('commit', '-aqm', 'after-mcp')
+
+      // Deleted skill: minor, from the deletion itself.
+      await rm(join(repoRoot, 'skills/you-new'), { recursive: true })
+      const deletePlan = await planFromWorkingTree()
+      expect(deletePlan.units.strands.youdotcom?.bump).toBe('minor')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  }, 30_000)
+
+  test('plans with a strands unit apply cleanly', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
+      await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-07-22T00:00:00.000Z',
+          changes: ['skills/you-web/SKILL.md'],
+          units: {
+            skills: {},
+            plugins: {},
+            npm: {},
+            clawhub: {},
+            strands: {
+              youdotcom: {
+                bump: 'patch',
+                paths: ['skills/you-web/SKILL.md'],
+                rationale: ['skill you-web changed'],
+              },
+            },
+          },
+        }),
+      )
+
+      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+
+      // Strands units pass validation but produce no version updates here —
+      // the strands repo bumps and publishes on its own when dispatched.
       expect(updates).toEqual([])
     } finally {
       await rm(repoRoot, { force: true, recursive: true })

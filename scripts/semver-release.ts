@@ -20,6 +20,7 @@ type ReleasePlan = {
     plugins: Record<string, ReleaseUnit>
     npm: Record<string, ReleaseUnit>
     clawhub: Record<string, ReleaseUnit>
+    strands: Record<string, ReleaseUnit>
   }
 }
 
@@ -115,16 +116,16 @@ export const isInitialPackage = (statuses: { status: string; path: string }[], d
   return packageChanges.length > 0 && packageChanges.every((item) => item.status.startsWith('A'))
 }
 
-const readChangedPaths = async (baseRef: string) => {
-  const names = await $`git -C ${defaultRepoRoot} diff --name-only ${baseRef}`.text()
+const readChangedPaths = async (baseRef: string, repoRoot: string = defaultRepoRoot) => {
+  const names = await $`git -C ${repoRoot} diff --name-only ${baseRef}`.text()
   return names
     .split('\n')
     .map((path) => path.trim())
     .filter(Boolean)
 }
 
-const readChangedStatuses = async (baseRef: string) => {
-  const names = await $`git -C ${defaultRepoRoot} diff --name-status ${baseRef}`.text()
+const readChangedStatuses = async (baseRef: string, repoRoot: string = defaultRepoRoot) => {
+  const names = await $`git -C ${repoRoot} diff --name-status ${baseRef}`.text()
   return names
     .split('\n')
     .map((line) => line.trim().split(/\s+/))
@@ -132,7 +133,17 @@ const readChangedStatuses = async (baseRef: string) => {
     .map(([status, path]) => ({ status: status ?? '', path: path ?? '' }))
 }
 
-const changedSkillBump = async ({ baseRef, path, isAdded }: { baseRef: string; path: string; isAdded: boolean }) => {
+const changedSkillBump = async ({
+  baseRef,
+  path,
+  isAdded,
+  repoRoot = defaultRepoRoot,
+}: {
+  baseRef: string
+  path: string
+  isAdded: boolean
+  repoRoot?: string
+}) => {
   if (isAdded) {
     return { bump: 'minor' as const, rationale: 'new skill' }
   }
@@ -141,7 +152,7 @@ const changedSkillBump = async ({ baseRef, path, isAdded }: { baseRef: string; p
     return { bump: 'patch' as const, rationale: 'skill resource change' }
   }
 
-  const diff = await $`git -C ${defaultRepoRoot} diff ${baseRef} -- ${path}`.text()
+  const diff = await $`git -C ${repoRoot} diff ${baseRef} -- ${path}`.text()
   if (/^[+-](name|description):/m.test(diff) || diff.includes('mcp_servers')) {
     return { bump: 'minor' as const, rationale: 'skill activation or MCP contract changed' }
   }
@@ -149,12 +160,12 @@ const changedSkillBump = async ({ baseRef, path, isAdded }: { baseRef: string; p
   return { bump: 'patch' as const, rationale: 'skill instructions changed' }
 }
 
-const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
-  const changes = await readChangedPaths(baseRef)
-  const statuses = await readChangedStatuses(baseRef)
+export const createReleasePlan = async (baseRef: string, repoRoot: string = defaultRepoRoot): Promise<ReleasePlan> => {
+  const changes = await readChangedPaths(baseRef, repoRoot)
+  const statuses = await readChangedStatuses(baseRef, repoRoot)
   const addedPaths = new Set(statuses.filter((item) => item.status.startsWith('A')).map((item) => item.path))
   const deletedPaths = new Set(statuses.filter((item) => item.status.startsWith('D')).map((item) => item.path))
-  const headRef = (await $`git -C ${defaultRepoRoot} rev-parse --short HEAD`.text()).trim()
+  const headRef = (await $`git -C ${repoRoot} rev-parse --short HEAD`.text()).trim()
   const plan: ReleasePlan = {
     schemaVersion: 1,
     baseRef,
@@ -166,6 +177,7 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
       plugins: {},
       npm: {},
       clawhub: {},
+      strands: {},
     },
   }
 
@@ -173,11 +185,21 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
     const skillMatch = /^skills\/([^/]+)\//.exec(path)
     if (skillMatch?.[1]) {
       if (deletedPaths.has(path)) {
+        // Deletions do not bump the skill itself (its version no longer
+        // matters) but do propagate to the strands mirror, which ships the
+        // skill in published packages.
+        plan.units.strands.youdotcom = updateReleaseUnit(
+          plan.units.strands.youdotcom,
+          'minor',
+          path,
+          `skill ${skillMatch[1]} removed from strands mirror`,
+        )
         continue
       }
 
       const { bump, rationale } = await changedSkillBump({ baseRef, path, isAdded: addedPaths.has(path) })
       plan.units.skills[skillMatch[1]] = updateReleaseUnit(plan.units.skills[skillMatch[1]], bump, path, rationale)
+      plan.units.strands.youdotcom = updateReleaseUnit(plan.units.strands.youdotcom, bump, path, rationale)
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, bump, path, `skill ${skillMatch[1]} changed`)
       plan.units.npm['@youdotcom-oss/opencode'] = updateReleaseUnit(
         plan.units.npm['@youdotcom-oss/opencode'],
@@ -214,6 +236,16 @@ const createReleasePlan = async (baseRef: string): Promise<ReleasePlan> => {
 
     if (isPluginReleasePath(path)) {
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, 'patch', path, 'plugin manifest changed')
+      // The root mcp.json is the source of truth for the strands mirror's
+      // server set; other plugin manifests do not affect it.
+      if (path === 'mcp.json') {
+        plan.units.strands.youdotcom = updateReleaseUnit(
+          plan.units.strands.youdotcom,
+          'patch',
+          path,
+          'mcp server config changed',
+        )
+      }
       continue
     }
 
@@ -281,6 +313,8 @@ const readReleasePlan = async ({ repoRoot, path }: { repoRoot: string; path: str
       plugins: validateReleaseUnitGroup(parsed.units.plugins, 'units.plugins'),
       npm: validateReleaseUnitGroup(parsed.units.npm, 'units.npm'),
       clawhub: validateReleaseUnitGroup(parsed.units.clawhub, 'units.clawhub'),
+      // Tolerate plans written before the strands unit existed.
+      strands: validateReleaseUnitGroup(parsed.units.strands ?? {}, 'units.strands'),
     },
   }
 }
