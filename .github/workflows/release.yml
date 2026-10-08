@@ -345,7 +345,9 @@ jobs:
 
       - name: Dispatch strands-agents release
         env:
-          STRANDS_RELEASE_TOKEN: ${{ secrets.STRANDS_RELEASE_TOKEN }}
+          # gh reads credentials from GH_TOKEN; the secret name stays
+          # STRANDS_RELEASE_TOKEN for clarity about its scope.
+          GH_TOKEN: ${{ secrets.STRANDS_RELEASE_TOKEN }}
           RELEASE_SHA: ${{ needs.apply.outputs.release_sha }}
         run: |
           BUMP=$(jq -r '.units.strands.youdotcom.bump // "none"' release-plan.json)

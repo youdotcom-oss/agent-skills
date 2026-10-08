@@ -222,6 +222,19 @@ describe('semver release', () => {
 
       git('commit', '-aqm', 'after-patch')
 
+      // Skill description change: minor (activation contract). Regression
+      // guard: changedSkillBump must diff the repo under test, not the
+      // default repo root — a clean default repo would fall through to the
+      // 'patch' default and mask the wrong-repo diff.
+      await writeFile(
+        join(repoRoot, 'skills/you-web/SKILL.md'),
+        '---\nmetadata:\n  version: 1.0.0\ndescription: new description\n---\nnew body\n',
+      )
+      const descriptionPlan = await planFromWorkingTree()
+      expect(descriptionPlan.units.strands.youdotcom?.bump).toBe('minor')
+
+      git('commit', '-aqm', 'after-description')
+
       // New skill: minor.
       await mkdir(join(repoRoot, 'skills/you-new'), { recursive: true })
       await writeFile(join(repoRoot, 'skills/you-new/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nnew\n')

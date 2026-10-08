@@ -197,7 +197,7 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
         continue
       }
 
-      const { bump, rationale } = await changedSkillBump({ baseRef, path, isAdded: addedPaths.has(path) })
+      const { bump, rationale } = await changedSkillBump({ baseRef, path, isAdded: addedPaths.has(path), repoRoot })
       plan.units.skills[skillMatch[1]] = updateReleaseUnit(plan.units.skills[skillMatch[1]], bump, path, rationale)
       plan.units.strands.youdotcom = updateReleaseUnit(plan.units.strands.youdotcom, bump, path, rationale)
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, bump, path, `skill ${skillMatch[1]} changed`)
