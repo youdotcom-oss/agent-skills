@@ -28,6 +28,7 @@
   },
   "files": [
     "main.ts",
+    "mcp.json",
     "skills"
   ],
   "publishConfig": {

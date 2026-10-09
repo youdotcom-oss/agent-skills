@@ -119,6 +119,17 @@ describe('MCP server registration', () => {
   })
 })
 
+describe('runtimes without registerMcpServer (omp)', () => {
+  test('loads without throwing and still registers skills and host context', async () => {
+    const { pi, events } = createPiMock()
+    const plugin = await loadExtension()
+
+    await plugin({ on: pi.on })
+
+    expect(events.map((e) => e.eventName).sort()).toEqual(['before_agent_start', 'resources_discover'])
+  })
+})
+
 describe('skill resources', () => {
   test('registers bundled skills via resources_discover', async () => {
     const { pi, events } = createPiMock()

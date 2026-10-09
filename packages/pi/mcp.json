@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "you": {
+      "type": "http",
+      "url": "https://api.you.com/mcp",
+      "headers": {
+        "Authorization": "!if [ -n \"$YDC_API_KEY\" ]; then printf 'Bearer %s' \"$YDC_API_KEY\"; fi"
+      }
+    },
+    "you-finance": {
+      "type": "http",
+      "url": "https://api.you.com/mcp/finance",
+      "headers": {
+        "Authorization": "!if [ -n \"$YDC_API_KEY\" ]; then printf 'Bearer %s' \"$YDC_API_KEY\"; fi"
+      }
+    },
+    "you-research": {
+      "type": "http",
+      "url": "https://api.you.com/mcp/research",
+      "headers": {
+        "Authorization": "!if [ -n \"$YDC_API_KEY\" ]; then printf 'Bearer %s' \"$YDC_API_KEY\"; fi"
+      }
+    },
+    "you-free": {
+      "type": "http",
+      "url": "https://api.you.com/mcp?profile=free"
+    },
+    "you-discover": {
+      "type": "http",
+      "url": "https://api.you.com/mcp?profile=discover"
+    },
+    "you-docs": {
+      "type": "http",
+      "url": "https://you.com/docs/_mcp/server"
+    }
+  }
+}
