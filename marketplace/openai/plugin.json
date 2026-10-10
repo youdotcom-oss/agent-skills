@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "you",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Search the web, read public pages, and produce answers with source citations using You.com.",
   "author": {
     "name": "You.com",
