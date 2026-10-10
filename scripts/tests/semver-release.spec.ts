@@ -201,11 +201,20 @@ describe('semver release', () => {
       git('add', '-A')
       return createReleasePlan('HEAD', repoRoot)
     }
+    // Simulate the apply step between plans: apply bumps the you manifest,
+    // so the next plan reads the updated version. bumpedVersion is always
+    // computed from the manifest's current version, not accumulated.
+    const applyYouBump = (version: string) => {
+      writeFile(join(repoRoot, '.claude-plugin/plugin.json'), `{"name":"you","version":"${version}"}\n`)
+      git('add', '-A')
+    }
 
     try {
       await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
       await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
       await writeFile(join(repoRoot, 'mcp.json'), '{}\n')
+      await mkdir(join(repoRoot, '.claude-plugin'), { recursive: true })
+      await writeFile(join(repoRoot, '.claude-plugin/plugin.json'), '{"name":"you","version":"0.7.5"}\n')
       git('init', '-q')
       git('config', 'user.email', 'test@example.com')
       git('config', 'user.name', 'Test')
@@ -219,6 +228,9 @@ describe('semver release', () => {
       await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nnew body\n')
       const patchPlan = await planFromWorkingTree()
       expect(patchPlan.units.strands.youdotcom?.bump).toBe('patch')
+      // The dispatched strands version is the bumped you-plugin version.
+      expect(patchPlan.units.plugins.you?.bumpedVersion).toBe('0.7.6')
+      applyYouBump('0.7.6')
 
       git('commit', '-aqm', 'after-patch')
 
@@ -232,6 +244,8 @@ describe('semver release', () => {
       )
       const descriptionPlan = await planFromWorkingTree()
       expect(descriptionPlan.units.strands.youdotcom?.bump).toBe('minor')
+      expect(descriptionPlan.units.plugins.you?.bumpedVersion).toBe('0.8.0')
+      applyYouBump('0.8.0')
 
       git('commit', '-aqm', 'after-description')
 
@@ -247,6 +261,8 @@ describe('semver release', () => {
       await writeFile(join(repoRoot, 'mcp.json'), '{"mcpServers":{}}\n')
       const mcpPlan = await planFromWorkingTree()
       expect(mcpPlan.units.strands.youdotcom?.bump).toBe('patch')
+      expect(mcpPlan.units.plugins.you?.bumpedVersion).toBe('0.8.1')
+      applyYouBump('0.8.1')
 
       git('commit', '-aqm', 'after-mcp')
 
@@ -254,6 +270,11 @@ describe('semver release', () => {
       await rm(join(repoRoot, 'skills/you-new'), { recursive: true })
       const deletePlan = await planFromWorkingTree()
       expect(deletePlan.units.strands.youdotcom?.bump).toBe('minor')
+      // The you plugin must bump too: the strands release takes its version
+      // from plugins.you, and an unchanged version would re-publish an
+      // already-published package version.
+      expect(deletePlan.units.plugins.you?.bump).toBe('minor')
+      expect(deletePlan.units.plugins.you?.bumpedVersion).toBe('0.9.0')
     } finally {
       await rm(repoRoot, { force: true, recursive: true })
     }

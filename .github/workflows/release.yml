@@ -355,8 +355,17 @@ jobs:
             echo "strands unit did not bump; skipping dispatch"
             exit 0
           fi
+          # The strands release carries this repo's canonical bundle version:
+          # plugins.you's bumped version at the release SHA. The strands
+          # plugin is the same skill set re-packaged for Strands Agents, so
+          # its version IS the you plugin version — not an independent bump.
+          VERSION=$(jq -r '.units.plugins.you.bumped_version // empty' release-plan.json)
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::strands unit bumped but plan has no plugins.you bumped_version"
+            exit 1
+          fi
           gh workflow run release-strands.yml \
             -R youdotcom-oss/strands-agents \
             --ref main \
-            -f "bump=$BUMP" \
+            -f "version=$VERSION" \
             -f "source_ref=$RELEASE_SHA"

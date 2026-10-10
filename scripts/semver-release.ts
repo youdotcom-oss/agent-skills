@@ -7,6 +7,11 @@ type ReleaseUnit = {
   bump: Bump
   paths: string[]
   rationale: string[]
+  /** Set only on the `plugins.you` unit: the manifest version after applying
+   * the unit's bump. Consumers that carry this version into derived releases
+   * (the strands-agents mirror) read it from the plan file directly —
+   * readReleasePlan strips it since apply never needs it. */
+  bumpedVersion?: string
 }
 
 type ReleasePlan = {
@@ -186,8 +191,14 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
     if (skillMatch?.[1]) {
       if (deletedPaths.has(path)) {
         // Deletions do not bump the skill itself (its version no longer
-        // matters) but do propagate to the strands mirror, which ships the
-        // skill in published packages.
+        // matters) but do propagate: the you plugin and the strands mirror
+        // ship the skill set, so removals change their published content.
+        plan.units.plugins.you = updateReleaseUnit(
+          plan.units.plugins.you,
+          'minor',
+          path,
+          `skill ${skillMatch[1]} removed`,
+        )
         plan.units.strands.youdotcom = updateReleaseUnit(
           plan.units.strands.youdotcom,
           'minor',
@@ -269,6 +280,18 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
         }
       }
     }
+  }
+
+  // The you plugin manifest is the canonical bundle version; expose the
+  // post-bump version so downstream carriers (strands-agents) can publish
+  // the exact same number instead of re-deriving a bump.
+  const youUnit = plan.units.plugins.you
+  if (youUnit) {
+    const manifest = await Bun.file(resolve(repoRoot, '.claude-plugin/plugin.json')).json()
+    if (!isRecord(manifest) || typeof manifest.version !== 'string') {
+      throw new TypeError('.claude-plugin/plugin.json must contain a version string')
+    }
+    plan.units.plugins.you = { ...youUnit, bumpedVersion: bumpVersion(manifest.version, youUnit.bump) }
   }
 
   return plan
