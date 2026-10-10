@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { ompMcpJson } from '../scripts/build.ts'
 
 type McpServerConfig = Record<string, unknown>
 
@@ -8,6 +9,11 @@ type RegisteredEvent = {
 }
 
 const loadExtension = async () => (await import(`../main.ts?test=${Date.now()}-${Math.random()}`)).default
+
+// Build-generated omp config (gitignored); the disk invariant below only runs
+// when `bun run build` has produced it.
+const generatedMcpJson = Bun.file(new URL('../mcp.json', import.meta.url))
+const hasGeneratedMcpJson = await generatedMcpJson.exists()
 
 const createPiMock = () => {
   const events: RegisteredEvent[] = []
@@ -117,6 +123,58 @@ describe('MCP server registration', () => {
       }
     }
   })
+})
+
+// omp discovers the package-level mcp.json instead of pi.registerMcpServer;
+// it is generated from the repo-root mcp.json by scripts/build.ts, so the
+// contract is tested against the transform (source, not a build artifact).
+describe('bundled mcp.json generation', () => {
+  const AUTH_COMMAND = '!if [ -n "$YDC_API_KEY" ]; then printf \'Bearer %s\' "$YDC_API_KEY"; fi'
+
+  const source = {
+    mcpServers: {
+      you: { type: 'streamable-http', url: 'https://api.you.com/mcp' },
+      'you-finance': { type: 'streamable-http', url: 'https://api.you.com/mcp/finance' },
+      'you-research': { type: 'streamable-http', url: 'https://api.you.com/mcp/research' },
+      'you-discover': { type: 'streamable-http', url: 'https://api.you.com/mcp?profile=discover' },
+      'you-docs': { type: 'streamable-http', url: 'https://you.com/docs/_mcp/server' },
+    },
+  }
+
+  test('rewrites transport, injects you-free, adds !command auth to keyed servers', () => {
+    expect(ompMcpJson(source)).toEqual({
+      mcpServers: {
+        you: { type: 'http', url: 'https://api.you.com/mcp', headers: { Authorization: AUTH_COMMAND } },
+        'you-finance': {
+          type: 'http',
+          url: 'https://api.you.com/mcp/finance',
+          headers: { Authorization: AUTH_COMMAND },
+        },
+        'you-research': {
+          type: 'http',
+          url: 'https://api.you.com/mcp/research',
+          headers: { Authorization: AUTH_COMMAND },
+        },
+        'you-discover': { type: 'http', url: 'https://api.you.com/mcp?profile=discover' },
+        'you-docs': { type: 'http', url: 'https://you.com/docs/_mcp/server' },
+        'you-free': { type: 'http', url: 'https://api.you.com/mcp?profile=free' },
+      },
+    })
+  })
+
+  test('fails on root servers not classified keyed or keyless', () => {
+    const unknown = { mcpServers: { 'you-pro': { type: 'streamable-http', url: 'https://api.you.com/mcp/pro' } } }
+    expect(() => ompMcpJson(unknown)).toThrow('Unclassified')
+  })
+
+  test.skipIf(!hasGeneratedMcpJson)(
+    'when built, the generated file matches the transform of the root mcp.json',
+    async () => {
+      expect(await generatedMcpJson.json()).toEqual(
+        ompMcpJson(await Bun.file(new URL('../../../mcp.json', import.meta.url)).json()),
+      )
+    },
+  )
 })
 
 describe('runtimes without registerMcpServer (omp)', () => {
