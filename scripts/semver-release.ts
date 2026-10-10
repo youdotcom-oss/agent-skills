@@ -50,7 +50,13 @@ const npmPackages = {
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
   '@youdotcom-oss/dsh-plugin': 'packages/dsh-plugin/package.json',
 } as const
-const packageBuildDirectories = ['packages/opencode', 'packages/openclaw', 'packages/pi', 'packages/dsh-plugin']
+const packageBuildDirectories = [
+  'packages/opencode',
+  'packages/openclaw',
+  'packages/pi',
+  'packages/dsh-plugin',
+  'packages/strands-agents/typescript',
+]
 // 'initial' outranks semantic bumps: a brand-new package publishes its declared
 // version as-is regardless of any other changes in the same diff.
 const bumpOrder: Bump[] = ['none', 'patch', 'minor', 'major', 'initial']
@@ -234,6 +240,22 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
       continue
     }
 
+    if (path.startsWith('packages/strands-agents/')) {
+      // The strands packages share one version line, bumped by the strands
+      // unit. A freshly added package set publishes its declared version
+      // as-is instead of deriving from unrelated content changes.
+      const isInitial =
+        isInitialPackage(statuses, 'packages/strands-agents/typescript') &&
+        isInitialPackage(statuses, 'packages/strands-agents/python')
+      plan.units.strands.youdotcom = updateReleaseUnit(
+        plan.units.strands.youdotcom,
+        isInitial ? 'initial' : 'patch',
+        path,
+        isInitial ? 'new packages: publish declared version as-is' : 'strands package changed',
+      )
+      continue
+    }
+
     if (isPluginReleasePath(path)) {
       plan.units.plugins.you = updateReleaseUnit(plan.units.plugins.you, 'patch', path, 'plugin manifest changed')
       // The root mcp.json is the source of truth for the strands mirror's
@@ -379,6 +401,26 @@ const bumpSkillVersion = async ({ repoRoot, skillName, bump }: { repoRoot: strin
   return { path, content: updated }
 }
 
+const bumpPyprojectVersion = async ({ repoRoot, path, bump }: { repoRoot: string; path: string; bump: Bump }) => {
+  const content = await Bun.file(resolve(repoRoot, path)).text()
+
+  // Validate through the platform TOML parser so the stamped version is the
+  // [project] table's — a version key in some other table must not match.
+  const toml = Bun.TOML.parse(content) as { project?: { version?: unknown } }
+  const declared = toml.project?.version
+  if (typeof declared !== 'string') {
+    throw new TypeError(`${path} [project] must contain a version string`)
+  }
+
+  // TOML has no serializer, so the write stays a surgical line replacement.
+  const updated = content.replace(/^version = "\d+\.\d+\.\d+"/m, `version = "${bumpVersion(declared, bump)}"`)
+  if (updated === content) {
+    throw new Error(`${path} version could not be updated`)
+  }
+
+  return { path, content: updated }
+}
+
 const writeUpdates = async (updates: { path: string; content: string }[]) => {
   for (const update of updates) {
     await Bun.write(resolve(defaultRepoRoot, update.path), update.content)
@@ -426,6 +468,26 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
         )
       }
     }
+  }
+
+  // The strands packages (Python + TypeScript) share one version line: the
+  // strands unit stamps both. An 'initial' bump keeps the declared version.
+  const strandsUnit = plan.units.strands.youdotcom
+  if (strandsUnit?.bump && strandsUnit.bump !== 'none' && strandsUnit.bump !== 'initial') {
+    updates.push(
+      await bumpJsonVersion({
+        repoRoot,
+        path: 'packages/strands-agents/typescript/package.json',
+        bump: strandsUnit.bump,
+      }),
+    )
+    updates.push(
+      await bumpPyprojectVersion({
+        repoRoot,
+        path: 'packages/strands-agents/python/pyproject.toml',
+        bump: strandsUnit.bump,
+      }),
+    )
   }
 
   return updates
