@@ -16,6 +16,10 @@
     "you-discover": {
       "type": "streamable-http",
       "url": "https://api.you.com/mcp?profile=discover"
+    },
+    "you-docs": {
+      "type": "streamable-http",
+      "url": "https://you.com/docs/_mcp/server"
     }
   }
 }
