@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "strands-agents-youdotcom"
+version = "0.1.0"
+description = "You.com MCP servers and skills for Strands Agents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "You.com", email = "oss@you.com"}
+]
+keywords = ["strands", "agents", "ai", "tool"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "strands-agents>=1.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/youdotcom-oss/agent-skills/tree/main/packages/strands-agents/python"
+Documentation = "https://github.com/youdotcom-oss/agent-skills#readme"
+Repository = "https://github.com/youdotcom-oss/agent-skills"
+Issues = "https://github.com/youdotcom-oss/agent-skills/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-asyncio>=0.25.0,<1.0.0",
+    "ruff>=0.11.0,<1.0.0",
+    "mypy>=1.15.0,<2.0.0",
+]
+
+# Environment management is uv: `uv sync` creates .venv from uv.lock, and
+# everything runs through `uv run` (see CI). Hatchling remains the build
+# backend — `uv build` drives it for release artifacts.
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/strands_agents_youdotcom"]
+
+[tool.ruff]
+line-length = 120
+include = ["src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"

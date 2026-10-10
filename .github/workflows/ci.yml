@@ -29,3 +29,44 @@ jobs:
         run: bun run test
         env:
           YDC_API_KEY: ${{ secrets.YDC_API_KEY }}
+
+  python-test:
+    name: Python - ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      # Bounds matrix: oldest supported (syntax floor) and newest (CI default).
+      # MINIMAL: middle versions omitted; add 3.11/3.12 if a release-blocking
+      # regression needs bisecting.
+      matrix:
+        python-version: ['3.10', '3.13']
+    defaults:
+      run:
+        working-directory: packages/strands-agents/python
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Bun (staging script)
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Stage shared assets
+        run: bun scripts/stage.ts
+
+      - name: Install dependencies
+        run: uv sync --group dev --locked
+
+      - name: Lint and format
+        run: |
+          uv run ruff format --check src tests
+          uv run ruff check src tests
+
+      - name: Type check
+        run: uv run mypy src
+
+      - name: Run tests
+        run: uv run pytest -q

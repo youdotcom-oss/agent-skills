@@ -1,0 +1,57 @@
+{
+  "name": "@youdotcom-oss/strands-agents",
+  "version": "0.1.0",
+  "description": "You.com MCP servers and skills for Strands Agents",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youdotcom-oss/agent-skills.git",
+    "directory": "packages/strands-agents/typescript"
+  },
+  "author": "You.com <oss@you.com>",
+  "keywords": [
+    "strands",
+    "agents",
+    "ai",
+    "tool"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "check": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "@strands-agents/sdk": ">=1.0.0 <2.0.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@strands-agents/sdk": "^1.10.0",
+    "@types/bun": "1.4.2",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0",
+    "zod": "^4.1.12"
+  }
+}

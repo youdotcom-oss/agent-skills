@@ -1,0 +1,9 @@
+.venv/
+dist/
+src/strands_agents_youdotcom/mcp.json
+src/strands_agents_youdotcom/skills/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
