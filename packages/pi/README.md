@@ -17,8 +17,12 @@ pi install npm:@youdotcom-oss/pi
 
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
   `you-discover`
-- MCP servers registered with `pi.registerMcpServer` at extension load, tools
-  named `mcp__<server>__<tool>`:
+- MCP servers (tools named `mcp__<server>__<tool>`), registered one of two
+  ways depending on the runtime:
+  - Pi: `pi.registerMcpServer` at extension load.
+  - omp (whose forked extension API has no `registerMcpServer`): the
+    build-generated package `mcp.json` (from the repo-root `mcp.json`),
+    discovered automatically as an extension package entry.
   - `you` — authenticated web search, content extraction, balance, discovery
   - `you-finance` — authenticated finance research
   - `you-research` — authenticated research synthesis
@@ -29,16 +33,19 @@ pi install npm:@youdotcom-oss/pi
 ## Auth
 
 - `you-free`, `you-discover`, and `you-docs` do not require auth.
-- The keyed servers send `YDC_API_KEY` as a bearer token when it is set at
-  extension load. Without it, Pi's built-in OAuth flow offers sign-in
-  (`/mcp login you`). After changing `YDC_API_KEY`, run `/reload` —
-  registrations are read once per load.
+- The keyed servers send `YDC_API_KEY` as a bearer token when it is set.
+  Without it, the built-in OAuth flow offers sign-in (`/mcp login you`).
+  - On Pi the key is read at extension load; after changing it, run
+    `/reload`.
+  - On omp the generated `mcp.json` resolves the key via a shell lookup when
+    connecting; if the lookup cannot run (for example no POSIX shell), the
+    header is omitted and OAuth is used instead.
 
 ## Configuration
 
-Manage the servers with `/mcp` or `mcp.json` (see
+Manage the servers with `/mcp` or your own `mcp.json` (see
 https://pi.dev/docs/latest/mcp). A same-name `mcp.json` entry overrides the
-extension's registration, so you can adjust exposure, timeouts, or auth per
+package's registration, so you can adjust exposure, timeouts, or auth per
 server without code changes. SDK sessions must add Pi's MCP extension to the
 resource loader for these registrations to connect (see
 https://pi.dev/docs/latest/sdk#codemode-mcp).

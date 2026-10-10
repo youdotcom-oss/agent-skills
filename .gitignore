@@ -24,6 +24,9 @@ packages/*/skills/**
 !packages/*/skills/
 !packages/*/skills/.gitkeep
 
+# Generated pi package mcp config (omp extension-package discovery)
+packages/pi/mcp.json
+
 # Generated dsh-plugin package build output
 packages/dsh-plugin/lib/
 packages/dsh-plugin/*.tsbuildinfo
