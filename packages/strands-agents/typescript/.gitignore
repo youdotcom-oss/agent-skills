@@ -1,0 +1,12 @@
+dist/
+node_modules/
+src/mcp.json
+src/skills/**
+!src/skills/.gitkeep
+*.log
+*.tsbuildinfo
+.DS_Store
+.env
+.env.local
+coverage/
+package-lock.json

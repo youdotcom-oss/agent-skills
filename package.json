@@ -6,10 +6,12 @@
     "bun": ">= 1.2.21"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/strands-agents/*"
   ],
   "scripts": {
     "build": "bun run --filter '*' build",
+    "build:python": "bun packages/strands-agents/python/scripts/stage.ts && uv build --directory packages/strands-agents/python",
     "check": "bun run check:ts && bun run check:package && bun run check:types",
     "check:package": "format-package --check",
     "check:ts": "biome check",
@@ -22,6 +24,7 @@
     "release:dry-run": "bun scripts/semver-release.ts plan --base HEAD~1 --out /tmp/agent-skills-release-plan.json",
     "release:plan": "bun scripts/semver-release.ts plan",
     "test": "bun test",
+    "test:python": "bun packages/strands-agents/python/scripts/stage.ts && uv run --project packages/strands-agents/python pytest -q",
     "validate:skills": "bun test tests/validate-skills.spec.ts"
   },
   "lint-staged": {

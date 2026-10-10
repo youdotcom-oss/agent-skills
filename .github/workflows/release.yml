@@ -32,6 +32,11 @@ on:
         required: false
         type: boolean
         default: true
+      publish_pypi:
+        description: "Publish the strands Python package to PyPI when publish_artifacts is enabled"
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -70,7 +75,7 @@ jobs:
           {
             echo "has_npm=$(jq -r 'any(.units.npm[]?; .bump != "none")' release-plan.json)"
             echo "has_clawhub=$(jq -r 'any(.units.clawhub[]?; .bump != "none")' release-plan.json)"
-            echo "has_strands=$(jq -r 'any(.units.strands[]?; .bump != "none")' release-plan.json)"
+            echo "has_strands=$(jq -r '(.units.strands.youdotcom.bump // "none") != "none"' release-plan.json)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Upload release plan
@@ -180,7 +185,10 @@ jobs:
 
   publish-npm:
     name: Publish npm packages
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_npm && needs.plan.outputs.has_npm == 'true' }}
+    # The strands packages publish on their own unit (skills/mcp.json/package
+    # code changes), so the job also runs when only that unit moved — the
+    # per-package jq gates inside decide what actually publishes.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_npm && (needs.plan.outputs.has_npm == 'true' || needs.plan.outputs.has_strands == 'true') }}
     needs: [plan, apply]
     runs-on: ubuntu-latest
     environment: npm
@@ -231,6 +239,13 @@ jobs:
               npm publish --provenance --access public "./$directory"
             fi
           done
+
+          # The strands packages share one version line driven by the strands
+          # unit (skills, mcp.json, or package code changes) — publish the TS
+          # package when it moved. PyPI publishing is its own job.
+          if jq -e '(.units.strands.youdotcom.bump // "none") != "none"' release-plan.json >/dev/null; then
+            npm publish --provenance --access public ./packages/strands-agents/typescript
+          fi
 
   publish-clawhub:
     name: Publish ClawHub package
@@ -284,10 +299,60 @@ jobs:
             sleep 30
           done
 
+  publish-pypi:
+    name: Publish Python package
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_artifacts && inputs.publish_pypi }}
+    needs: [plan, apply]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.apply.outputs.release_sha }}
+
+      - name: Download release plan
+        uses: actions/download-artifact@v8
+        with:
+          name: release-plan
+
+      - name: Compute strands bump
+        id: strands
+        run: echo "bump=$(jq -r '.units.strands.youdotcom.bump // "none"' release-plan.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Bun (staging script)
+        if: steps.strands.outputs.bump != 'none'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Set up uv
+        if: steps.strands.outputs.bump != 'none'
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.13'
+
+      - name: Build distributions
+        if: steps.strands.outputs.bump != 'none'
+        working-directory: packages/strands-agents/python
+        run: |
+          bun scripts/stage.ts
+          uv build
+          uvx twine check dist/*
+
+      - name: Publish to PyPI
+        if: steps.strands.outputs.bump != 'none'
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        with:
+          packages-dir: packages/strands-agents/python/dist/
+
   release:
     name: Create dated release
     if: ${{ !cancelled() && inputs.publish_artifacts && contains(needs.*.result, 'failure') == false && contains(needs.*.result, 'cancelled') == false }}
-    needs: [plan, apply, publish-npm, publish-clawhub]
+    needs: [plan, apply, publish-npm, publish-clawhub, publish-pypi]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -320,43 +385,3 @@ jobs:
             --title "${tag}" \
             --generate-notes
           gh release upload "${tag}" dist/you-openai.zip --clobber
-
-  dispatch-strands-release:
-    name: Dispatch strands-agents release
-
-    # Propagate the release to youdotcom-oss/strands-agents when the plan bumps
-    # its `strands` unit (a skill or the root mcp.json changed): its release
-    # workflow syncs the mirrors, bumps the shared version, and publishes to
-    # PyPI and npm. Runs only on real releases that applied versions — a plan-
-    # only or publish-current-ref run would sync content without a version bump.
-    # Tokens: PUBLISH_TOKEN needs workflow+contents write on
-    # youdotcom-oss/strands-agents — a plain GITHUB_TOKEN cannot reach another
-    # repository.
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_versions && needs.plan.outputs.has_strands == 'true' }}
-    needs: [plan, apply]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Download release plan
-        uses: actions/download-artifact@v8
-        with:
-          name: release-plan
-
-      - name: Dispatch strands-agents release
-        env:
-          # gh reads credentials from GH_TOKEN only; PUBLISH_TOKEN is the
-          # existing cross-repo token used by the publish jobs.
-          GH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          RELEASE_SHA: ${{ needs.apply.outputs.release_sha }}
-        run: |
-          BUMP=$(jq -r '.units.strands.youdotcom.bump // "none"' release-plan.json)
-          if [[ "$BUMP" == "none" ]]; then
-            echo "strands unit did not bump; skipping dispatch"
-            exit 0
-          fi
-          gh workflow run release-strands.yml \
-            -R youdotcom-oss/strands-agents \
-            --ref main \
-            -f "bump=$BUMP" \
-            -f "source_ref=$RELEASE_SHA"

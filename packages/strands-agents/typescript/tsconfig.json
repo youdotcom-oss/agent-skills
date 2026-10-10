@@ -1,0 +1,9 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    // node: builtins/process in src and the emitted declarations; bun: the
+    // build/test tooling (Bun.build, bun:test).
+    "types": ["bun", "node"]
+  }
+}

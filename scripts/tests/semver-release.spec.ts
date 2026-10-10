@@ -259,12 +259,22 @@ describe('semver release', () => {
     }
   }, 30_000)
 
-  test('plans with a strands unit apply cleanly', async () => {
+  test('strands unit stamps both package versions on apply', async () => {
     const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
 
     try {
       await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
       await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/typescript/package.json'),
+        '{"name":"@youdotcom-oss/strands-agents","version":"0.1.0"}\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
+        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-agents-youdotcom"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_agents_youdotcom"]\n',
+      )
       await writeFile(
         join(repoRoot, 'plan.json'),
         JSON.stringify({
@@ -291,9 +301,106 @@ describe('semver release', () => {
 
       const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
 
-      // Strands units pass validation but produce no version updates here —
-      // the strands repo bumps and publishes on its own when dispatched.
-      expect(updates).toEqual([])
+      // Both packages share one version line; the strands unit stamps them.
+      expect(updates.map((u) => u.path).sort()).toEqual([
+        'packages/strands-agents/python/pyproject.toml',
+        'packages/strands-agents/typescript/package.json',
+      ])
+      await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+      // Applying for real writes the bumped versions.
+      for (const update of updates) await Bun.write(`${repoRoot}/${update.path}`, update.content)
+      expect(
+        JSON.parse(await Bun.file(`${repoRoot}/packages/strands-agents/typescript/package.json`).text()).version,
+      ).toBe('0.1.1')
+      expect(await Bun.file(`${repoRoot}/packages/strands-agents/python/pyproject.toml`).text()).toContain(
+        'version = "0.1.1"',
+      )
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('strands stamping targets the [project] version, not other tables', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/typescript/package.json'),
+        '{"name":"@youdotcom-oss/strands-agents","version":"0.1.0"}\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
+        '[tool.other]\nversion = "9.9.9"\n',
+      )
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-07-22T00:00:00.000Z',
+          changes: ['packages/strands-agents/python/src/new.py'],
+          units: {
+            skills: {},
+            plugins: {},
+            npm: {},
+            clawhub: {},
+            strands: { youdotcom: { bump: 'patch', paths: ['x'], rationale: ['r'] } },
+          },
+        }),
+      )
+
+      // No [project].version: stamping must fail, not touch [tool.other].
+      await expect(createVersionUpdates({ repoRoot, planPath: 'plan.json' })).rejects.toThrow(
+        /pyproject.toml \[project\] must contain a version/,
+      )
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('newly added strands packages publish their declared version as-is', async () => {
+    const { createReleasePlan } = await import('../semver-release.ts')
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-plan-'))
+    const git = (...args: string[]) => execFileSync('git', ['-C', repoRoot, ...args])
+    const planFromWorkingTree = async () => {
+      git('add', '-A')
+      return createReleasePlan('HEAD', repoRoot)
+    }
+
+    try {
+      await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
+      await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
+      git('init', '-q')
+      git('config', 'user.email', 't@e.com')
+      git('config', 'user.name', 'T')
+      git('add', '-A')
+      git('commit', '-q', '-m', 'base')
+
+      // Initial: package dirs freshly added (the merger commit) publish the
+      // declared version as-is.
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python/src/strands_agents_youdotcom'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/typescript/package.json'),
+        '{"name":"@youdotcom-oss/strands-agents","version":"0.1.0"}\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
+        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-agents-youdotcom"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_agents_youdotcom"]\n',
+      )
+      await writeFile(join(repoRoot, 'packages/strands-agents/python/src/strands_agents_youdotcom/plugin.py'), 'x\n')
+      const initialPlan = await planFromWorkingTree()
+      expect(initialPlan.units.strands.youdotcom?.bump).toBe('initial')
+
+      git('commit', '-aqm', 'after-initial')
+
+      // Package source change: patch.
+      await writeFile(join(repoRoot, 'packages/strands-agents/python/src/new.py'), 'x\n')
+      const patchPlan = await planFromWorkingTree()
+      expect(patchPlan.units.strands.youdotcom?.bump).toBe('patch')
     } finally {
       await rm(repoRoot, { force: true, recursive: true })
     }
