@@ -6,8 +6,8 @@ import pytest
 from strands import Agent
 from strands.hooks import BeforeInvocationEvent
 
-import strands_agents_youdotcom.plugin as plugin_mod
-from strands_agents_youdotcom import YouDotComPlugin
+import strands_you.plugin as plugin_mod
+from strands_you import YouDotComPlugin
 
 #: The server set comes from the shipped mcp.json mirror, which the release
 #: sync owns. Expectations are derived from it so a sync that adds or removes

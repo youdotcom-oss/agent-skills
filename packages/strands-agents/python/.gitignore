@@ -1,7 +1,7 @@
 .venv/
 dist/
-src/strands_agents_youdotcom/mcp.json
-src/strands_agents_youdotcom/skills/
+src/strands_you/mcp.json
+src/strands_you/skills/
 __pycache__/
 .pytest_cache/
 .ruff_cache/

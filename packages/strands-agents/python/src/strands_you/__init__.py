@@ -1,6 +1,6 @@
 """Strands Package."""
 
-from strands_agents_youdotcom.plugin import YouDotComPlugin
+from strands_you.plugin import YouDotComPlugin
 
 __all__ = [
     "YouDotComPlugin",

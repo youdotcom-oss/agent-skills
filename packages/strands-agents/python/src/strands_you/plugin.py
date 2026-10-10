@@ -5,7 +5,7 @@ Agent Skills (from the bundled ``skills/`` directory) into a single plugin:
 
     ```python
     from strands import Agent
-    from strands_agents_youdotcom import YouDotComPlugin
+    from strands_you import YouDotComPlugin
 
     agent = Agent(plugins=[YouDotComPlugin()])
     ```
@@ -41,9 +41,7 @@ _CAPABILITY_NOTE_MARKER = "unavailable You.com MCP servers"
 
 def _load_mcp_config() -> dict[str, dict[str, Any]]:
     """Load the shipped ``mcp.json`` and return its server entries by name."""
-    mcp_config: Any = json.loads(
-        resources.files("strands_agents_youdotcom").joinpath("mcp.json").read_text(encoding="utf-8")
-    )
+    mcp_config: Any = json.loads(resources.files("strands_you").joinpath("mcp.json").read_text(encoding="utf-8"))
     servers: dict[str, dict[str, Any]] = mcp_config.get("mcpServers", {})
     return servers
 
@@ -69,7 +67,7 @@ class YouDotComPlugin(AgentSkills):
         self._all_servers = _load_mcp_config()
         self._servers = {name: server for name, server in self._all_servers.items() if self._server_enabled(name)}
         self._skipped_servers = sorted(set(self._all_servers) - set(self._servers))
-        super().__init__(skills=[str(resources.files("strands_agents_youdotcom").joinpath("skills"))])
+        super().__init__(skills=[str(resources.files("strands_you").joinpath("skills"))])
 
     def _server_enabled(self, name: str) -> bool:
         """Return True when the named server is usable with the current auth."""

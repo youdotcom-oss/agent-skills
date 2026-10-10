@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "strands-agents-youdotcom"
+name = "strands-you"
 version = "0.1.0"
 description = "You.com MCP servers and skills for Strands Agents"
 readme = "README.md"
@@ -48,7 +48,7 @@ dev = [
 # backend — `uv build` drives it for release artifacts.
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/strands_agents_youdotcom"]
+packages = ["src/strands_you"]
 
 [tool.ruff]
 line-length = 120
