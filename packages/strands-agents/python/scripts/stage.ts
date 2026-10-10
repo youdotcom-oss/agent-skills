@@ -1,7 +1,7 @@
 /**
  * Stage the shared You.com assets from the repo root into the Python package
  * (gitignored build inputs): repo-root skills/ + mcp.json ->
- * src/strands_agents_youdotcom/{skills/,mcp.json}. Run before `uv build` and
+ * src/strands_you/{skills/,mcp.json}. Run before `uv build` and
  * before tests — the plugin loads the shipped assets via importlib.resources,
  * so tests exercise exactly what the wheel will contain.
  *
@@ -12,7 +12,7 @@
 import { cpSync, readdirSync, rmSync, statSync } from 'node:fs'
 
 const repoRoot = new URL('../../../../', import.meta.url)
-const packageAssetsDir = new URL('../src/strands_agents_youdotcom/', import.meta.url)
+const packageAssetsDir = new URL('../src/strands_you/', import.meta.url)
 
 const isDirectory = (path: URL) => statSync(path, { throwIfNoEntry: false })?.isDirectory()
 
@@ -32,4 +32,4 @@ for (const entry of readdirSync(new URL('skills/', repoRoot))) {
 if (staged === 0) throw new Error(`No skills found in ${repoRoot}skills/`)
 cpSync(new URL('mcp.json', repoRoot), new URL('mcp.json', packageAssetsDir), { force: true })
 
-console.log(`staged ${staged} skills + mcp.json -> src/strands_agents_youdotcom/`)
+console.log(`staged ${staged} skills + mcp.json -> src/strands_you/`)

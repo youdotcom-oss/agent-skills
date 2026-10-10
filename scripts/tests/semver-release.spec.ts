@@ -273,7 +273,7 @@ describe('semver release', () => {
       )
       await writeFile(
         join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
-        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-agents-youdotcom"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_agents_youdotcom"]\n',
+        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-you"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_you"]\n',
       )
       await writeFile(
         join(repoRoot, 'plan.json'),
@@ -382,16 +382,16 @@ describe('semver release', () => {
       // Initial: package dirs freshly added (the merger commit) publish the
       // declared version as-is.
       await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
-      await mkdir(join(repoRoot, 'packages/strands-agents/python/src/strands_agents_youdotcom'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python/src/strands_you'), { recursive: true })
       await writeFile(
         join(repoRoot, 'packages/strands-agents/typescript/package.json'),
         '{"name":"@youdotcom-oss/strands-agents","version":"0.1.0"}\n',
       )
       await writeFile(
         join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
-        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-agents-youdotcom"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_agents_youdotcom"]\n',
+        '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-you"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_you"]\n',
       )
-      await writeFile(join(repoRoot, 'packages/strands-agents/python/src/strands_agents_youdotcom/plugin.py'), 'x\n')
+      await writeFile(join(repoRoot, 'packages/strands-agents/python/src/strands_you/plugin.py'), 'x\n')
       const initialPlan = await planFromWorkingTree()
       expect(initialPlan.units.strands.youdotcom?.bump).toBe('initial')
 

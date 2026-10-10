@@ -1,4 +1,4 @@
-# strands-agents-youdotcom
+# strands-you
 
 You.com MCP servers and Agent Skills for [Strands Agents](https://strandsagents.com), in one Python plugin.
 
@@ -7,14 +7,14 @@ You.com MCP servers and Agent Skills for [Strands Agents](https://strandsagents.
 ## Install
 
 ```sh
-pip install strands-agents-youdotcom
+pip install strands-you
 ```
 
 ## Quickstart
 
 ```python
 from strands import Agent
-from strands_agents_youdotcom import YouDotComPlugin
+from strands_you import YouDotComPlugin
 
 agent = Agent(plugins=[YouDotComPlugin()])
 result = agent("What changed in the latest release of strands-agents? Cite sources.")
