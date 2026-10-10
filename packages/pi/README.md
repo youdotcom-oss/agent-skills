@@ -21,8 +21,8 @@ pi install npm:@youdotcom-oss/pi
   ways depending on the runtime:
   - Pi: `pi.registerMcpServer` at extension load.
   - omp (whose forked extension API has no `registerMcpServer`): the
-    package's bundled `mcp.json`, discovered automatically as an extension
-    package entry.
+    build-generated package `mcp.json` (from the repo-root `mcp.json`),
+    discovered automatically as an extension package entry.
   - `you` — authenticated web search, content extraction, balance, discovery
   - `you-finance` — authenticated finance research
   - `you-research` — authenticated research synthesis
@@ -37,7 +37,7 @@ pi install npm:@youdotcom-oss/pi
   Without it, the built-in OAuth flow offers sign-in (`/mcp login you`).
   - On Pi the key is read at extension load; after changing it, run
     `/reload`.
-  - On omp the bundled `mcp.json` resolves the key via a shell lookup when
+  - On omp the generated `mcp.json` resolves the key via a shell lookup when
     connecting; if the lookup cannot run (for example no POSIX shell), the
     header is omitted and OAuth is used instead.
 
