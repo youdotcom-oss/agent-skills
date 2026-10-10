@@ -41,9 +41,7 @@ _CAPABILITY_NOTE_MARKER = "unavailable You.com MCP servers"
 
 def _load_mcp_config() -> dict[str, dict[str, Any]]:
     """Load the shipped ``mcp.json`` and return its server entries by name."""
-    mcp_config: Any = json.loads(
-        resources.files("strands_you").joinpath("mcp.json").read_text(encoding="utf-8")
-    )
+    mcp_config: Any = json.loads(resources.files("strands_you").joinpath("mcp.json").read_text(encoding="utf-8"))
     servers: dict[str, dict[str, Any]] = mcp_config.get("mcpServers", {})
     return servers
 
