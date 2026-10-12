@@ -1,10 +1,10 @@
 /**
  * Contract tests for the You.com OpenCode plugin.
  *
- * Driven entirely through the single public interface: the default-exported
- * plugin function. No implementation helpers are imported. The You.com remote
- * MCP server provides the tools; this plugin installs the server configs and
- * registers the packaged OpenCode skill path.
+ * Driven entirely through the single public interface: the default export.
+ * No implementation helpers are imported. The You.com remote MCP servers
+ * provide the tools; the plugin installs the server configs and registers the
+ * packaged OpenCode skills through OpenCode 2 domain transforms.
  *
  * @public
  */
@@ -13,77 +13,63 @@ import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
 import plugin from '../plugin.ts'
 
-/** The OpenCode plugin context. Only the fields the plugin reads are populated. */
-const ctx = (): Parameters<typeof plugin>[0] =>
-  ({
-    project: { id: 'p' } as never,
-    directory: '/tmp',
-    worktree: '/tmp',
-  }) as never
-
 const skillsDir = join(import.meta.dirname, '..', 'skills')
 
-type ConfigWithSkills = Parameters<NonNullable<Awaited<ReturnType<typeof plugin>>['config']>>[0] & {
-  skills?: { paths?: string[] }
+/** A minimal OpenCode 2 plugin context that records transform registrations. */
+const v2Ctx = () => {
+  const servers = new Map<string, Record<string, unknown>>()
+  const skills: Record<string, unknown>[] = []
+  const ctx = {
+    mcp: {
+      transform: async (callback: (editor: { set: (name: string, config: Record<string, unknown>) => void }) => void) =>
+        callback({ set: (name, config) => servers.set(name, config) }),
+    },
+    skill: {
+      transform: async (callback: (editor: { add: (skill: Record<string, unknown>) => void }) => void) =>
+        callback({ add: (skill) => skills.push(skill) }),
+    },
+  }
+  return { ctx, servers, skills }
 }
 
 describe('plugin', () => {
-  test('registers a config hook', async () => {
-    const hooks = await plugin(ctx())
-    expect(typeof hooks.config).toBe('function')
-    expect(hooks['shell.env']).toBeUndefined()
-    expect(hooks['tool.execute.after']).toBeUndefined()
+  test('exposes only the OpenCode 2 plugin contract', () => {
+    expect(plugin.id).toBe('youdotcom')
+    expect(typeof plugin.setup).toBe('function')
+    expect('server' in plugin).toBe(false)
   })
 
-  test('installs You.com remote MCP server profiles', async () => {
-    const hooks = await plugin(ctx())
-    const config = hooks.config
-    expect(typeof config).toBe('function')
-    if (!config) throw new Error('plugin did not register config')
+  test('registers You.com remote MCP servers via the mcp transform', async () => {
+    const { ctx, servers } = v2Ctx()
+    await plugin.setup(ctx as never)
 
-    const input = {} as Parameters<typeof config>[0]
-    await config(input)
-
-    expect(input.mcp?.you).toEqual({
-      type: 'remote',
-      url: 'https://api.you.com/mcp',
-      enabled: true,
-      oauth: {},
-    })
-    expect(input.mcp?.['you-free']).toEqual({
-      type: 'remote',
-      url: 'https://api.you.com/mcp?profile=free',
-      enabled: true,
-    })
-    expect(input.mcp?.['you-finance']).toEqual({
-      type: 'remote',
-      url: 'https://api.you.com/mcp/finance',
-      enabled: true,
-      oauth: {},
-    })
-    expect(input.mcp?.['you-research']).toEqual({
-      type: 'remote',
-      url: 'https://api.you.com/mcp/research',
-      enabled: true,
-      oauth: {},
-    })
-    expect(input.mcp?.['you-docs']).toEqual({
-      type: 'remote',
-      url: 'https://you.com/docs/_mcp/server',
-      enabled: true,
-    })
+    expect([...servers.keys()].sort()).toEqual(['you', 'you-docs', 'you-finance', 'you-free', 'you-research'])
+    expect(servers.get('you')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp' })
+    expect(servers.get('you-free')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp?profile=free' })
+    expect(servers.get('you-finance')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp/finance' })
+    expect(servers.get('you-research')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp/research' })
+    expect(servers.get('you-docs')).toEqual({ type: 'remote', url: 'https://you.com/docs/_mcp/server' })
+    for (const config of servers.values()) {
+      expect('enabled' in config).toBe(false)
+      expect('oauth' in config).toBe(false)
+    }
   })
 
-  test('registers packaged OpenCode skill paths', async () => {
-    const hooks = await plugin(ctx())
-    const config = hooks.config
-    expect(typeof config).toBe('function')
-    if (!config) throw new Error('plugin did not register config')
+  test('registers each bundled skill via the skill transform', async () => {
+    const { ctx, skills } = v2Ctx()
+    await plugin.setup(ctx as never)
 
-    const input = {} as ConfigWithSkills
-    await config(input)
-
-    expect(input.instructions).toEqual([])
-    expect(input.skills?.paths).toContain(skillsDir)
+    const byId = new Map(skills.map((skill) => [skill.id, skill]))
+    for (const id of ['you-discover', 'you-finance', 'you-research', 'you-web']) {
+      const skill = byId.get(id)
+      expect(skill, `bundled skill ${id}`).toBeDefined()
+      if (!skill) continue
+      expect(skill.name).toBe(id)
+      expect(typeof skill.description).toBe('string')
+      expect((skill.description as string).length).toBeGreaterThan(0)
+      expect(skill.path).toBe(join(skillsDir, id))
+      expect(skill.content as string).not.toMatch(/^---/)
+      expect((skill.content as string).trim().length).toBeGreaterThan(0)
+    }
   })
 })

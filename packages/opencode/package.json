@@ -1,7 +1,7 @@
 {
   "name": "@youdotcom-oss/opencode",
   "version": "0.7.1",
-  "description": "You.com OpenCode plugin with bundled skills and remote MCP setup",
+  "description": "You.com OpenCode 2 plugin with bundled skills and remote MCP setup",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -35,13 +35,10 @@
     "check": "tsc --noEmit",
     "test": "bun test"
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.18.33",
-    "@opencode-ai/sdk": ">=1.18.33"
+    "@opencode/plugin": ">=2.0.0"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.18.33",
-    "@opencode-ai/sdk": "^1.18.33"
+    "@opencode/plugin": "^2.0.27"
   }
 }
