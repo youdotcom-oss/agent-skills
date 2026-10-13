@@ -33,7 +33,8 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "check": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "pretest": "bun run build"
   },
   "peerDependencies": {
     "@opencode/plugin": ">=2.0.0"

@@ -94,7 +94,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | Cursor                          | Install this repository from the Cursor plugin UI or CLI                                              |
 | Kimi Code                       | `/plugins install <repo url>`                                                                         |
 | Grok Build                      | `grok plugin marketplace add youdotcom-oss/agent-skills` then `grok plugin install you --trust`       |
-| OpenCode 2                      | `opencode2 plugin add @youdotcom-oss/opencode`                                                        |
+| OpenCode 2                      | `opencode plugin add @youdotcom-oss/opencode`                                                         |
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
 | Pi                              | `pi install npm:@youdotcom-oss/pi`                                                                    |
 | Hermes                          | `hermes plugins install youdotcom-oss/agent-skills`                                                                        |
