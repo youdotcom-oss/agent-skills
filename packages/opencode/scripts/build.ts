@@ -45,6 +45,9 @@ export const copySkills = async ({ sourceSkillsDir, targetSkillsDir }: CopySkill
   return copied
 }
 
+/** Runs the copy with the default source/target layout for this package. */
+export const buildSkills = () => copySkills({ sourceSkillsDir, targetSkillsDir })
+
 if (import.meta.main) {
   await copySkills({ sourceSkillsDir, targetSkillsDir })
 }

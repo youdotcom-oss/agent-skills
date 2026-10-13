@@ -9,11 +9,18 @@
  * @public
  */
 
-import { describe, expect, test } from 'bun:test'
+import { beforeAll, describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
+import { buildSkills } from '../scripts/build.ts'
 import plugin from '../plugin.ts'
 
 const skillsDir = join(import.meta.dirname, '..', 'skills')
+
+// The packaged skills directory is a build artifact (gitignored). Rebuild it
+// so a bare `bun test` on a fresh checkout has the SKILL.md files to read.
+beforeAll(async () => {
+  await buildSkills()
+})
 
 /** A minimal OpenCode 2 plugin context that records transform registrations. */
 const v2Ctx = () => {

@@ -52,13 +52,8 @@
         "@opencode/plugin": "^2.0.27",
       },
       "peerDependencies": {
-        "@opencode-ai/plugin": "*",
         "@opencode/plugin": ">=2.0.0",
       },
-      "optionalPeers": [
-        "@opencode-ai/plugin",
-        "@opencode/plugin",
-      ],
     },
     "packages/pi": {
       "name": "@youdotcom-oss/pi",
