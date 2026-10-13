@@ -37,6 +37,19 @@
     "agent-skills",
     "x402"
   ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "WebFetch|WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"The You.com plugin provides 1-1 replacements for these tools: use you-search instead of WebSearch and you-contents instead of WebFetch (you-research for cited multi-source research). Call the matching You.com tool with the same query or URL.\"}}'"
+          }
+        ]
+      }
+    ]
+  },
   "userConfig": {
     "ydc_api_key": {
       "type": "string",
