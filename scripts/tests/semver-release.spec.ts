@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { createVersionUpdates, isInitialPackage, isPluginReleasePath } from '../semver-release.ts'
+import { createVersionUpdates, isInitialPackage, isPluginReleasePath, planNpmBump } from '../semver-release.ts'
 
 describe('semver release', () => {
   test('classifies plugin manifests and marketplaces as plugin release paths', () => {
@@ -113,6 +113,27 @@ describe('semver release', () => {
     expect(isInitialPackage(statuses, 'packages/pi')).toBe(false)
     expect(isInitialPackage(statuses, 'packages/openclaw')).toBe(false)
     expect(isInitialPackage(statuses, 'packages/missing')).toBe(false)
+  })
+
+  test('publishes a hand-pegged declared version as-is', () => {
+    expect(planNpmBump({ isNew: false, headVersion: '2.0.0', baseVersion: '0.7.1' })).toEqual({
+      bump: 'initial',
+      rationale: 'declared version hand-pegged: publish declared version as-is',
+    })
+  })
+
+  test('patches ordinary package content changes', () => {
+    expect(planNpmBump({ isNew: false, headVersion: '0.7.1', baseVersion: '0.7.1' })).toEqual({
+      bump: 'patch',
+      rationale: 'package implementation changed',
+    })
+  })
+
+  test('publishes brand-new packages as-is', () => {
+    expect(planNpmBump({ isNew: true, headVersion: '1.0.0', baseVersion: undefined })).toEqual({
+      bump: 'initial',
+      rationale: 'new package: publish declared version as-is',
+    })
   })
 
   test('leaves initial-release package versions untouched when applying a plan', async () => {

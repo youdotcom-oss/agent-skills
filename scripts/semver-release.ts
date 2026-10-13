@@ -122,6 +122,44 @@ export const isInitialPackage = (statuses: { status: string; path: string }[], d
   return packageChanges.length > 0 && packageChanges.every((item) => item.status.startsWith('A'))
 }
 
+/** Decides the release bump for an npm package. A hand-pegged declared
+ * version (changed between base and head) is published as-is so maintainers
+ * can cut majors and other deliberate version lines the planner cannot infer. */
+export const planNpmBump = ({
+  isNew,
+  headVersion,
+  baseVersion,
+}: {
+  isNew: boolean
+  headVersion: string | undefined
+  baseVersion: string | undefined
+}): { bump: Bump; rationale: string } => {
+  if (isNew) return { bump: 'initial', rationale: 'new package: publish declared version as-is' }
+  if (headVersion !== undefined && headVersion !== baseVersion) {
+    return { bump: 'initial', rationale: 'declared version hand-pegged: publish declared version as-is' }
+  }
+  return { bump: 'patch', rationale: 'package implementation changed' }
+}
+
+const readDeclaredVersion = async (
+  repoRoot: string,
+  packageManifest: string,
+  ref?: string,
+): Promise<string | undefined> => {
+  const raw = ref
+    ? await $`git -C ${repoRoot} show ${ref}:${packageManifest}`.text().catch(() => undefined)
+    : await Bun.file(resolve(repoRoot, packageManifest))
+        .text()
+        .catch(() => undefined)
+  if (raw === undefined) return undefined
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return isRecord(parsed) && typeof parsed.version === 'string' ? parsed.version : undefined
+  } catch {
+    return undefined
+  }
+}
+
 const readChangedPaths = async (baseRef: string, repoRoot: string = defaultRepoRoot) => {
   const names = await $`git -C ${repoRoot} diff --name-only ${baseRef}`.text()
   return names
@@ -271,22 +309,21 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
       continue
     }
 
-    for (const [name, packagePath] of Object.entries(npmPackages)) {
-      const directory = dirname(packagePath)
+    for (const [name, packageManifest] of Object.entries(npmPackages)) {
+      const directory = dirname(packageManifest)
       if (path.startsWith(directory)) {
-        const isInitial = isInitialPackage(statuses, directory)
-        plan.units.npm[name] = updateReleaseUnit(
-          plan.units.npm[name],
-          isInitial ? 'initial' : 'patch',
-          path,
-          isInitial ? 'new package: publish declared version as-is' : 'package implementation changed',
-        )
+        const { bump, rationale } = planNpmBump({
+          isNew: isInitialPackage(statuses, directory),
+          headVersion: await readDeclaredVersion(repoRoot, packageManifest),
+          baseVersion: await readDeclaredVersion(repoRoot, packageManifest, baseRef),
+        })
+        plan.units.npm[name] = updateReleaseUnit(plan.units.npm[name], bump, path, rationale)
         if (name === '@youdotcom-oss/openclaw') {
           plan.units.clawhub.you = updateReleaseUnit(
             plan.units.clawhub.you,
-            isInitial ? 'initial' : 'patch',
+            bump,
             path,
-            isInitial ? 'new package: publish declared version as-is' : 'OpenClaw package changed',
+            bump === 'initial' ? rationale.replace('package', 'OpenClaw package') : 'OpenClaw package changed',
           )
         }
       }

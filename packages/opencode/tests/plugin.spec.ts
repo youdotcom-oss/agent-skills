@@ -11,8 +11,8 @@
 
 import { beforeAll, describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
-import { buildSkills } from '../scripts/build.ts'
 import plugin from '../plugin.ts'
+import { buildSkills } from '../scripts/build.ts'
 
 const skillsDir = join(import.meta.dirname, '..', 'skills')
 
