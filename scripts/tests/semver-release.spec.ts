@@ -280,6 +280,40 @@ describe('semver release', () => {
     }
   }, 30_000)
 
+  test('repo-level strands docs do not bump the strands unit', async () => {
+    const { createReleasePlan } = await import('../semver-release.ts')
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-plan-'))
+    const git = (...args: string[]) => execFileSync('git', ['-C', repoRoot, ...args])
+    const planFromWorkingTree = async () => {
+      git('add', '-A')
+      return createReleasePlan('HEAD', repoRoot)
+    }
+
+    try {
+      await mkdir(join(repoRoot, 'packages/strands-agents/python'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await writeFile(join(repoRoot, 'packages/strands-agents/README.md'), '# guide\n')
+      git('init', '-q')
+      git('config', 'user.email', 'test@example.com')
+      git('config', 'user.name', 'Test')
+      git('add', '-A')
+      git('commit', '-q', '-m', 'base')
+
+      // Repo-level strands guide changes: no bump — neither published
+      // package ships this file.
+      await writeFile(join(repoRoot, 'packages/strands-agents/README.md'), '# guide v2\n')
+      const docsPlan = await planFromWorkingTree()
+      expect(docsPlan.units.strands).toEqual({})
+
+      // Shipped Python package README: patch bump.
+      await writeFile(join(repoRoot, 'packages/strands-agents/python/README.md'), '# strands-you\n')
+      const pythonReadmePlan = await planFromWorkingTree()
+      expect(pythonReadmePlan.units.strands.youdotcom?.bump).toBe('patch')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  }, 30_000)
+
   test('strands unit stamps both package versions on apply', async () => {
     const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
 

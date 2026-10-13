@@ -279,6 +279,17 @@ export const createReleasePlan = async (baseRef: string, repoRoot: string = defa
     }
 
     if (path.startsWith('packages/strands-agents/')) {
+      // Only paths inside the two published packages ship artifacts (the
+      // Python package reads python/README.md, the npm package bundles
+      // typescript/README.md). Repo-level strands docs — e.g. the unified
+      // packages/strands-agents/README.md guide — change neither, so they
+      // must not trigger a republish.
+      if (
+        !path.startsWith('packages/strands-agents/typescript/') &&
+        !path.startsWith('packages/strands-agents/python/')
+      ) {
+        continue
+      }
       // The strands packages share one version line, bumped by the strands
       // unit. A freshly added package set publishes its declared version
       // as-is instead of deriving from unrelated content changes.
