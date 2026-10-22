@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
+import { youcomProvider } from './provider.ts'
 
 type McpServerRegistration = Parameters<ExtensionAPI['registerMcpServer']>[1]
 
@@ -94,13 +95,14 @@ const registerHostContext = (pi: ExtensionAPI) => {
 }
 
 /**
- * Registers the You.com MCP servers (connected by Pi's built-in MCP support)
- * and the bundled Pi skill resources.
+ * Registers the You.com inference provider, the You.com MCP servers (connected
+ * by Pi's built-in MCP support), and the bundled Pi skill resources.
  *
  * On runtimes without `pi.registerMcpServer` (omp's fork), server
  * registration is skipped here and the build-generated `mcp.json` (from the
  * repo-root mcp.json) supplies the same servers through extension-package
- * discovery instead.
+ * discovery instead. omp's `registerProvider` takes only a name and config,
+ * not a provider object, so the inference provider is skipped there too.
  *
  * @param pi - Pi extension API.
  *
@@ -113,10 +115,13 @@ export default function youPiPlugin(pi: ExtensionAPI) {
 
   // omp's fork has no registerMcpServer; there the build-generated
   // mcp.json registers the same servers via extension-package discovery.
+  // Its registerProvider has no provider-object form either, so the same
+  // check gates the inference provider.
   if (typeof pi.registerMcpServer === 'function') {
     for (const [name, config] of serverRegistrations()) {
       pi.registerMcpServer(name, config)
     }
+    pi.registerProvider(youcomProvider())
   }
   registerHostContext(pi)
 }

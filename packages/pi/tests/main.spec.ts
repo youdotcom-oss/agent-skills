@@ -18,6 +18,7 @@ const hasGeneratedMcpJson = await generatedMcpJson.exists()
 const createPiMock = () => {
   const events: RegisteredEvent[] = []
   const servers: [string, McpServerConfig][] = []
+  const providers: { id: string }[] = []
 
   return {
     events,
@@ -28,7 +29,11 @@ const createPiMock = () => {
       registerMcpServer: mock((name: string, config: McpServerConfig) => {
         servers.push([name, config])
       }),
+      registerProvider: mock((provider: { id: string }) => {
+        providers.push(provider)
+      }),
     },
+    providers,
     servers,
   }
 }
@@ -177,6 +182,16 @@ describe('bundled mcp.json generation', () => {
   )
 })
 
+describe('inference provider registration', () => {
+  test('registers the You.com provider', async () => {
+    const { pi, providers } = createPiMock()
+    const plugin = await loadExtension()
+    await plugin(pi)
+
+    expect(providers.map((provider) => provider.id)).toEqual(['youcom'])
+  })
+})
+
 describe('runtimes without registerMcpServer (omp)', () => {
   test('loads without throwing and still registers skills and host context', async () => {
     const { pi, events } = createPiMock()
@@ -185,6 +200,15 @@ describe('runtimes without registerMcpServer (omp)', () => {
     await plugin({ on: pi.on })
 
     expect(events.map((e) => e.eventName).sort()).toEqual(['before_agent_start', 'resources_discover'])
+  })
+
+  test('skips the inference provider, since omp has no provider-object form of registerProvider', async () => {
+    const { pi, providers } = createPiMock()
+    const plugin = await loadExtension()
+
+    await plugin({ on: pi.on, registerProvider: pi.registerProvider })
+
+    expect(providers).toEqual([])
   })
 })
 

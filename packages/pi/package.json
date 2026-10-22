@@ -1,7 +1,7 @@
 {
   "name": "@youdotcom-oss/pi",
   "version": "0.7.2",
-  "description": "Pi extension for You.com MCP tools and skills",
+  "description": "Pi extension for You.com inference, MCP tools, and skills",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,6 +16,8 @@
   "keywords": [
     "pi-package",
     "you.com",
+    "inference",
+    "models",
     "web-search",
     "research",
     "content-extraction",
@@ -28,6 +30,8 @@
   },
   "files": [
     "main.ts",
+    "provider.ts",
+    "models.json",
     "mcp.json",
     "skills"
   ],
@@ -49,7 +53,12 @@
       "./skills"
     ]
   },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*"
+  },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "^0.99.1"
+    "@earendil-works/pi-ai": "^1.4.0",
+    "@earendil-works/pi-coding-agent": "^1.4.0"
   }
 }

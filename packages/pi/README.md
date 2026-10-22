@@ -1,11 +1,12 @@
 # @youdotcom-oss/pi
 
-You.com skills and MCP tools for Pi.
+You.com inference, skills, and MCP tools for Pi.
 
-This package registers bundled You.com skills and connects the You.com remote
-MCP servers through Pi's built-in MCP support for web search, content
-extraction, research, finance, docs lookup, and guidance on adding You.com
-APIs, MCP, and SDKs to agentic projects.
+This package registers You.com as a model provider, registers bundled You.com
+skills, and connects the You.com remote MCP servers through Pi's built-in MCP
+support for web search, content extraction, research, finance, docs lookup,
+and guidance on adding You.com APIs, MCP, and SDKs to agentic projects. One
+`YDC_API_KEY` covers models and tools.
 
 ## Install
 
@@ -15,6 +16,8 @@ pi install npm:@youdotcom-oss/pi
 
 ## What it includes
 
+- The `youcom` model provider: You.com inference through the OpenAI-compatible
+  Chat Completions API at `https://api.you.com/v1`.
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
   `you-discover`
 - MCP servers (tools named `mcp__<server>__<tool>`), registered one of two
@@ -29,6 +32,39 @@ pi install npm:@youdotcom-oss/pi
   - `you-free` — keyless web search (free profile)
   - `you-discover` — keyless integration discovery (discover profile)
   - `you-docs` — keyless You.com documentation search
+
+## Inference
+
+Set `YDC_API_KEY`, then pick a model with `/model` or on the command line:
+
+```sh
+pi --model youcom/kimi-k3
+pi --list-models youcom
+```
+
+The package ships a snapshot of the model list so models are available on
+first start. When Pi refreshes model catalogs (at interactive startup and when
+`/model` opens), the provider replaces the snapshot with the models your key
+may use, with context size, max output, and prices from `GET /v1/models`, and
+saves the list for offline use.
+
+Inference requests send `X-Client-Info: harness; client=pi` so You.com can
+attribute Pi traffic. A request that already sets `X-Client-Info` keeps its
+own value.
+
+To route through a proxy, set the base URL in Pi's `models.json`:
+
+```json
+{
+  "providers": {
+    "youcom": { "baseUrl": "https://proxy.example/v1" }
+  }
+}
+```
+
+The provider needs a Pi version with native extension providers (1.x). On
+omp, whose extension API has no provider-object form of `registerProvider`,
+only the skills and MCP tools load.
 
 ## Auth
 
