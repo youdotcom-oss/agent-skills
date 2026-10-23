@@ -96,6 +96,9 @@ export const toYoucomModel = (entry: YoucomApiModel, base?: YoucomModel): Youcom
  *   gets an empty list, so Pi neither lists nor auto-selects You.com models for it.
  * - A missing endpoint (404), for example a proxy configured in models.json, gets the snapshot.
  * - Anything else throws, so Pi reports the refresh error and keeps the last saved list.
+ *
+ * Every returned model carries `baseUrl`, so listed and saved models point at the endpoint that
+ * was checked, including a proxy configured in models.json.
  */
 export const fetchYoucomModels = async (
   key: string,
@@ -107,8 +110,9 @@ export const fetchYoucomModels = async (
     headers: { accept: 'application/json', authorization: `Bearer ${key}` },
     signal: AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]),
   })
+  const atBaseUrl = (model: YoucomModel): YoucomModel => ({ ...model, baseUrl })
   if (response.status === 401 || response.status === 402 || response.status === 403) return []
-  if (response.status === 404) return SNAPSHOT_MODELS
+  if (response.status === 404) return SNAPSHOT_MODELS.map(atBaseUrl)
   if (!response.ok) throw new Error(`You.com model list request failed: ${response.status}`)
   const body: unknown = await response.json()
   if (typeof body !== 'object' || body === null || !('data' in body) || !Array.isArray(body.data)) {
@@ -120,7 +124,7 @@ export const fetchYoucomModels = async (
       (entry): entry is YoucomApiModel =>
         typeof entry === 'object' && entry !== null && 'id' in entry && typeof entry.id === 'string',
     )
-    .map((entry) => toYoucomModel(entry, known.get(entry.id)))
+    .map((entry) => atBaseUrl(toYoucomModel(entry, known.get(entry.id))))
 }
 
 const hasHeader = (headers: StreamOptions['headers'], name: string) =>

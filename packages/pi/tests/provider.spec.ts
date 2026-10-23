@@ -128,7 +128,19 @@ describe('fetchYoucomModels', () => {
   test('returns the snapshot when the endpoint is missing (404)', async () => {
     stubFetch(new Response('', { status: 404 }))
 
-    expect(await fetchYoucomModels('ydc-test', BASE_URL, signal())).toBe(SNAPSHOT_MODELS)
+    expect(await fetchYoucomModels('ydc-test', BASE_URL, signal())).toEqual(SNAPSHOT_MODELS)
+  })
+
+  test.each([
+    ['listed models', modelsResponse(['kimi-k3', 'new-model'])],
+    ['the 404 snapshot', new Response('', { status: 404 })],
+  ])('points %s at the checked base URL, so a proxy override carries through', async (_label, response) => {
+    stubFetch(response)
+
+    const models = await fetchYoucomModels('ydc-test', 'https://proxy.example/v1', signal())
+
+    expect(models.length).toBeGreaterThan(0)
+    expect(new Set(models.map((model) => model.baseUrl))).toEqual(new Set(['https://proxy.example/v1']))
   })
 
   test('throws on other failures so pi reports the refresh error', async () => {
