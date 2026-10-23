@@ -5,8 +5,9 @@ You.com inference, skills, and MCP tools for Pi.
 This package registers You.com as a model provider, registers bundled You.com
 skills, and connects the You.com remote MCP servers through Pi's built-in MCP
 support for web search, content extraction, research, finance, docs lookup,
-and guidance on adding You.com APIs, MCP, and SDKs to agentic projects. One
-`YDC_API_KEY` covers models and tools.
+and guidance on adding You.com APIs, MCP, and SDKs to agentic projects. The
+tools work with any `YDC_API_KEY`. You.com models need inference access on the
+account.
 
 ## Install
 
@@ -35,18 +36,21 @@ pi install npm:@youdotcom-oss/pi
 
 ## Inference
 
-Set `YDC_API_KEY`, then pick a model with `/model` or on the command line:
+Inference needs purchased API credits on your You.com account. With
+`YDC_API_KEY` set, pick a model with `/model` or on the command line:
 
 ```sh
 pi --model youcom/kimi-k3
 pi --list-models youcom
 ```
 
-The package ships a snapshot of the model list so models are available on
-first start. When Pi refreshes model catalogs (at interactive startup and when
-`/model` opens), the provider replaces the snapshot with the models your key
-may use, with context size, max output, and prices from `GET /v1/models`, and
-saves the list for offline use.
+You.com models appear only after `GET /v1/models` confirms your key may use
+them. A key without inference access lists no You.com models, so Pi never
+selects one by default. The provider checks on the first start, and again each
+time Pi refreshes model catalogs (interactive startup and opening `/model`),
+so models appear on the next start after you add credits. The confirmed list,
+with context size, max output, and prices, is saved for offline and print-mode
+starts.
 
 Inference requests send `X-Client-Info: harness; client=pi` so You.com can
 attribute Pi traffic. A request that already sets `X-Client-Info` keeps its

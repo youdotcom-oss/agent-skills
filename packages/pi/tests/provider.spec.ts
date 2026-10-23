@@ -1,30 +1,62 @@
-import { afterEach, describe, expect, spyOn, test } from 'bun:test'
-import { normalizeContext, type RefreshModelsContext } from '@earendil-works/pi-ai/compat'
+import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import {
+  type AnyModel,
+  type ModelsPublication,
+  normalizeContext,
+  type RefreshModelsContext,
+} from '@earendil-works/pi-ai/compat'
 import { fetchYoucomModels, SNAPSHOT_MODELS, toYoucomModel, youcomProvider } from '../provider.ts'
 
-const refreshContext = (baseUrl?: string): RefreshModelsContext => ({
-  credential: { type: 'api_key', key: 'ydc-test' },
-  publish: async () => true,
-  allowNetwork: true,
-  signal: new AbortController().signal,
-  baseUrl,
-})
+const BASE_URL = 'https://api.you.com/v1'
+const signal = () => new AbortController().signal
 
 const stubFetch = (response: Response) => spyOn(globalThis, 'fetch').mockResolvedValue(response)
 
-afterEach(() => {
-  ;(globalThis.fetch as unknown as { mockRestore?: () => void }).mockRestore?.()
+const modelsResponse = (ids: string[]) => Response.json({ data: ids.map((id) => ({ id })) })
+const denied = (status: number) => Response.json({ error: { message: 'denied', code: String(status) } }, { status })
+
+type Refresh = {
+  context: RefreshModelsContext
+  publications: ModelsPublication[]
+}
+
+const refreshContext = (options: {
+  allowNetwork: boolean
+  key?: string
+  stored?: AnyModel[]
+  baseUrl?: string
+}): Refresh => {
+  const publications: ModelsPublication[] = []
+  return {
+    publications,
+    context: {
+      credential: options.key ? { type: 'api_key', key: options.key } : undefined,
+      stored: options.stored ? { models: options.stored, checkedAt: 0 } : undefined,
+      publish: async (publication) => {
+        publications.push(publication)
+        publication.update?.()
+        return true
+      },
+      allowNetwork: options.allowNetwork,
+      signal: signal(),
+      baseUrl: options.baseUrl,
+    },
+  }
+}
+
+const savedEnv = { key: process.env.YDC_API_KEY, offline: process.env.PI_OFFLINE }
+
+beforeEach(() => {
+  delete process.env.YDC_API_KEY
+  delete process.env.PI_OFFLINE
 })
 
-describe('snapshot catalog', () => {
-  test('lists the release-time models on the You.com endpoint', () => {
-    const provider = youcomProvider()
-    expect(provider.id).toBe('youcom')
-    expect(provider.getModels().length).toBe(SNAPSHOT_MODELS.length)
-    for (const model of provider.getModels()) {
-      expect(model).toMatchObject({ provider: 'youcom', api: 'openai-completions', baseUrl: 'https://api.you.com/v1' })
-    }
-  })
+afterEach(() => {
+  ;(globalThis.fetch as unknown as { mockRestore?: () => void }).mockRestore?.()
+  if (savedEnv.key === undefined) delete process.env.YDC_API_KEY
+  else process.env.YDC_API_KEY = savedEnv.key
+  if (savedEnv.offline === undefined) delete process.env.PI_OFFLINE
+  else process.env.PI_OFFLINE = savedEnv.offline
 })
 
 describe('toYoucomModel', () => {
@@ -75,48 +107,131 @@ describe('toYoucomModel', () => {
 })
 
 describe('fetchYoucomModels', () => {
-  test("lists only the key's models from /v1/models", async () => {
-    const fetch = stubFetch(
-      Response.json({ data: [{ id: 'kimi-k3', max_input_tokens: 1_000_000 }, { id: 'new-model' }] }),
-    )
+  test("lists the key's models from the configured base URL", async () => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3', 'new-model']))
 
-    const models = await fetchYoucomModels(refreshContext())
+    const models = await fetchYoucomModels('ydc-test', 'https://proxy.example/v1/', signal())
 
-    expect(fetch.mock.calls[0]?.[0]).toBe('https://api.you.com/v1/models')
+    expect(fetch.mock.calls[0]?.[0]).toBe('https://proxy.example/v1/models')
     expect(models.map((model) => model.id)).toEqual(['kimi-k3', 'new-model'])
   })
 
-  test('uses the configured base URL', async () => {
-    const fetch = stubFetch(Response.json({ data: [] }))
+  test.each([401, 402, 403])('returns no models when the key has no inference access (%i)', async (status) => {
+    stubFetch(denied(status))
 
-    await fetchYoucomModels(refreshContext('https://proxy.example/v1/'))
-
-    expect(fetch.mock.calls[0]?.[0]).toBe('https://proxy.example/v1/models')
+    expect(await fetchYoucomModels('ydc-test', BASE_URL, signal())).toEqual([])
   })
 
-  test.each([401, 403, 404])(
-    'keeps the snapshot when the endpoint rejects the key or is missing (%i)',
-    async (status) => {
-      stubFetch(new Response('', { status }))
+  test('returns the snapshot when the endpoint is missing (404)', async () => {
+    stubFetch(new Response('', { status: 404 }))
 
-      expect(await fetchYoucomModels(refreshContext())).toBe(SNAPSHOT_MODELS)
-    },
-  )
+    expect(await fetchYoucomModels('ydc-test', BASE_URL, signal())).toBe(SNAPSHOT_MODELS)
+  })
 
   test('throws on other failures so pi reports the refresh error', async () => {
     stubFetch(new Response('', { status: 500 }))
 
-    expect(fetchYoucomModels(refreshContext())).rejects.toThrow('500')
+    expect(fetchYoucomModels('ydc-test', BASE_URL, signal())).rejects.toThrow('500')
+  })
+})
+
+describe('model list lifecycle', () => {
+  test('lists no models before access is confirmed', () => {
+    expect(youcomProvider().getModels()).toEqual([])
+  })
+
+  test('network refresh with access lists and saves the models', async () => {
+    stubFetch(modelsResponse(['kimi-k3']))
+    const provider = youcomProvider()
+    const { context, publications } = refreshContext({ allowNetwork: true, key: 'ydc-test' })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels().map((model) => model.id)).toEqual(['kimi-k3'])
+    expect(publications.at(-1)?.persist).toMatchObject({ models: [{ id: 'kimi-k3' }] })
+  })
+
+  test('network refresh without access hides saved models and clears the saved list', async () => {
+    stubFetch(denied(402))
+    const provider = youcomProvider()
+    const { context, publications } = refreshContext({
+      allowNetwork: true,
+      key: 'ydc-test',
+      stored: SNAPSHOT_MODELS.slice(0, 2),
+    })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels()).toEqual([])
+    expect(publications.at(-1)?.persist).toBeNull()
+  })
+
+  test('a saved list is restored on a cache-only start without a network call', async () => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3']))
+    process.env.YDC_API_KEY = 'ydc-test'
+    const provider = youcomProvider()
+    const { context } = refreshContext({ allowNetwork: false, stored: SNAPSHOT_MODELS.slice(0, 2) })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels().length).toBe(2)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('first run checks access during the cache-only start, using the environment key', async () => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3']))
+    process.env.YDC_API_KEY = 'ydc-env'
+    const provider = youcomProvider()
+    const { context } = refreshContext({ allowNetwork: false })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels().map((model) => model.id)).toEqual(['kimi-k3'])
+    expect(new Headers(fetch.mock.calls[0]?.[1]?.headers).get('authorization')).toBe('Bearer ydc-env')
+  })
+
+  test('first run without access lists nothing and does not fail startup', async () => {
+    stubFetch(denied(402))
+    process.env.YDC_API_KEY = 'ydc-env'
+    const provider = youcomProvider()
+    const { context } = refreshContext({ allowNetwork: false })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels()).toEqual([])
+  })
+
+  test('first run swallows network errors so startup continues', async () => {
+    spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
+    process.env.YDC_API_KEY = 'ydc-env'
+    const provider = youcomProvider()
+    const { context } = refreshContext({ allowNetwork: false })
+
+    await provider.refreshModels?.(context)
+
+    expect(provider.getModels()).toEqual([])
+  })
+
+  test.each([
+    ['no key', {}],
+    ['PI_OFFLINE', { YDC_API_KEY: 'ydc-env', PI_OFFLINE: '1' }],
+  ])('first run makes no network call with %s', async (_label, env) => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3']))
+    Object.assign(process.env, env)
+    const provider = youcomProvider()
+
+    await provider.refreshModels?.(refreshContext({ allowNetwork: false }).context)
+
+    expect(fetch).not.toHaveBeenCalled()
   })
 })
 
 describe('attribution', () => {
   const captureHeaders = async (headers?: Record<string, string>) => {
     const fetch = stubFetch(Response.json({ error: { message: 'rejected' } }, { status: 401 }))
-    const provider = youcomProvider()
-    const model = provider.getModels()[0]
-    if (!model) throw new Error('no models')
-    await provider
+    const model = SNAPSHOT_MODELS[0]
+    if (!model) throw new Error('empty snapshot')
+    await youcomProvider()
       .streamSimple(model, normalizeContext({ messages: [{ role: 'user', content: 'test', timestamp: 0 }] }), {
         apiKey: 'ydc-test',
         headers,
