@@ -202,6 +202,13 @@ describe('runtimes without registerMcpServer (omp)', () => {
     expect(events.map((e) => e.eventName).sort()).toEqual(['before_agent_start', 'resources_discover'])
   })
 
+  test('does not import provider.ts statically, since omp lacks pi-ai exports it uses', async () => {
+    // omp validates extensions at install time; a static import of provider.ts fails there with
+    // "Export named 'envApiKeyAuth' not found" before the runtime check can skip the provider.
+    const source = await Bun.file(new URL('../main.ts', import.meta.url)).text()
+    expect(source).not.toMatch(/^import[^\n]*['"]\.\/provider(\.ts)?['"]/m)
+  })
+
   test('skips the inference provider, since omp has no provider-object form of registerProvider', async () => {
     const { pi, providers } = createPiMock()
     const plugin = await loadExtension()

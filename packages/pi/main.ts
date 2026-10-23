@@ -1,5 +1,4 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent'
-import { youcomProvider } from './provider.ts'
 
 type McpServerRegistration = Parameters<ExtensionAPI['registerMcpServer']>[1]
 
@@ -102,13 +101,15 @@ const registerHostContext = (pi: ExtensionAPI) => {
  * registration is skipped here and the build-generated `mcp.json` (from the
  * repo-root mcp.json) supplies the same servers through extension-package
  * discovery instead. omp's `registerProvider` takes only a name and config,
- * not a provider object, so the inference provider is skipped there too.
+ * not a provider object, so the inference provider is skipped there too. It
+ * is imported dynamically: omp's pi-ai compatibility layer lacks exports that
+ * provider.ts uses, and a static import fails omp's install-time validation.
  *
  * @param pi - Pi extension API.
  *
  * @public
  */
-export default function youPiPlugin(pi: ExtensionAPI) {
+export default async function youPiPlugin(pi: ExtensionAPI) {
   pi.on('resources_discover', () => ({
     skillPaths: [SKILLS_PATH],
   }))
@@ -121,7 +122,8 @@ export default function youPiPlugin(pi: ExtensionAPI) {
     for (const [name, config] of serverRegistrations()) {
       pi.registerMcpServer(name, config)
     }
-    pi.registerProvider(youcomProvider())
+    const { loadYoucomProvider } = await import('./provider.ts')
+    pi.registerProvider(await loadYoucomProvider())
   }
   registerHostContext(pi)
 }

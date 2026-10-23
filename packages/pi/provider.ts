@@ -1,5 +1,9 @@
 // Pi resolves only a fixed set of pi-ai specifiers for extensions (root, /compat, /models,
 // /oauth, /providers/all). /compat re-exports the lazy API wrappers; /api/* does not resolve.
+
+import { readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import {
   envApiKeyAuth,
   type Model,
@@ -137,19 +141,41 @@ const withYoucomClientInfo = (streams: ProviderStreams): ProviderStreams => ({
 const credentialKey = (context: RefreshModelsContext) =>
   context.credential?.type === 'oauth' ? context.credential.access : context.credential?.key
 
+// Pi's agent directory, where it keeps models.json and models-store.json.
+const agentDir = () => process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent')
+
+const readJson = (file: string): unknown => {
+  try {
+    return JSON.parse(readFileSync(join(agentDir(), file), 'utf8'))
+  } catch {
+    return undefined
+  }
+}
+
+/** Whether Pi's model store already holds a confirmed You.com list. */
+const hasSavedModels = () =>
+  ((readJson('models-store.json') as { youcom?: { models?: unknown[] } } | undefined)?.youcom?.models?.length ?? 0) > 0
+
+/** The base URL, honoring a `providers.youcom.baseUrl` override in Pi's models.json. */
+const configuredBaseUrl = () => {
+  const override = (readJson('models.json') as { providers?: { youcom?: { baseUrl?: unknown } } } | undefined)
+    ?.providers?.youcom?.baseUrl
+  return typeof override === 'string' && override ? override : BASE_URL
+}
+
 /**
  * The You.com inference provider: OpenAI Chat Completions at `https://api.you.com/v1`,
  * authenticated with `YDC_API_KEY`.
  *
  * Lists only models the key has been confirmed to use. Pi refreshes catalogs at interactive
  * startup and when `/model` opens, so a key that gains inference access picks up models on the
- * next start. The confirmed list is saved for offline and print-mode starts. On the first run
- * there is no saved list yet, so the startup (cache-only) refresh runs the check itself.
+ * next start. The confirmed list is saved for offline and print-mode starts. `initialModels`
+ * seeds the list before the first refresh; see {@link loadYoucomProvider}.
  *
  * @public
  */
-export const youcomProvider = (): Provider<'openai-completions'> => {
-  let models: YoucomModel[] = []
+export const youcomProvider = (options: { initialModels?: YoucomModel[] } = {}): Provider<'openai-completions'> => {
+  let models: YoucomModel[] = options.initialModels ?? []
   const streams = withYoucomClientInfo(openAICompletionsApi())
 
   const publish = async (context: RefreshModelsContext, fetched: YoucomModel[]) => {
@@ -185,17 +211,31 @@ export const youcomProvider = (): Provider<'openai-completions'> => {
         await publish(context, await fetchYoucomModels(key, baseUrl, context.signal))
         return
       }
-      // First run: the cache-only startup refresh has no saved list and no resolved credential
-      // (Pi passes only stored credentials here), so read the environment key and check now.
-      const key = credentialKey(context) ?? process.env[API_KEY_ENV]
-      if (stored?.length || !key || process.env.PI_OFFLINE) return
-      try {
-        await publish(context, await fetchYoucomModels(key, baseUrl, context.signal, FIRST_RUN_TIMEOUT_MS))
-      } catch {
-        // Never block or fail startup; the background network refresh retries.
-      }
+      // First run: save the list seeded at load, so later starts restore it without a check.
+      if (!stored?.length && models.length > 0) await publish(context, models)
     },
     stream: (model, context, options) => streams.stream(model, context, options),
     streamSimple: (model, context, options) => streams.streamSimple(model, context, options),
   }
+}
+
+/**
+ * Builds the provider for registration. On the first run (a key, no saved list, not offline)
+ * it checks access before returning, so a key with inference access has models before Pi picks
+ * the initial model. Pi awaits async extension factories, and its startup refreshes overlap
+ * and supersede each other, so a check started from a refresh can lose that race.
+ *
+ * @public
+ */
+export const loadYoucomProvider = async (): Promise<Provider<'openai-completions'>> => {
+  const key = process.env[API_KEY_ENV]
+  if (!key || process.env.PI_OFFLINE || hasSavedModels()) return youcomProvider()
+  // Never block or fail startup: on a network error the background network refresh retries.
+  const initialModels = await fetchYoucomModels(
+    key,
+    configuredBaseUrl(),
+    new AbortController().signal,
+    FIRST_RUN_TIMEOUT_MS,
+  ).catch(() => undefined)
+  return youcomProvider({ initialModels })
 }
