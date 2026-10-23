@@ -20,6 +20,8 @@ const API_KEY_ENV = 'YDC_API_KEY'
 const MODELS_TIMEOUT_MS = 15_000
 // First run only: the check blocks startup so a key with inference access has models before
 // Pi picks the initial model. Short, because a key without access must not slow startup.
+// MINIMAL: a slower gateway gets no models on the first start until the background refresh
+// lands; raise the cap or show a startup notice if first-start reports show up.
 const FIRST_RUN_TIMEOUT_MS = 5_000
 const CLIENT_INFO_HEADER = 'X-Client-Info'
 // You.com attributes API traffic by the leading source token of this header.
@@ -27,7 +29,11 @@ const CLIENT_INFO = 'harness; client=pi'
 
 type YoucomModel = Model<'openai-completions'>
 
-/** One entry of `GET /v1/models`. */
+/**
+ * One entry of `GET /v1/models`.
+ *
+ * @public
+ */
 export type YoucomApiModel = {
   id: string
   display_name?: string
@@ -46,6 +52,11 @@ export type YoucomApiModel = {
  * Snapshot of `GET /v1/models` at release time. Never listed on its own: it supplies reasoning,
  * thinking levels, and request compatibility, which the API response does not carry, and serves
  * as the list when the endpoint is missing (404).
+ *
+ * MINIMAL: hand-maintained; new API models get text-only defaults until it is updated. Add a
+ * sync script (needs a key, since `/v1/models` is authenticated) if model churn makes this stale.
+ *
+ * @public
  */
 export const SNAPSHOT_MODELS: YoucomModel[] = (snapshot as Omit<YoucomModel, 'api' | 'provider' | 'baseUrl'>[]).map(
   (model) => ({ ...model, api: 'openai-completions', provider: 'youcom', baseUrl: BASE_URL }),
@@ -56,6 +67,12 @@ const perMillion = (value: string | undefined) => (value === undefined ? 0 : Num
 /**
  * Applies one `/v1/models` entry to a model: display name, limits, image input, and prices.
  * A missing field keeps the existing value. Unknown ids start from text-only defaults.
+ *
+ * @param entry - one entry of the `/v1/models` response.
+ * @param base - the snapshot model with the same id, if any; supplies the fields the API omits.
+ * @returns the model to list.
+ *
+ * @public
  */
 export const toYoucomModel = (entry: YoucomApiModel, base?: YoucomModel): YoucomModel => {
   const input = entry.capabilities?.input
@@ -99,6 +116,14 @@ export const toYoucomModel = (entry: YoucomApiModel, base?: YoucomModel): Youcom
  *
  * Every returned model carries `baseUrl`, so listed and saved models point at the endpoint that
  * was checked, including a proxy configured in models.json.
+ *
+ * @param key - the You.com API key, sent as a bearer token.
+ * @param baseUrl - the API base URL; `/models` is appended.
+ * @param signal - aborts the request.
+ * @param timeoutMs - request timeout; defaults to 15 seconds.
+ * @returns the models the key may use; empty when the key has no inference access.
+ *
+ * @public
  */
 export const fetchYoucomModels = async (
   key: string,
@@ -189,8 +214,11 @@ const configuredBaseUrl = () => {
  *
  * Lists only models the key has been confirmed to use. Pi refreshes catalogs at interactive
  * startup and when `/model` opens, so a key that gains inference access picks up models on the
- * next start. The confirmed list is saved for offline and print-mode starts. `initialModels`
- * seeds the list before the first refresh; see {@link loadYoucomProvider}.
+ * next start. The confirmed list is saved for offline and print-mode starts.
+ *
+ * @param options - `initialModels` seeds the list before the first refresh; see
+ *   {@link loadYoucomProvider}.
+ * @returns the provider to pass to `pi.registerProvider()`.
  *
  * @public
  */
@@ -244,6 +272,8 @@ export const youcomProvider = (options: { initialModels?: YoucomModel[] } = {}):
  * it checks access before returning, so a key with inference access has models before Pi picks
  * the initial model. Pi awaits async extension factories, and its startup refreshes overlap
  * and supersede each other, so a check started from a refresh can lose that race.
+ *
+ * @returns the provider to pass to `pi.registerProvider()`.
  *
  * @public
  */

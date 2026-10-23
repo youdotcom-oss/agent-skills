@@ -149,7 +149,7 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 | ------------------------- | ----------------------------------------------------------------------------- |
 | `@youdotcom-oss/opencode` | OpenCode plugin that registers You.com skills and remote MCP server configs.  |
 | `@youdotcom-oss/openclaw` | OpenClaw plugin with You.com skills and `YDC_API_KEY` setup metadata.         |
-| `@youdotcom-oss/pi`       | Pi package that registers You.com skills and bridges You.com MCP tools.       |
+| `@youdotcom-oss/pi`       | Pi package that registers You.com skills, MCP tools, and the You.com model provider. |
 | `@youdotcom-oss/dsh-plugin` | DeepSeek Harness plugin with You.com skills and MCP server mounts.          |
 | `strands-you` / `@youdotcom-oss/strands-agents` | Strands Agents plugin (Python + TypeScript) bundling You.com MCP servers and skills. |
 
