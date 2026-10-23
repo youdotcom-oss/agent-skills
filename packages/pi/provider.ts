@@ -171,7 +171,12 @@ export const youcomProvider = (): Provider<'openai-completions'> => {
     refreshModels: async (context) => {
       const stored = context.stored?.models.filter((model): model is YoucomModel => model.provider === 'youcom')
       if (stored?.length) {
-        if (!(await context.publish({ update: () => void (models = stored) }))) return
+        const restored = await context.publish({
+          update: () => {
+            models = stored
+          },
+        })
+        if (!restored) return
       }
       const baseUrl = context.baseUrl ?? BASE_URL
       if (context.allowNetwork) {
