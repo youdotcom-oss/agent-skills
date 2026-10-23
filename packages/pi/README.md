@@ -1,11 +1,13 @@
 # @youdotcom-oss/pi
 
-You.com skills and MCP tools for Pi.
+You.com inference, skills, and MCP tools for Pi.
 
-This package registers bundled You.com skills and connects the You.com remote
-MCP servers through Pi's built-in MCP support for web search, content
-extraction, research, finance, docs lookup, and guidance on adding You.com
-APIs, MCP, and SDKs to agentic projects.
+This package registers You.com as a model provider, registers bundled You.com
+skills, and connects the You.com remote MCP servers through Pi's built-in MCP
+support for web search, content extraction, research, finance, docs lookup,
+and guidance on adding You.com APIs, MCP, and SDKs to agentic projects. The
+tools work with any `YDC_API_KEY`. You.com models need inference access on the
+account.
 
 ## Install
 
@@ -15,6 +17,8 @@ pi install npm:@youdotcom-oss/pi
 
 ## What it includes
 
+- The `youcom` model provider: You.com inference through the OpenAI-compatible
+  Chat Completions API at `https://api.you.com/v1`.
 - Skills from `./skills`: `you-web`, `you-research`, `you-finance`,
   `you-discover`
 - MCP servers (tools named `mcp__<server>__<tool>`), registered one of two
@@ -29,6 +33,42 @@ pi install npm:@youdotcom-oss/pi
   - `you-free` — keyless web search (free profile)
   - `you-discover` — keyless integration discovery (discover profile)
   - `you-docs` — keyless You.com documentation search
+
+## Inference
+
+Inference needs purchased API credits on your You.com account. With
+`YDC_API_KEY` set, pick a model with `/model` or on the command line:
+
+```sh
+pi --model youcom/kimi-k3
+pi --list-models youcom
+```
+
+You.com models appear only after `GET /v1/models` confirms your key may use
+them. A key without inference access lists no You.com models, so Pi never
+selects one by default. The provider checks on the first start, and again each
+time Pi refreshes model catalogs (interactive startup and opening `/model`),
+so models appear on the next start after you add credits. The confirmed list,
+with context size, max output, and prices, is saved for offline and print-mode
+starts.
+
+Inference requests send `X-Client-Info: harness; client=pi` so You.com can
+attribute Pi traffic. A request that already sets `X-Client-Info` keeps its
+own value.
+
+To route through a proxy, set the base URL in Pi's `models.json`:
+
+```json
+{
+  "providers": {
+    "youcom": { "baseUrl": "https://proxy.example/v1" }
+  }
+}
+```
+
+The provider needs a Pi version with native extension providers (1.x). On
+omp, whose extension API has no provider-object form of `registerProvider`,
+only the skills and MCP tools load.
 
 ## Auth
 
