@@ -145,12 +145,28 @@ const withYoucomClientInfo = (streams: ProviderStreams): ProviderStreams => ({
 const credentialKey = (context: RefreshModelsContext) =>
   context.credential?.type === 'oauth' ? context.credential.access : context.credential?.key
 
-// Pi's agent directory, where it keeps models.json and models-store.json.
-const agentDir = () => process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.pi', 'agent')
+// Pi's agent directory, where it keeps models.json and models-store.json. Expands `~` the way
+// Pi does for PI_CODING_AGENT_DIR.
+const agentDir = () => {
+  const dir = process.env.PI_CODING_AGENT_DIR
+  if (!dir) return join(homedir(), '.pi', 'agent')
+  if (dir === '~') return homedir()
+  return dir.startsWith('~/') ? join(homedir(), dir.slice(2)) : dir
+}
+
+// Pi's models.json allows `//` comments, trailing commas, and a BOM; strip them as Pi does,
+// leaving string contents (such as URLs) untouched.
+const parseJsonc = (text: string): unknown =>
+  JSON.parse(
+    text
+      .replace(/^\uFEFF/, '')
+      .replace(/"(?:\\.|[^"\\])*"|\/\/[^\n]*/g, (match) => (match[0] === '"' ? match : ''))
+      .replace(/"(?:\\.|[^"\\])*"|,(\s*[}\]])/g, (match, tail) => tail ?? (match[0] === '"' ? match : '')),
+  )
 
 const readJson = (file: string): unknown => {
   try {
-    return JSON.parse(readFileSync(join(agentDir(), file), 'utf8'))
+    return parseJsonc(readFileSync(join(agentDir(), file), 'utf8'))
   } catch {
     return undefined
   }

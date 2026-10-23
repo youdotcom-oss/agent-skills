@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   type AnyModel,
@@ -234,6 +234,39 @@ describe('loadYoucomProvider (first run)', () => {
     writeAgentFile('models.json', { providers: { youcom: { baseUrl: 'https://proxy.example/v1' } } })
 
     await loadYoucomProvider()
+
+    expect(fetch.mock.calls[0]?.[0]).toBe('https://proxy.example/v1/models')
+  })
+
+  test('reads a models.json with comments, trailing commas, and a BOM, as Pi allows', async () => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3']))
+    process.env.YDC_API_KEY = 'ydc-env'
+    writeFileSync(
+      join(process.env.PI_CODING_AGENT_DIR ?? '', 'models.json'),
+      '\uFEFF{\n  // route through the corporate proxy\n  "providers": {\n    "youcom": { "baseUrl": "https://proxy.example/v1", },\n  },\n}\n',
+    )
+
+    await loadYoucomProvider()
+
+    expect(fetch.mock.calls[0]?.[0]).toBe('https://proxy.example/v1/models')
+  })
+
+  test('expands ~ in PI_CODING_AGENT_DIR, as Pi does', async () => {
+    const fetch = stubFetch(modelsResponse(['kimi-k3']))
+    process.env.YDC_API_KEY = 'ydc-env'
+    // A directory under the home directory, so it can be named with a leading ~.
+    const dir = mkdtempSync(join(homedir(), '.yc-pi-test-'))
+    try {
+      writeFileSync(
+        join(dir, 'models.json'),
+        JSON.stringify({ providers: { youcom: { baseUrl: 'https://proxy.example/v1' } } }),
+      )
+      process.env.PI_CODING_AGENT_DIR = `~/${dir.slice(homedir().length + 1)}`
+
+      await loadYoucomProvider()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
 
     expect(fetch.mock.calls[0]?.[0]).toBe('https://proxy.example/v1/models')
   })
