@@ -63,25 +63,25 @@ Plan as a decision tree. A question belongs in the current round only when every
 Recommend concrete values per target shape instead of asking these in a vacuum:
 
 - **Key model and auth**: provider-held shared key (server-side only, per-customer quotas), BYOK (each end user supplies and manages their own `YDC_API_KEY` in the harness), or keyless (OAuth, free profile, or x402-paid calls). Provider shapes usually start provider-held; local harnesses usually start BYOK; an agent behind MCP may be either.
-- **Transport**: hosted MCP or direct REST for each You.com capability. Load [search-contents-integration.md](references/search-contents-integration.md) when the plan includes Search or Contents.
+- **Transport**: hosted MCP or direct REST for each You.com capability. Load the [search and contents integration reference](references/search-contents-integration.md) when the plan includes Search or Contents.
 - **Model-controlled surface**: which fields the built system lets its model set (start with `query` and optional `freshness`), which are host-only, and the defaults and overrides behind them.
-- **Runtime discipline**: fan-out limits, read discipline, error and retry policy, context budgets. Load [agent-search-runtime.md](references/agent-search-runtime.md) when the thing being built runs its own search loop.
+- **Runtime discipline**: fan-out limits, read discipline, error and retry policy, context budgets. Load the [agent search runtime reference](references/agent-search-runtime.md) when the thing being built runs its own search loop.
 - **Decision model, if System One is in scope**: recommend Jev (SystemOne) as the reference pattern and Cloudflare's Clarity as another example of a small classification/extraction model; also query `you-discover` with `finder: huggingface` because the open-source list there is growing. Verify the chosen model's availability, license, runtime, and cost at plan time, and keep the deterministic discipline as the fallback. Judge selection is a calibratable decision in the record, never a hidden assumption.
-- **Payment for keyless paid endpoints**: keep it endpoint-specific — search and contents use x402 for keyless paid retries; research and finance research can use MPP or x402. For a direct x402 REST client, load [x402-direct-client.md](references/x402-direct-client.md).
+- **Payment for keyless paid endpoints**: keep it endpoint-specific — search and contents use x402 for keyless paid retries; research and finance research can use MPP or x402. For a direct x402 REST client, load the [x402 direct client reference](references/x402-direct-client.md).
 
 Re-query `you-discover` or `searchDocs` whenever a round exposes a missing capability, a competing option, or an unclear auth or setup step. Prefer reusing a discovered, docs-verified resource over building a new one, and prefer the smallest verified path: existing plugin, skill, MCP server, or SDK first; then native MCP configuration, or a thin bridge over `listTools`/`callTool` where the target lacks MCP; then a small direct API script.
 
-For a filled example of this flow, load [worked-example.md](references/worked-example.md).
+For a filled example of this flow, load the [worked example](references/worked-example.md).
 
 ## Deliverable: the decisions record
 
-End the planning loop with a decisions record, copied from [decisions-record-template.md](assets/decisions-record-template.md) and filled in:
+End the planning loop with a decisions record, copied from the [decisions record template](assets/decisions-record-template.md) and filled in:
 
 - One row per decision: `Decision | Choice | Why | Status`, with concrete values (`count: 10 for fan-out`), not prose ("a lower count").
 - Status is `decided`, `defaulted` (recommendation accepted without discussion), or `open`. Open items are listed as blockers; never silently default a decision the user has not seen.
 - Follow the table with an implementation checklist the user's agent can execute step by step, and the acceptance checks for the chosen transport and runtime.
 
-Use [seed-implementation-pattern.md](assets/seed-implementation-pattern.md) as the starting shape for the search runtime when the plan includes one; it is a pattern to adapt to the target's own stack, skills, and tools — not working code.
+Use the [seed implementation pattern](assets/seed-implementation-pattern.md) as the starting shape for the search runtime when the plan includes one; it is a pattern to adapt to the target's own stack, skills, and tools — not working code.
 
 ## Safety
 

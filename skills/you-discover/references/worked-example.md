@@ -9,7 +9,7 @@ On-demand example of the planning flow end to end, modeled on the public `youdot
 ## Evidence sweep (before any questions)
 
 - `you-discover` (`finder: all`): the You.com catalog returns the Search and Contents MCP entries (`you://catalog`); GitHub returns comparable agent-server implementations. One candidate is selected for reading.
-- `searchDocs`: confirms the hosted MCP URL pattern, provider-key header, and the search override contract location (`tool._meta["com.you.com/search"]`).
+- `searchDocs`: confirms the hosted MCP URL pattern, provider-key header, and the search override contract — the accepted override schema is published in the tool definition's `_meta["com.you.com/search"]` (read via `tools/list`), while override values are sent per call in the request `params._meta`.
 - `you-search` ("MCP server news risk analysis reference implementation"): finds the public `youdotcom-oss/risk-analysis-server` pattern — proposal ranking, result scoring, selected-page retrieval, replaceable judge.
 - `you-contents` on that repository's README (authenticated server available): confirms the judge returns a task-specific severity choice and that page reads are selective, not exhaustive.
 
