@@ -1,6 +1,6 @@
 {
   "name": "@youdotcom-oss/strands-agents",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "You.com MCP servers and skills for Strands Agents",
   "license": "MIT",
   "engines": {
