@@ -189,12 +189,17 @@ describe('skills validation', () => {
   test('skill directories contain only SKILL.md files and approved support directories', async () => {
     const skillFiles = await loadSkillFiles()
     const skillsWithReferences = new Set(['you-discover', 'you-finance', 'you-research', 'you-web'])
+    // Support directories from the Agent Skills specification: references/ holds
+    // prose loaded on demand; assets/ holds templates and seeds the agent copies.
+    const skillsWithAssets = new Set(['you-discover'])
 
     for (const skillFile of skillFiles) {
       const entries = await readdir(dirname(skillFile.path))
-      const expectedEntries = skillsWithReferences.has(skillFile.directoryName)
-        ? ['SKILL.md', 'references']
-        : ['SKILL.md']
+      const expectedEntries = [
+        'SKILL.md',
+        ...(skillsWithReferences.has(skillFile.directoryName) ? ['references'] : []),
+        ...(skillsWithAssets.has(skillFile.directoryName) ? ['assets'] : []),
+      ].sort()
 
       expect(entries.sort()).toEqual(expectedEntries)
     }
