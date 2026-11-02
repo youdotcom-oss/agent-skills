@@ -60,18 +60,20 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
-    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-web": "^0.1.5-rc.3"
+    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.3 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.3 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.3 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-web": "^0.1.5-rc.3 || ^0.2.0-rc.1"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
-    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-skill": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-web": "^0.1.5-rc.3",
+    "@deepseek-ai/dsh-fs": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-launch-environment": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-mcp-client": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-skill": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-skill-filesystem": "0.2.1-rc.5",
+    "@deepseek-ai/dsh-web": "0.2.1-rc.5",
     "@types/bun": "1.4.2",
     "@types/node": "^22.20.4"
   }

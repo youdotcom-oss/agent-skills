@@ -38,6 +38,9 @@
       "format-package --write"
     ]
   },
+  "overrides": {
+    "@modelcontextprotocol/client": "2.4.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@commitlint/cli": "^21.2.3",
