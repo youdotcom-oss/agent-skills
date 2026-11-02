@@ -60,10 +60,10 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",
-    "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.3",
-    "@deepseek-ai/dsh-web": "^0.1.5-rc.3"
+    "@deepseek-ai/dsh-launch-environment": ">=0.1.5-rc.3",
+    "@deepseek-ai/dsh-mcp-client": ">=0.1.5-rc.3",
+    "@deepseek-ai/dsh-skill-filesystem": ">=0.1.5-rc.3",
+    "@deepseek-ai/dsh-web": ">=0.1.5-rc.3"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.4",

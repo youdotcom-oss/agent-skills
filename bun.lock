@@ -16,7 +16,7 @@
     },
     "packages/dsh-plugin": {
       "name": "@youdotcom-oss/dsh-plugin",
-      "version": "0.2.1",
+      "version": "0.3.0",
       "dependencies": {
         "@deepseek-ai/schemastery": "^3.18.4",
       },
@@ -32,22 +32,22 @@
       },
       "peerDependencies": {
         "@deepseek-ai/cordis": "^4.0.4",
-        "@deepseek-ai/dsh-launch-environment": "^0.1.5-rc.3",
-        "@deepseek-ai/dsh-mcp-client": "^0.1.5-rc.3",
-        "@deepseek-ai/dsh-skill-filesystem": "^0.1.5-rc.3",
-        "@deepseek-ai/dsh-web": "^0.1.5-rc.3",
+        "@deepseek-ai/dsh-launch-environment": ">=0.1.5-rc.3",
+        "@deepseek-ai/dsh-mcp-client": ">=0.1.5-rc.3",
+        "@deepseek-ai/dsh-skill-filesystem": ">=0.1.5-rc.3",
+        "@deepseek-ai/dsh-web": ">=0.1.5-rc.3",
       },
     },
     "packages/openclaw": {
       "name": "@youdotcom-oss/openclaw",
-      "version": "1.7.1",
+      "version": "1.8.0",
       "peerDependencies": {
         "openclaw": ">=2026.9.7",
       },
     },
     "packages/opencode": {
       "name": "@youdotcom-oss/opencode",
-      "version": "0.7.1",
+      "version": "2.1.0",
       "devDependencies": {
         "@opencode/plugin": "^2.0.27",
       },
@@ -57,14 +57,14 @@
     },
     "packages/pi": {
       "name": "@youdotcom-oss/pi",
-      "version": "0.7.2",
+      "version": "0.8.0",
       "devDependencies": {
         "@earendil-works/pi-coding-agent": "^0.99.1",
       },
     },
     "packages/strands-agents/typescript": {
       "name": "@youdotcom-oss/strands-agents",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "devDependencies": {
         "@biomejs/biome": "2.5.15",
         "@strands-agents/sdk": "^1.10.0",
