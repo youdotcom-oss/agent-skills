@@ -48,10 +48,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "@strands-agents/sdk": "^1.10.0",
+    "@strands-agents/sdk": "^1.23.0",
     "@types/bun": "1.4.2",
     "@types/node": "^22.0.0",
     "typescript": "^5.5.0",
-    "zod": "^4.1.12"
+    "zod": "^4.6.7"
   }
 }
