@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import warnings
-from importlib import resources
+from importlib import metadata, resources
 from typing import Any
 
 from strands.hooks import BeforeInvocationEvent
@@ -37,6 +37,13 @@ _API_KEY_SERVERS = frozenset({"you", "you-finance", "you-research"})
 _API_KEY_ENV_VAR = "YDC_API_KEY"
 
 _CAPABILITY_NOTE_MARKER = "unavailable You.com MCP servers"
+
+#: Client identity sent as MCP ``clientInfo`` on every server connection.
+#: Shared with the TypeScript package so both identify identically in the
+#: You.com API's ``X-Client-Info`` analytics header
+#: (``client=strands-agents/<version>``); the two packages share one version
+#: line, stamped by the release plan's strands unit.
+_CLIENT_NAME = "strands-agents"
 
 
 def _load_mcp_config() -> dict[str, dict[str, Any]]:
@@ -94,7 +101,12 @@ class YouDotComPlugin(AgentSkills):
         """
         for name, server in self._servers.items():
             headers = {"Authorization": f"Bearer {self._api_key}"} if name in _API_KEY_SERVERS else None
-            client = MCPClient(url=server["url"], headers=headers)
+            client = MCPClient(
+                url=server["url"],
+                headers=headers,
+                application_name=_CLIENT_NAME,
+                application_version=metadata.version("strands-you"),
+            )
             agent.tool_registry.process_tools([client])
             logger.debug("server=<%s> | registered MCP client", name)
 
