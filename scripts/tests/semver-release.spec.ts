@@ -314,7 +314,7 @@ describe('semver release', () => {
     }
   }, 30_000)
 
-  test('strands unit stamps both package versions on apply', async () => {
+  test('strands unit stamps both package versions and the python lockfile on apply', async () => {
     const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
 
     try {
@@ -329,6 +329,10 @@ describe('semver release', () => {
       await writeFile(
         join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
         '[build-system]\nrequires = ["hatchling"]\n\n[project]\nname = "strands-you"\nversion = "0.1.0"\n\n[tool.hatch.build.targets.wheel]\npackages = ["src/strands_you"]\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/uv.lock'),
+        '[[package]]\nname = "pydantic"\nversion = "2.0.0"\n\n[[package]]\nname = "strands-you"\nversion = "0.1.0"\nsource = { editable = "." }\n',
       )
       await writeFile(
         join(repoRoot, 'plan.json'),
@@ -356,12 +360,13 @@ describe('semver release', () => {
 
       const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
 
-      // Both packages share one version line; the strands unit stamps them.
+      // Both packages share one version line, and the lockfile must record the
+      // same version: `uv sync --locked` compares it against pyproject.toml.
       expect(updates.map((u) => u.path).sort()).toEqual([
         'packages/strands-agents/python/pyproject.toml',
+        'packages/strands-agents/python/uv.lock',
         'packages/strands-agents/typescript/package.json',
       ])
-      await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
       // Applying for real writes the bumped versions.
       for (const update of updates) await Bun.write(`${repoRoot}/${update.path}`, update.content)
       expect(
@@ -369,6 +374,98 @@ describe('semver release', () => {
       ).toBe('0.1.1')
       expect(await Bun.file(`${repoRoot}/packages/strands-agents/python/pyproject.toml`).text()).toContain(
         'version = "0.1.1"',
+      )
+      const lock = await Bun.file(`${repoRoot}/packages/strands-agents/python/uv.lock`).text()
+      expect(lock).toContain('name = "strands-you"\nversion = "0.1.1"')
+      // Sibling package entries are left alone.
+      expect(lock).toContain('name = "pydantic"\nversion = "2.0.0"')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('strands lockfile stamping adopts the pyproject version, healing prior drift', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/typescript/package.json'),
+        '{"name":"@youdotcom-oss/strands-agents","version":"0.1.5"}\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
+        '[project]\nname = "strands-you"\nversion = "0.1.5"\n',
+      )
+      // The lock lagged a release behind: an independent patch on the lock's
+      // own version would land on 0.1.1 and leave it stale again.
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/uv.lock'),
+        '[[package]]\nname = "strands-you"\nversion = "0.1.4"\nsource = { editable = "." }\n',
+      )
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-07-22T00:00:00.000Z',
+          changes: ['packages/strands-agents/python/src/strands_you/plugin.py'],
+          units: {
+            skills: {},
+            plugins: {},
+            npm: {},
+            clawhub: {},
+            strands: { youdotcom: { bump: 'patch', paths: ['x'], rationale: ['r'] } },
+          },
+        }),
+      )
+
+      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+      const lock = updates.find((update) => update.path.endsWith('uv.lock'))
+
+      expect(lock?.content).toContain('name = "strands-you"\nversion = "0.1.6"')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
+
+  test('strands stamping fails loudly when the lockfile has no package entry', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-release-'))
+
+    try {
+      await mkdir(join(repoRoot, 'packages/strands-agents/typescript'), { recursive: true })
+      await mkdir(join(repoRoot, 'packages/strands-agents/python'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/typescript/package.json'),
+        '{"name":"@youdotcom-oss/strands-agents","version":"0.1.0"}\n',
+      )
+      await writeFile(
+        join(repoRoot, 'packages/strands-agents/python/pyproject.toml'),
+        '[project]\nname = "strands-you"\nversion = "0.1.0"\n',
+      )
+      await writeFile(join(repoRoot, 'packages/strands-agents/python/uv.lock'), '[[package]]\nname = "pydantic"\n')
+      await writeFile(
+        join(repoRoot, 'plan.json'),
+        JSON.stringify({
+          schemaVersion: 1,
+          baseRef: 'HEAD~1',
+          headRef: 'HEAD',
+          generatedAt: '2026-07-22T00:00:00.000Z',
+          changes: ['packages/strands-agents/python/src/strands_you/plugin.py'],
+          units: {
+            skills: {},
+            plugins: {},
+            npm: {},
+            clawhub: {},
+            strands: { youdotcom: { bump: 'patch', paths: ['x'], rationale: ['r'] } },
+          },
+        }),
+      )
+
+      await expect(createVersionUpdates({ repoRoot, planPath: 'plan.json' })).rejects.toThrow(
+        /uv\.lock must contain a strands-you package version/,
       )
     } finally {
       await rm(repoRoot, { force: true, recursive: true })
