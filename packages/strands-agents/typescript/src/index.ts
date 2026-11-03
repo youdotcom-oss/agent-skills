@@ -43,9 +43,9 @@ const CAPABILITY_NOTE_MARKER = 'unavailable You.com MCP servers'
 /** Client identity sent as MCP `clientInfo` on every server connection.
  * Shared with the Python package so both identify identically in the
  * You.com API's `X-Client-Info` analytics header
- * (`client=strands-agents/<version>`); the two packages share one version
+ * (`client=strands-you/<version>`); the two packages share one version
  * line, stamped by the release plan's strands unit. */
-const CLIENT_NAME = 'strands-agents'
+const CLIENT_NAME = 'strands-you'
 
 /** This package's version, read from `package.json` at module load (same
  * pattern as the dsh-plugin). `package.json` sits one level above both the

@@ -41,9 +41,9 @@ _CAPABILITY_NOTE_MARKER = "unavailable You.com MCP servers"
 #: Client identity sent as MCP ``clientInfo`` on every server connection.
 #: Shared with the TypeScript package so both identify identically in the
 #: You.com API's ``X-Client-Info`` analytics header
-#: (``client=strands-agents/<version>``); the two packages share one version
+#: (``client=strands-you/<version>``); the two packages share one version
 #: line, stamped by the release plan's strands unit.
-_CLIENT_NAME = "strands-agents"
+_CLIENT_NAME = "strands-you"
 
 #: This package's version, read once at import. ``None`` when the distribution
 #: metadata is unavailable (e.g. a source checkout on ``PYTHONPATH``); the MCP

@@ -129,7 +129,7 @@ describe('YouDotComPlugin', () => {
     }
   })
 
-  test('every MCP client identifies as strands-agents with the plugin version', () => {
+  test('every MCP client identifies as strands-you with the plugin version', () => {
     clientCalls.length = 0
     new YouDotComPlugin({ apiKey: 'test-key' })
     expect(clientCalls).toHaveLength(ALL_SERVERS.length)
@@ -137,7 +137,7 @@ describe('YouDotComPlugin', () => {
       version: string
     }
     for (const call of clientCalls) {
-      expect(call.applicationName).toBe('strands-agents')
+      expect(call.applicationName).toBe('strands-you')
       expect(call.applicationVersion).toBe(version)
     }
   })
