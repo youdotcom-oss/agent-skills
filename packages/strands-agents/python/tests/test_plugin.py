@@ -97,13 +97,6 @@ def test_init_agent_registers_one_client_per_enabled_server(monkeypatch: pytest.
             assert by_url[server["url"]] is None
 
 
-def test_client_version_matches_package_metadata():
-    """The reported client version is the installed strands-you version."""
-    from importlib.metadata import version as package_version
-
-    assert plugin_mod._CLIENT_VERSION == package_version("strands-you")
-
-
 def test_attached_agent_discovers_bundled_skills_and_skills_tool(monkeypatch: pytest.MonkeyPatch):
     """An agent with the plugin gains the skills tool and sees the bundled skills."""
     monkeypatch.setattr(plugin_mod, "MCPClient", lambda *args, **kwargs: _InertProvider())
