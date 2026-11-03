@@ -69,7 +69,9 @@ class _FakeAgent:
 
 def test_init_agent_registers_one_client_per_enabled_server(monkeypatch: pytest.MonkeyPatch):
     """init_agent hands one MCP client per enabled server to the tool registry,
-    with a Bearer header on keyed servers and no header on keyless ones."""
+    with a Bearer header on keyed servers and no header on keyless ones. Every
+    client also identifies as strands-agents/<package version> via MCP
+    clientInfo."""
     client_calls: list[dict] = []
 
     def fake_mcp_client(_factory=None, *, url=None, headers=None, **kwargs):
