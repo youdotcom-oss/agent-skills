@@ -69,11 +69,13 @@ class _FakeAgent:
 
 def test_init_agent_registers_one_client_per_enabled_server(monkeypatch: pytest.MonkeyPatch):
     """init_agent hands one MCP client per enabled server to the tool registry,
-    with a Bearer header on keyed servers and no header on keyless ones."""
+    with a Bearer header on keyed servers and no header on keyless ones. Every
+    client also identifies as strands-agents/<package version> via MCP
+    clientInfo."""
     client_calls: list[dict] = []
 
-    def fake_mcp_client(_factory=None, *, url=None, headers=None, **_kwargs):
-        client_calls.append({"url": url, "headers": headers})
+    def fake_mcp_client(_factory=None, *, url=None, headers=None, **kwargs):
+        client_calls.append({"url": url, "headers": headers, **kwargs})
         return object()
 
     monkeypatch.setattr(plugin_mod, "MCPClient", fake_mcp_client)
@@ -85,6 +87,11 @@ def test_init_agent_registers_one_client_per_enabled_server(monkeypatch: pytest.
     assert len(fake_agent.providers) == len(ALL_SERVERS)
     by_url = {call["url"]: call["headers"] for call in client_calls}
     assert len(client_calls) == len(ALL_SERVERS)
+    # Each client identifies as strands-agents/<package version> via MCP
+    # clientInfo, matching the TypeScript package byte-for-byte.
+    for call in client_calls:
+        assert call["application_name"] == "strands-agents"
+        assert call["application_version"] == plugin_mod._CLIENT_VERSION
     for name, server in plugin.servers.items():
         if name in KEYED_SERVERS:
             assert by_url[server["url"]] == {"Authorization": "Bearer test-key"}

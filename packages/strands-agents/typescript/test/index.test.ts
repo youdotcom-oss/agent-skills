@@ -3,7 +3,12 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 
 const require = createRequire(import.meta.url)
-const clientCalls = [] as Array<{ url?: string | URL; headers?: Record<string, string> }>
+const clientCalls = [] as Array<{
+  url?: string | URL
+  headers?: Record<string, string>
+  applicationName?: string
+  applicationVersion?: string
+}>
 
 // Partial mock: spread the real SDK, replace only McpClient. bun's
 // mock.module factory takes no arguments, so pull the original via require.
@@ -15,7 +20,12 @@ mock.module('@strands-agents/sdk', () => {
   class FakeMcpClient {
     toolName: string
 
-    constructor(args: { url?: string | URL; headers?: Record<string, string> }) {
+    constructor(args: {
+      url?: string | URL
+      headers?: Record<string, string>
+      applicationName?: string
+      applicationVersion?: string
+    }) {
       clientCalls.push(args)
       this.toolName = serverNames[clientCalls.length - 1] ?? `tool-${clientCalls.length}`
     }
@@ -116,6 +126,19 @@ describe('YouDotComPlugin', () => {
       } else {
         expect(headersByUrl.get(server.url)).toBeUndefined()
       }
+    }
+  })
+
+  test('every MCP client identifies as strands-agents with the plugin version', () => {
+    clientCalls.length = 0
+    new YouDotComPlugin({ apiKey: 'test-key' })
+    expect(clientCalls).toHaveLength(ALL_SERVERS.length)
+    const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf-8')) as {
+      version: string
+    }
+    for (const call of clientCalls) {
+      expect(call.applicationName).toBe('strands-agents')
+      expect(call.applicationVersion).toBe(version)
     }
   })
 

@@ -17,6 +17,7 @@
  */
 
 import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -38,6 +39,18 @@ const API_KEY_SERVERS = new Set(['you', 'you-finance', 'you-research'])
 const API_KEY_ENV_VAR = 'YDC_API_KEY'
 
 const CAPABILITY_NOTE_MARKER = 'unavailable You.com MCP servers'
+
+/** Client identity sent as MCP `clientInfo` on every server connection.
+ * Shared with the Python package so both identify identically in the
+ * You.com API's `X-Client-Info` analytics header
+ * (`client=strands-agents/<version>`); the two packages share one version
+ * line, stamped by the release plan's strands unit. */
+const CLIENT_NAME = 'strands-agents'
+
+/** This package's version, read from `package.json` at module load (same
+ * pattern as the dsh-plugin). `package.json` sits one level above both the
+ * source file and the bundled output, so the path resolves in either. */
+const CLIENT_VERSION: string = createRequire(import.meta.url)('../package.json').version
 
 /** One entry of the shipped `mcp.json`'s `mcpServers` map. Only `url` is
  * consumed; the rest of the entry is preserved verbatim. */
@@ -99,7 +112,15 @@ export class YouDotComPlugin implements Plugin {
       Object.entries(this.servers).map(([name, server]) => {
         const headers =
           API_KEY_SERVERS.has(name) && this.#apiKey ? { Authorization: `Bearer ${this.#apiKey}` } : undefined
-        return [name, new McpClient({ url: server.url, ...(headers ? { headers } : {}) })] as const
+        return [
+          name,
+          new McpClient({
+            url: server.url,
+            applicationName: CLIENT_NAME,
+            applicationVersion: CLIENT_VERSION,
+            ...(headers ? { headers } : {}),
+          }),
+        ] as const
       }),
     )
   }
