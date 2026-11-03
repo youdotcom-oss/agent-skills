@@ -460,13 +460,42 @@ const bumpPyprojectVersion = async ({ repoRoot, path, bump }: { repoRoot: string
     throw new TypeError(`${path} [project] must contain a version string`)
   }
 
+  const version = bumpVersion(declared, bump)
   // TOML has no serializer, so the write stays a surgical line replacement.
-  const updated = content.replace(/^version = "\d+\.\d+\.\d+"/m, `version = "${bumpVersion(declared, bump)}"`)
+  const updated = content.replace(/^version = "\d+\.\d+\.\d+"/m, `version = "${version}"`)
   if (updated === content) {
     throw new Error(`${path} version could not be updated`)
   }
 
-  return { path, content: updated }
+  return { path, content: updated, version }
+}
+
+/** Stamps the version `uv.lock` records for an editable package.
+ *
+ * `uv sync --locked` compares that entry against `pyproject.toml`, so leaving
+ * it behind fails Python CI on the release commit. The lock has no parser
+ * here, so the write stays a surgical line replacement inside the package's
+ * `[[package]]` block. The caller passes the version pyproject ended at
+ * rather than an independent bump, so a lock that already drifted from an
+ * earlier release self-heals instead of staying wrong. */
+const setUvLockVersion = async ({
+  repoRoot,
+  path,
+  packageName,
+  version,
+}: {
+  repoRoot: string
+  path: string
+  packageName: string
+  version: string
+}) => {
+  const content = await Bun.file(resolve(repoRoot, path)).text()
+  const pattern = new RegExp(`(\\[\\[package\\]\\]\\nname = "${packageName}"\\nversion = )"\\d+\\.\\d+\\.\\d+"`)
+  if (!pattern.test(content)) {
+    throw new Error(`${path} must contain a ${packageName} package version`)
+  }
+
+  return { path, content: content.replace(pattern, `$1"${version}"`) }
 }
 
 const writeUpdates = async (updates: { path: string; content: string }[]) => {
@@ -529,11 +558,20 @@ export const createVersionUpdates = async ({ repoRoot, planPath }: { repoRoot: s
         bump: strandsUnit.bump,
       }),
     )
+    const pyproject = await bumpPyprojectVersion({
+      repoRoot,
+      path: 'packages/strands-agents/python/pyproject.toml',
+      bump: strandsUnit.bump,
+    })
+    updates.push(pyproject)
+    // Keep the lock in lockstep with pyproject so the stamped commit still
+    // satisfies `uv sync --locked` in Python CI.
     updates.push(
-      await bumpPyprojectVersion({
+      await setUvLockVersion({
         repoRoot,
-        path: 'packages/strands-agents/python/pyproject.toml',
-        bump: strandsUnit.bump,
+        path: 'packages/strands-agents/python/uv.lock',
+        packageName: 'strands-you',
+        version: pyproject.version,
       }),
     )
   }
