@@ -98,7 +98,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | OpenClaw                        | `openclaw plugins install clawhub:you` or `openclaw plugins install npm:@youdotcom-oss/openclaw`      |
 | Pi                              | `pi install npm:@youdotcom-oss/pi`                                                                    |
 | Hermes                          | `hermes plugins install youdotcom-oss/agent-skills`                                                                        |
-| DeepSeek Harness                | `dsh plugin add @youdotcom-oss/dsh-plugin`                                                            |
+| DeepSeek Harness                | `dsh plugin --profile web add @youdotcom-oss/dsh-plugin`                                              |
 
 The top-level plugin manifests reuse the shared `skills/` directory when the host supports it. Packages under `packages/` include host-specific metadata, copied skills, or runtime adapters where needed.
 
