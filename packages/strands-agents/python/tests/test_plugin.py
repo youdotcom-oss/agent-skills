@@ -87,16 +87,21 @@ def test_init_agent_registers_one_client_per_enabled_server(monkeypatch: pytest.
     assert len(client_calls) == len(ALL_SERVERS)
     # Each client identifies as strands-agents/<package version> via MCP
     # clientInfo, matching the TypeScript package byte-for-byte.
-    from importlib.metadata import version as package_version
-
     for call in client_calls:
         assert call["application_name"] == "strands-agents"
-        assert call["application_version"] == package_version("strands-you")
+        assert call["application_version"] == plugin_mod._CLIENT_VERSION
     for name, server in plugin.servers.items():
         if name in KEYED_SERVERS:
             assert by_url[server["url"]] == {"Authorization": "Bearer test-key"}
         else:
             assert by_url[server["url"]] is None
+
+
+def test_client_version_matches_package_metadata():
+    """The reported client version is the installed strands-you version."""
+    from importlib.metadata import version as package_version
+
+    assert plugin_mod._CLIENT_VERSION == package_version("strands-you")
 
 
 def test_attached_agent_discovers_bundled_skills_and_skills_tool(monkeypatch: pytest.MonkeyPatch):

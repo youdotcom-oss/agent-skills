@@ -45,6 +45,14 @@ _CAPABILITY_NOTE_MARKER = "unavailable You.com MCP servers"
 #: line, stamped by the release plan's strands unit.
 _CLIENT_NAME = "strands-agents"
 
+#: This package's version, read once at import. ``None`` when the distribution
+#: metadata is unavailable (e.g. a source checkout on ``PYTHONPATH``); the MCP
+#: client then falls back to the Strands SDK version.
+try:
+    _CLIENT_VERSION: str | None = metadata.version("strands-you")
+except metadata.PackageNotFoundError:
+    _CLIENT_VERSION = None
+
 
 def _load_mcp_config() -> dict[str, dict[str, Any]]:
     """Load the shipped ``mcp.json`` and return its server entries by name."""
@@ -105,7 +113,7 @@ class YouDotComPlugin(AgentSkills):
                 url=server["url"],
                 headers=headers,
                 application_name=_CLIENT_NAME,
-                application_version=metadata.version("strands-you"),
+                application_version=_CLIENT_VERSION,
             )
             agent.tool_registry.process_tools([client])
             logger.debug("server=<%s> | registered MCP client", name)
