@@ -1,7 +1,7 @@
 {
   "name": "@youdotcom-oss/opencode",
   "version": "2.1.0",
-  "description": "You.com OpenCode 2 plugin with bundled skills and remote MCP setup",
+  "description": "You.com OpenCode 2 plugin with bundled skills, remote MCP setup, and a web search provider",
   "license": "MIT",
   "repository": {
     "type": "git",

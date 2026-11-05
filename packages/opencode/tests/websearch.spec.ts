@@ -165,6 +165,18 @@ describe('websearch provider', () => {
     expect(await search(provider)).toEqual([{ url: 'https://a.test', title: 'A', content: 'About A', time: {} }])
   })
 
+  test('joins SSE data fields split across lines and matches a string response id', async () => {
+    stubFetch(
+      () =>
+        new Response(
+          'event: message\ndata: {"jsonrpc":"2.0","id":"1",\ndata: "result":{"structuredContent":{"results":{"web":[{"url":"https://a.test"}]}}}}\n\n',
+        ),
+    )
+    const { provider } = await setupPlugin()
+
+    expect(await search(provider)).toEqual([{ url: 'https://a.test', time: {} }])
+  })
+
   test('fails with the tool error message when the search reports isError', async () => {
     stubFetch(() =>
       sse({

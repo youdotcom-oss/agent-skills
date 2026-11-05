@@ -55,6 +55,8 @@ export const registerWebSearch = async (ctx: Plugin.Context, endpoints: Endpoint
   })
 }
 
+// MINIMAL: one stateless `tools/call` with no `initialize` handshake, which the You.com MCP server
+// accepts. If it ever requires a session, switch to the MCP SDK's StreamableHTTPClientTransport.
 const search = async (
   url: string,
   query: string,
@@ -99,11 +101,16 @@ const search = async (
 const findResponse = (body: string) => {
   const messages = body.trimStart().startsWith('{')
     ? [parseJson<JsonRpcMessage>(body)]
-    : body
-        .split(/\r?\n/)
-        .filter((line) => line.startsWith('data:'))
-        .map((line) => parseJson<JsonRpcMessage>(line.slice(5)))
-  return messages.find((message) => message?.id === REQUEST_ID && message.method === undefined)
+    : body.split(/\r?\n\r?\n/).map((event) =>
+        parseJson<JsonRpcMessage>(
+          event
+            .split(/\r?\n/)
+            .filter((line) => line.startsWith('data:'))
+            .map((line) => line.slice(5))
+            .join('\n'),
+        ),
+      )
+  return messages.find((message) => String(message?.id) === String(REQUEST_ID) && message?.method === undefined)
 }
 
 const toResult = (entry: WebEntry): SearchResult[] => {
