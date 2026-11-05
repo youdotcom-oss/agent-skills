@@ -68,6 +68,6 @@ export default Plugin.define({
       for (const skill of skills) editor.add(skill as unknown as Skill.Info)
     })
 
-    await registerWebSearch(ctx)
+    await registerWebSearch(ctx, { free: YOU_COM_MCP_SERVERS['you-free'], keyed: YOU_COM_MCP_SERVERS.you })
   },
 })

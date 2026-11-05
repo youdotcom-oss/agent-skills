@@ -3,9 +3,9 @@ import type { Plugin } from '@opencode/plugin'
 
 type SearchResult = { url: string; title?: string; content?: string; time: { published?: number } }
 
+type Endpoints = { free: string; keyed: string }
+
 const PROVIDER_ID = 'youcom'
-const FREE_MCP_URL = 'https://api.you.com/mcp?profile=free'
-const KEYED_MCP_URL = 'https://api.you.com/mcp'
 const RESULT_COUNT = 8
 const REQUEST_ID = 1
 
@@ -33,7 +33,7 @@ type JsonRpcMessage = {
  * switches to the authenticated MCP endpoint for higher limits. The default
  * provider is left to the user.
  */
-export const registerWebSearch = async (ctx: Plugin.Context) => {
+export const registerWebSearch = async (ctx: Plugin.Context, endpoints: Endpoints) => {
   await ctx.integration.transform((editor) => {
     editor.update(PROVIDER_ID, (integration) => {
       integration.name = 'You.com'
@@ -48,14 +48,20 @@ export const registerWebSearch = async (ctx: Plugin.Context) => {
       execute: async (input, { signal }) => {
         const connection = await ctx.integration.connection.active(PROVIDER_ID)
         const credential = connection ? await ctx.integration.connection.resolve(connection) : undefined
-        return search(input.query, credential?.type === 'key' ? credential.key : undefined, signal)
+        const key = credential?.type === 'key' ? credential.key : undefined
+        return search(key ? endpoints.keyed : endpoints.free, input.query, key, signal)
       },
     })
   })
 }
 
-const search = async (query: string, key: string | undefined, signal: AbortSignal): Promise<SearchResult[]> => {
-  const response = await fetch(key ? KEYED_MCP_URL : FREE_MCP_URL, {
+const search = async (
+  url: string,
+  query: string,
+  key: string | undefined,
+  signal: AbortSignal,
+): Promise<SearchResult[]> => {
+  const response = await fetch(url, {
     method: 'POST',
     redirect: 'error',
     signal,

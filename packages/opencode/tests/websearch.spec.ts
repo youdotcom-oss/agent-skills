@@ -136,6 +136,7 @@ describe('websearch provider', () => {
     })
   })
 
+  // OpenCode resolves both a `/connect` key and a `YDC_API_KEY` env connection to `{ type: 'key', key }`.
   test('uses the authenticated MCP endpoint when a key is connected', async () => {
     const fetchMock = stubFetch(() => new Response(twoFrameSse))
     const { provider } = await setupPlugin({ connected: 'ydc-secret' })
