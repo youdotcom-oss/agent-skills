@@ -72,7 +72,7 @@ const search = async (
       // The MCP Streamable HTTP transport requires clients to accept both.
       accept: 'application/json, text/event-stream',
       // The MCP server attributes traffic from the User-Agent and `_meta` clientInfo, not X-Client-Info.
-      'user-agent': `${CLIENT_NAME}/${pluginVersion} ${navigator.userAgent}`,
+      'user-agent': `${CLIENT_NAME}/${pluginVersion}`,
       ...(key ? { authorization: `Bearer ${key}` } : {}),
     },
     body: JSON.stringify({

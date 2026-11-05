@@ -121,7 +121,7 @@ describe('websearch provider', () => {
     const headers = new Headers(init?.headers)
     expect(headers.get('authorization')).toBeNull()
     expect(headers.get('accept')).toBe('application/json, text/event-stream')
-    expect(headers.get('user-agent')).toMatch(/^youdotcom-opencode\/\d+\.\d+\.\d+ /)
+    expect(headers.get('user-agent')).toMatch(/^youdotcom-opencode\/\d+\.\d+\.\d+$/)
     expect(JSON.parse(String(init?.body))).toEqual({
       jsonrpc: '2.0',
       id: 1,
