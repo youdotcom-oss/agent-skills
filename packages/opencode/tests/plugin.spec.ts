@@ -35,6 +35,13 @@ const v2Ctx = () => {
       transform: async (callback: (editor: { add: (skill: Record<string, unknown>) => void }) => void) =>
         callback({ add: (skill) => skills.push(skill) }),
     },
+    integration: {
+      transform: async (callback: (editor: Record<string, unknown>) => void) =>
+        callback({ update: () => {}, method: { update: () => {} } }),
+    },
+    websearch: {
+      transform: async (callback: (editor: Record<string, unknown>) => void) => callback({ add: () => {} }),
+    },
   }
   return { ctx, servers, skills }
 }

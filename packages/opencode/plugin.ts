@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { type Mcp, Plugin, type Skill } from '@opencode/plugin'
+import { registerWebSearch } from './websearch.ts'
 
 const YOU_COM_MCP_SERVERS = {
   you: 'https://api.you.com/mcp',
@@ -66,5 +67,7 @@ export default Plugin.define({
     await ctx.skill.transform((editor) => {
       for (const skill of skills) editor.add(skill as unknown as Skill.Info)
     })
+
+    await registerWebSearch(ctx)
   },
 })
