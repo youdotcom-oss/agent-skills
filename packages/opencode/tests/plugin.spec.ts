@@ -3,8 +3,9 @@
  *
  * Driven entirely through the single public interface: the default export.
  * No implementation helpers are imported. The You.com remote MCP servers
- * provide the tools; the plugin installs the server configs and registers the
- * packaged OpenCode skills through OpenCode 2 domain transforms.
+ * provide the tools; the plugin installs the server configs, registers the
+ * packaged OpenCode skills, removes the query-only built-in websearch tool, and
+ * routes sessions to authenticated You.com tools through OpenCode 2 APIs.
  *
  * @public
  */
@@ -26,6 +27,12 @@ beforeAll(async () => {
 const v2Ctx = () => {
   const servers = new Map<string, Record<string, unknown>>()
   const skills: Record<string, unknown>[] = []
+  const tools = new Map([
+    ['websearch', { name: 'websearch' }],
+    ['webfetch', { name: 'webfetch' }],
+    ['other', { name: 'other' }],
+  ])
+  const contextHooks: ((event: { system: { type: 'text'; text: string }[] }) => void)[] = []
   const ctx = {
     mcp: {
       transform: async (callback: (editor: { set: (name: string, config: Record<string, unknown>) => void }) => void) =>
@@ -35,15 +42,17 @@ const v2Ctx = () => {
       transform: async (callback: (editor: { add: (skill: Record<string, unknown>) => void }) => void) =>
         callback({ add: (skill) => skills.push(skill) }),
     },
-    integration: {
-      transform: async (callback: (editor: Record<string, unknown>) => void) =>
-        callback({ update: () => {}, method: { update: () => {} } }),
+    tool: {
+      transform: async (callback: (editor: { remove: (name: string) => void }) => void) =>
+        callback({ remove: (name) => tools.delete(name) }),
     },
-    websearch: {
-      transform: async (callback: (editor: Record<string, unknown>) => void) => callback({ add: () => {} }),
+    session: {
+      hook: async (name: string, callback: (event: { system: { type: 'text'; text: string }[] }) => void) => {
+        if (name === 'context') contextHooks.push(callback)
+      },
     },
   }
-  return { ctx, servers, skills }
+  return { ctx, servers, skills, tools, contextHooks }
 }
 
 describe('plugin', () => {
@@ -67,6 +76,36 @@ describe('plugin', () => {
       expect('enabled' in config).toBe(false)
       expect('oauth' in config).toBe(false)
     }
+  })
+
+  test('removes built-in websearch while preserving webfetch and unrelated tools', async () => {
+    const { ctx, tools } = v2Ctx()
+    await plugin.setup(ctx as never)
+
+    expect([...tools.keys()]).toEqual(['webfetch', 'other'])
+  })
+
+  test('tells sessions to prefer authenticated You.com tools over the free profile', async () => {
+    const { ctx, contextHooks } = v2Ctx()
+    await plugin.setup(ctx as never)
+    const event = { system: [{ type: 'text' as const, text: 'base' }] }
+
+    for (const hook of contextHooks) hook(event)
+
+    expect(event.system).toEqual([
+      { type: 'text', text: 'base' },
+      {
+        type: 'text',
+        text: [
+          'You.com MCP routing:',
+          '- When `tools["you"]["you-search"]` is available, use it instead of `tools["you-free"]["you-search"]`.',
+          '- For web research, search with You.com before using `webfetch`.',
+          '- When `tools["you"]["you-contents"]` is available, use it instead of `webfetch` to read selected pages.',
+          '- Use `you-free` search only when the authenticated `you` server is unavailable.',
+          '- Use `webfetch` only for URLs the user supplied or when You.com contents is unavailable.',
+        ].join('\n'),
+      },
+    ])
   })
 
   test('registers each bundled skill via the skill transform', async () => {

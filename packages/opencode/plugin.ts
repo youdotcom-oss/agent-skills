@@ -1,7 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { type Mcp, Plugin, type Skill } from '@opencode/plugin'
-import { registerWebSearch } from './websearch.ts'
 
 const YOU_COM_MCP_SERVERS = {
   you: 'https://api.you.com/mcp',
@@ -10,6 +9,15 @@ const YOU_COM_MCP_SERVERS = {
   'you-research': 'https://api.you.com/mcp/research',
   'you-docs': 'https://you.com/docs/_mcp/server',
 } as const
+
+const MCP_ROUTING_CONTEXT = [
+  'You.com MCP routing:',
+  '- When `tools["you"]["you-search"]` is available, use it instead of `tools["you-free"]["you-search"]`.',
+  '- For web research, search with You.com before using `webfetch`.',
+  '- When `tools["you"]["you-contents"]` is available, use it instead of `webfetch` to read selected pages.',
+  '- Use `you-free` search only when the authenticated `you` server is unavailable.',
+  '- Use `webfetch` only for URLs the user supplied or when You.com contents is unavailable.',
+].join('\n')
 
 const skillsDir = join(import.meta.dirname, 'skills')
 
@@ -68,6 +76,12 @@ export default Plugin.define({
       for (const skill of skills) editor.add(skill as unknown as Skill.Info)
     })
 
-    await registerWebSearch(ctx, { free: YOU_COM_MCP_SERVERS['you-free'], keyed: YOU_COM_MCP_SERVERS.you })
+    await ctx.tool.transform((editor) => {
+      editor.remove('websearch')
+    })
+
+    await ctx.session.hook('context', (event) => {
+      event.system.push({ type: 'text', text: MCP_ROUTING_CONTEXT })
+    })
   },
 })
