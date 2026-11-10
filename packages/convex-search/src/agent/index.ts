@@ -10,7 +10,7 @@ import { formatResultsForModel, type YouSearch } from '../client/index.js'
 export type YouSearchToolOptions = {
   /** Tool description shown to the model. */
   description?: string
-  /** Upper bound on results per call, whatever the model asks for. */
+  /** Upper bound on results per call, whatever the model asks for. When the model omits `count`, the client's `defaultCount` applies. */
   maxCount?: number
   /** Snippets per result included in the text sent back to the model. */
   maxSnippetsPerResult?: number
@@ -54,7 +54,7 @@ export function youSearchTool(
     execute: async (ctx, input) => {
       const response = await youSearch.search(ctx, {
         query: input.query,
-        count: Math.min(input.count ?? 5, maxCount),
+        ...(input.count === undefined ? {} : { count: Math.min(input.count, maxCount) }),
         ...(input.freshness ? { freshness: input.freshness } : {}),
       })
       return formatResultsForModel(response, {

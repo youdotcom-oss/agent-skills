@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { resultValidator, searchParamsValidator } from './validators.js'
+import { resultValidator, searchParamsValidator, sourceValidator } from './validators.js'
 
 /**
  * Cached You.com search responses.
@@ -13,7 +13,7 @@ export default defineSchema({
   searches: defineTable({
     cacheKey: v.string(),
     canonical: v.string(),
-    source: v.union(v.literal('keyless'), v.literal('keyed')),
+    source: sourceValidator,
     params: searchParamsValidator,
     results: v.array(resultValidator),
     searchUuid: v.optional(v.string()),

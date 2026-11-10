@@ -50,6 +50,9 @@ describe('normalizeParams', () => {
     ).toEqual({ query: 'a', count: 10, offset: 9, country: 'US', language: 'EN', freshness: 'week' })
     expect(normalizeParams({ query: 'a', offset: 0 }, 'keyed')).not.toHaveProperty('offset')
   })
+  test('drops a blank freshness so it does not split the cache', () => {
+    expect(normalizeParams({ query: 'a', freshness: '   ' }, 'keyed')).not.toHaveProperty('freshness')
+  })
   test('drops empty domain lists so they do not split the cache', () => {
     const p = normalizeParams({ query: 'a', includeDomains: [], excludeDomains: [' '] }, 'keyed')
     expect(p).not.toHaveProperty('includeDomains')

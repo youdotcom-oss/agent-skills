@@ -168,8 +168,8 @@ export const researcher = new Agent(components.agent, {
 });
 ```
 
-The tool accepts `query`, an optional `count` (capped at `maxCount`) and an
-optional `freshness`. It returns numbered results as plain text with titles,
+The tool accepts `query`, an optional `count` (capped at `maxCount`, otherwise
+the client's `defaultCount`) and an optional `freshness`. It returns numbered results as plain text with titles,
 URLs, publish dates and snippets. Searches made by the tool use the same cache.
 `formatResultsForModel` is exported if you want the same text format elsewhere.
 
@@ -203,6 +203,14 @@ results view and a list of recent searches, plus an agent example in
 ```sh
 bun run dev           # Convex backend
 bun run dev:frontend  # Vite app, in a second terminal
+```
+
+The UI does not call the agent or `invalidate`. Run them from the CLI:
+
+```sh
+npx convex env set OPENAI_API_KEY <your key>
+npx convex run agent:ask '{"prompt":"What changed in Convex this month?"}'
+npx convex run example:invalidate '{"query":"convex components"}'
 ```
 
 Run `bun run build` after changing the component: the example imports it from `dist`.

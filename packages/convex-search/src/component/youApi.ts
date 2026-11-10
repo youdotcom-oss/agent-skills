@@ -41,7 +41,8 @@ export function normalizeParams(params: SearchParams, source: Source): SearchPar
   const requested = Number.isFinite(params.count) ? (params.count as number) : DEFAULT_COUNT
   const count = Math.min(max, Math.max(1, Math.floor(requested)))
   const out: SearchParams = { query, count }
-  if (params.freshness) out.freshness = params.freshness.trim()
+  const freshness = params.freshness?.trim()
+  if (freshness) out.freshness = freshness
   if (params.offset !== undefined && Number.isFinite(params.offset) && params.offset > 0) {
     out.offset = Math.min(9, Math.floor(params.offset))
   }

@@ -162,13 +162,13 @@ describe('youSearchTool', () => {
     return { out, calls, description: t.description }
   }
 
-  test('defaults to 5 results and forwards freshness', async () => {
+  test('uses the client defaultCount when the model omits count, and forwards freshness', async () => {
     const { out, calls } = await run({ query: 'q', freshness: 'week' })
     expect(out).toBe('No results.')
-    expect(calls[0].params).toMatchObject({ query: 'q', count: 5, freshness: 'week' })
+    expect(calls[0].params).toEqual({ query: 'q', count: 4, freshness: 'week' })
   })
-  test('the default count is capped by a small maxCount', async () => {
-    const { calls } = await run({ query: 'q' }, { maxCount: 2 })
+  test('caps a model-requested count at maxCount', async () => {
+    const { calls } = await run({ query: 'q', count: 9 }, { maxCount: 2 })
     expect(calls[0].params.count).toBe(2)
   })
   test('the default description marks results as untrusted evidence', async () => {
