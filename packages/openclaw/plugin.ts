@@ -143,7 +143,10 @@ export const mapYouComSearchResults = (data: unknown): YouComSearchResult[] => {
       if (!url) continue
 
       const title = readString(entry.title)
-      const snippet = readSnippet(entry.contents)
+      const snippets = Array.isArray(entry.snippets)
+        ? entry.snippets.filter((s): s is string => typeof s === 'string' && s.length > 0).join(' ')
+        : undefined
+      const snippet = readString(entry.description) || snippets || readSnippet(entry.contents)
       const published = readString(entry.page_age) ?? readString(entry.published)
 
       results.push({
