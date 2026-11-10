@@ -111,12 +111,13 @@ describe('web search provider', () => {
             {
               title: 'Bun runtime',
               url: 'https://bun.com/docs/runtime',
-              contents: { highlights: ['Bun runs JavaScript', 'and TypeScript.'] },
+              snippets: ['Bun runs JavaScript', 'and TypeScript.'],
+              page_age: '2026-01-02T00:00:00Z',
             },
             { url: 'https://bun.com/docs/cli' },
             { title: 'No URL' },
           ],
-          news: [{ title: 'Bun 2', url: 'https://news.example/bun', contents: { snippet: 'Release notes' } }],
+          news: [{ title: 'Bun 2', url: 'https://news.example/bun', description: 'Release notes' }],
           knowledge: [{ type: 'fact', title: 'Licensed fact' }],
         },
       })
@@ -144,9 +145,42 @@ describe('web search provider', () => {
     expect(results[0]?.title).toContain('Bun runtime')
     expect(results[0]?.description).toContain('Bun runs JavaScript and TypeScript.')
     expect(results[0]?.siteName).toBe('bun.com')
-    // A result with no title still gets a usable label, and a result with no URL is dropped.
-    expect(results[1]?.title).toBe('https://bun.com/docs/cli')
-    expect(results[2]?.url).toBe('https://news.example/bun')
+    expect(results[0]?.published).toBe('2026-01-02T00:00:00Z')
+    // The snippets array is joined into the description, and news uses top-level description.
+    expect(results[2]?.description).toContain('Release notes')
+  })
+
+  test('wraps the URL used as a title fallback', async () => {
+    resetEndpoint()
+    endpointResponder = () => Response.json({ results: { web: [{ url: 'https://bun.com/docs/cli' }] } })
+
+    const tool = createYouComSearchTool({ apiKey: 'ydc-test', searchConfig: undefined })
+    const payload = await tool.execute({ query: 'bun cli' })
+
+    const [result] = payload.results as YouComSearchResult[]
+    expect(result?.title).toContain('EXTERNAL_UNTRUSTED_CONTENT')
+    expect(result?.title).toContain('https://bun.com/docs/cli')
+  })
+
+  test('drops results whose URL is not an http(s) web page', async () => {
+    resetEndpoint()
+    endpointResponder = () =>
+      Response.json({
+        results: {
+          web: [
+            { title: 'Script', url: 'javascript:alert(1)' },
+            { title: 'Local file', url: 'file:///etc/passwd' },
+            { title: 'Real page', url: 'https://bun.com/docs' },
+          ],
+        },
+      })
+
+    const tool = createYouComSearchTool({ apiKey: 'ydc-test', searchConfig: undefined })
+    const payload = await tool.execute({ query: 'bun' })
+
+    const results = payload.results as YouComSearchResult[]
+    expect(results).toHaveLength(1)
+    expect(results[0]?.url).toBe('https://bun.com/docs')
   })
 
   test('surfaces an API error with the status and body', async () => {
@@ -162,6 +196,20 @@ describe('web search provider', () => {
 describe('request and response mapping', () => {
   test('omits freshness when it is not set', () => {
     expect(buildYouComSearchRequest({ query: 'q', count: 5 })).toEqual({ query: 'q', count: 5 })
+  })
+
+  test('reads the documented snippets-mode fields, not a highlights shape', () => {
+    const results = mapYouComSearchResults({
+      results: {
+        web: [
+          { url: 'https://a.example', snippets: ['first', '', 'second'] },
+          { url: 'https://b.example', description: 'from description' },
+        ],
+      },
+    })
+
+    expect(results[0]?.description).toContain('first second')
+    expect(results[1]?.description).toContain('from description')
   })
 
   test('returns no results for an empty or malformed body', () => {

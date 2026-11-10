@@ -65,6 +65,20 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const readString = (value: unknown): string | undefined => (typeof value === 'string' && value ? value : undefined)
 
+/**
+ * Whether a result URL is a plain web page.
+ *
+ * @remarks
+ * Result URLs come from the untrusted response and are handed to the host for
+ * rendering as links, so the scheme is validated at that boundary: only
+ * `http:`/`https:` URLs are emitted. A non-web URL is not a usable citation.
+ */
+const isHttpUrl = (value: string): boolean => {
+  if (!URL.canParse(value)) return false
+  const { protocol } = new URL(value)
+  return protocol === 'http:' || protocol === 'https:'
+}
+
 /** One result the host renders; `description` is the snippet-based shape used by web-mode providers. */
 export interface YouComSearchResult {
   title: string
@@ -72,32 +86,6 @@ export interface YouComSearchResult {
   description?: string
   siteName?: string
   published?: string
-}
-
-/**
- * Read a snippet string from a You.com result section.
- *
- * @remarks
- * The API returns `contents.highlights` (highlights mode) or `contents.snippets`
- * (default snippets mode), and news entries carry their own fields. All three
- * shapes are accepted so one mapper covers web and news sections.
- */
-const readSnippet = (contents: unknown): string | undefined => {
-  if (typeof contents === 'string') return readString(contents)
-  if (!isRecord(contents)) return undefined
-
-  for (const key of ['snippet', 'description', 'summary'] as const) {
-    const value = readString(contents[key])
-    if (value) return value
-  }
-  for (const key of ['highlights', 'snippets'] as const) {
-    const value = contents[key]
-    if (Array.isArray(value)) {
-      const joined = value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0).join(' ')
-      if (joined) return joined
-    }
-  }
-  return undefined
 }
 
 /**
@@ -123,8 +111,16 @@ export const buildYouComSearchRequest = (args: {
  * Licensed knowledge entries are intentionally not mapped: they carry data
  * attribution rather than page URLs, and mapping them into URL-shaped results
  * would invent citations. The MCP `you-search` tool remains the path for
- * licensed knowledge. Titles and snippets are passed through `wrapWebContent`
- * so the host's untrusted-content wrapping applies.
+ * licensed knowledge.
+ *
+ * Each entry is read in the default snippets-mode shape this provider requests:
+ * top-level `description`, `snippets`, and `page_age`. `contents.highlights`
+ * appears only in highlights mode, which requires an `extraction` request field
+ * this provider does not send, so it is not read here.
+ *
+ * Every free-text field reaching the prompt is passed through `wrapWebContent`,
+ * including the URL used as a title fallback — a URL's path and query are
+ * attacker-controllable and the title is rendered as a label.
  *
  * @param data - Parsed response body (untrusted).
  * @returns Web and news results; `[]` when the response has no usable sections.
@@ -140,17 +136,19 @@ export const mapYouComSearchResults = (data: unknown): YouComSearchResult[] => {
     for (const entry of entries) {
       if (!isRecord(entry)) continue
       const url = readString(entry.url)
-      if (!url) continue
+      if (!url || !isHttpUrl(url)) continue
 
       const title = readString(entry.title)
       const snippets = Array.isArray(entry.snippets)
-        ? entry.snippets.filter((s): s is string => typeof s === 'string' && s.length > 0).join(' ')
+        ? entry.snippets
+            .filter((candidate): candidate is string => typeof candidate === 'string' && candidate.length > 0)
+            .join(' ')
         : undefined
-      const snippet = readString(entry.description) || snippets || readSnippet(entry.contents)
-      const published = readString(entry.page_age) ?? readString(entry.published)
+      const snippet = readString(entry.description) || snippets
+      const published = readString(entry.page_age)
 
       results.push({
-        title: title ? wrapWebContent(title, 'web_search') : url,
+        title: wrapWebContent(title ?? url, 'web_search'),
         url,
         ...(snippet ? { description: wrapWebContent(snippet, 'web_search') } : {}),
         ...(resolveSiteName(url) ? { siteName: resolveSiteName(url) } : {}),
