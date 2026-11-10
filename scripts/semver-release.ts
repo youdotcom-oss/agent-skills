@@ -49,12 +49,14 @@ const npmPackages = {
   '@youdotcom-oss/pi': 'packages/pi/package.json',
   '@youdotcom-oss/openclaw': 'packages/openclaw/package.json',
   '@youdotcom-oss/dsh-plugin': 'packages/dsh-plugin/package.json',
+  '@youdotcom-oss/convex-search': 'packages/convex-search/package.json',
 } as const
 const packageBuildDirectories = [
   'packages/opencode',
   'packages/openclaw',
   'packages/pi',
   'packages/dsh-plugin',
+  'packages/convex-search',
   'packages/strands-agents/typescript',
 ]
 // 'initial' outranks semantic bumps: a brand-new package publishes its declared

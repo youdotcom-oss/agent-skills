@@ -151,6 +151,7 @@ Use you-discover to compare You.com MCP, Python SDK, and direct API options for 
 | `@youdotcom-oss/openclaw` | OpenClaw plugin with You.com skills and `YDC_API_KEY` setup metadata.         |
 | `@youdotcom-oss/pi`       | Pi package that registers You.com skills and bridges You.com MCP tools.       |
 | `@youdotcom-oss/dsh-plugin` | DeepSeek Harness plugin with You.com skills and MCP server mounts.          |
+| `@youdotcom-oss/convex-search` | Convex component for cached You.com web search and an `@convex-dev/agent` tool. |
 | `strands-you` / `@youdotcom-oss/strands-agents` | Strands Agents plugin (Python + TypeScript) bundling You.com MCP servers and skills. |
 
 See each package README for host-specific details.
@@ -171,6 +172,7 @@ See each package README for host-specific details.
 | `packages/openclaw/` | OpenClaw package                                |
 | `packages/pi/`       | Pi package                                      |
 | `packages/dsh-plugin/` | DeepSeek Harness package                      |
+| `packages/convex-search/` | Convex component                            |
 | `packages/strands-agents/` | Strands Agents packages (Python + TypeScript)  |
 | `skills.sh.json`     | skills.sh display grouping for top-level skills |
 
@@ -191,6 +193,7 @@ bun run --filter '@youdotcom-oss/opencode' test
 bun run --filter '@youdotcom-oss/openclaw' test
 bun run --filter '@youdotcom-oss/pi' test
 bun run --filter '@youdotcom-oss/dsh-plugin' test
+bun run --filter '@youdotcom-oss/convex-search' test
 ```
 
 Validate shared skill metadata and structure:
@@ -212,7 +215,7 @@ Web pages, search results, extracted content, catalog entries, and docs results 
 
 ## License
 
-MIT, see [LICENSE](./LICENSE).
+MIT, see [LICENSE](./LICENSE). `packages/convex-search` is Apache-2.0, see its own [LICENSE](./packages/convex-search/LICENSE).
 
 ## Submit to the OpenAI plugin directory
 

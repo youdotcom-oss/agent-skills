@@ -557,4 +557,47 @@ describe('semver release', () => {
       await rm(repoRoot, { force: true, recursive: true })
     }
   })
+
+  test('registers convex-search: initial on add, patch on change, version bump on apply', async () => {
+    const { createReleasePlan } = await import('../semver-release.ts')
+    const repoRoot = await mkdtemp(join(tmpdir(), 'agent-skills-plan-'))
+    const git = (...args: string[]) => execFileSync('git', ['-C', repoRoot, ...args])
+    const planFromWorkingTree = async () => {
+      git('add', '-A')
+      return createReleasePlan('HEAD', repoRoot)
+    }
+
+    try {
+      await mkdir(join(repoRoot, 'skills/you-web'), { recursive: true })
+      await writeFile(join(repoRoot, 'skills/you-web/SKILL.md'), '---\nmetadata:\n  version: 1.0.0\n---\nbody\n')
+      git('init', '-q')
+      git('config', 'user.email', 't@e.com')
+      git('config', 'user.name', 'T')
+      git('add', '-A')
+      git('commit', '-q', '-m', 'base')
+
+      await mkdir(join(repoRoot, 'packages/convex-search/src'), { recursive: true })
+      await writeFile(
+        join(repoRoot, 'packages/convex-search/package.json'),
+        `${JSON.stringify({ name: '@youdotcom-oss/convex-search', version: '0.1.0' })}\n`,
+      )
+      await writeFile(join(repoRoot, 'packages/convex-search/src/index.ts'), 'x\n')
+      const initialPlan = await planFromWorkingTree()
+      expect(initialPlan.units.npm['@youdotcom-oss/convex-search']?.bump).toBe('initial')
+      expect(Object.keys(initialPlan.units.npm)).toEqual(['@youdotcom-oss/convex-search'])
+      git('commit', '-aqm', 'add convex-search')
+
+      await writeFile(join(repoRoot, 'packages/convex-search/src/index.ts'), 'y\n')
+      const patchPlan = await planFromWorkingTree()
+      expect(patchPlan.units.npm['@youdotcom-oss/convex-search']?.bump).toBe('patch')
+      expect(patchPlan.units.strands.youdotcom).toBeUndefined()
+
+      await writeFile(join(repoRoot, 'plan.json'), JSON.stringify(patchPlan))
+      const updates = await createVersionUpdates({ repoRoot, planPath: 'plan.json' })
+      const manifest = updates.find((update) => update.path === 'packages/convex-search/package.json')
+      expect(JSON.parse(manifest?.content ?? '{}').version).toBe('0.1.1')
+    } finally {
+      await rm(repoRoot, { force: true, recursive: true })
+    }
+  })
 })

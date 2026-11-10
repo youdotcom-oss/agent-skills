@@ -230,6 +230,7 @@ jobs:
             "@youdotcom-oss/pi=packages/pi"
             "@youdotcom-oss/openclaw=packages/openclaw"
             "@youdotcom-oss/dsh-plugin=packages/dsh-plugin"
+            "@youdotcom-oss/convex-search=packages/convex-search"
           )
 
           for entry in "${packages[@]}"; do
