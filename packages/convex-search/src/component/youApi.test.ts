@@ -225,7 +225,7 @@ describe('parseResponse', () => {
     expect(out.results[1].title).toBe('https://b.com')
     expect(out.results[1].highlights).toEqual(['h1'])
     expect(out.searchUuid).toBe('u')
-    expect(out.latency).toBe(0.2)
+    expect(out).not.toHaveProperty('latency')
   })
   test('tolerates empty or odd payloads', () => {
     expect(parseResponse(null).results).toEqual([])

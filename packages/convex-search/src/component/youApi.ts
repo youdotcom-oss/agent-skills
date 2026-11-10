@@ -1,7 +1,7 @@
 // Thin fetch layer for the You.com search APIs. No Convex imports, so it can
 // be unit tested on its own (including against the live free MCP profile).
 import pkg from '../../package.json' with { type: 'json' }
-import type { SearchParams, SearchResultItem } from './validators.js'
+import type { SearchParams, SearchResultItem, Source } from './validators.js'
 
 export const KEYLESS_SEARCH_URL = 'https://api.you.com/mcp?profile=free'
 export const KEYED_SEARCH_URL = 'https://ydc-index.io/v1/search'
@@ -18,7 +18,7 @@ export const DEFAULT_COUNT = 10
 export const MAX_QUERY_CHARS = 400
 export const MAX_QUERY_WORDS = 50
 
-export type Source = 'keyless' | 'keyed'
+export type { Source }
 
 export class YouSearchError extends Error {
   constructor(
@@ -165,11 +165,10 @@ const strArr = (x: unknown) => (Array.isArray(x) ? x.filter((s): s is string => 
 export function parseResponse(json: unknown): {
   results: SearchResultItem[]
   searchUuid?: string
-  latency?: number
 } {
   const root = (json ?? {}) as {
     results?: { web?: RawResult[]; news?: RawResult[] }
-    metadata?: { search_uuid?: unknown; latency?: unknown }
+    metadata?: { search_uuid?: unknown }
   }
   const raw = [...(root.results?.web ?? []), ...(root.results?.news ?? [])]
   const seen = new Set<string>()
@@ -194,12 +193,7 @@ export function parseResponse(json: unknown): {
     results.push(item)
   }
   const uuid = str(root.metadata?.search_uuid)
-  const latency = typeof root.metadata?.latency === 'number' ? root.metadata.latency : undefined
-  return {
-    results,
-    ...(uuid ? { searchUuid: uuid } : {}),
-    ...(latency === undefined ? {} : { latency }),
-  }
+  return { results, ...(uuid ? { searchUuid: uuid } : {}) }
 }
 
 type McpMessage = {

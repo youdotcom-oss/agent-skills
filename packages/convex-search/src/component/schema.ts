@@ -17,7 +17,6 @@ export default defineSchema({
     params: searchParamsValidator,
     results: v.array(resultValidator),
     searchUuid: v.optional(v.string()),
-    latency: v.optional(v.number()),
     fetchedAt: v.number(),
     expiresAt: v.number(),
   })

@@ -24,6 +24,8 @@ describe('search action', () => {
     expect(first.results[0].url).toBe('https://docs.convex.dev/components')
     expect(first.results[0].pageAge).toBe('2026-10-01T00:00:00')
     expect(first.searchUuid).toBe('uuid-1')
+    const [stored] = await t.run(async (ctx) => ctx.db.query('searches').collect())
+    expect(stored).not.toHaveProperty('latency')
     expect(mock.calls).toHaveLength(1)
     expect(mock.calls[0].url).toBe('https://api.you.com/mcp?profile=free')
     expect(JSON.parse(String(mock.calls[0].init?.body)).params.arguments.count).toBe(3)

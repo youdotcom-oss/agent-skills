@@ -1,6 +1,8 @@
 import { type Infer, v } from 'convex/values'
 
 export const sourceValidator = v.union(v.literal('keyless'), v.literal('keyed'))
+/** Which You.com endpoint served a search: the keyless free MCP profile or the keyed API. */
+export type Source = Infer<typeof sourceValidator>
 
 /** Search parameters shared by the keyless and keyed You.com endpoints. */
 export const searchParamsValidator = v.object({

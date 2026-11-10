@@ -73,7 +73,6 @@ export const search = action({
       params: normalized,
       results: fetched.results,
       ...(fetched.searchUuid ? { searchUuid: fetched.searchUuid } : {}),
-      ...(fetched.latency === undefined ? {} : { latency: fetched.latency }),
       fetchedAt,
       expiresAt: fetchedAt + ttl,
     })
@@ -100,7 +99,6 @@ export const store = internalMutation({
     params: searchParamsValidator,
     results: v.array(resultValidator),
     searchUuid: v.optional(v.string()),
-    latency: v.optional(v.number()),
     fetchedAt: v.number(),
     expiresAt: v.number(),
   },
