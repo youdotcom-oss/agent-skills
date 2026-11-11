@@ -285,7 +285,7 @@ jobs:
             if bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
               --source-path packages/openclaw \
               --source-repo youdotcom-oss/agent-skills \
-              --family bundle-plugin \
+              --family code-plugin \
               --owner youdotcom-oss \
               --name you \
               --version "${VERSION}" \
