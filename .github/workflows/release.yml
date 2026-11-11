@@ -280,6 +280,10 @@ jobs:
           cp -R packages/openclaw "${CLAWHUB_PACKAGE_DIR}"
           jq '.name = "you"' "${CLAWHUB_PACKAGE_DIR}/package.json" > "${CLAWHUB_PACKAGE_DIR}/package.json.tmp"
           mv "${CLAWHUB_PACKAGE_DIR}/package.json.tmp" "${CLAWHUB_PACKAGE_DIR}/package.json"
+          # code-plugin publishes a ClawPack built from compiled output, and the
+          # entry imports the host's openclaw/* SDK, which resolves only at
+          # gateway runtime — so bundle it with those imports left external.
+          (cd "${CLAWHUB_PACKAGE_DIR}" && bun build ./plugin.ts --outdir dist --target node --format esm --external 'openclaw/*')
           bunx clawhub login --token "${CLAWHUB_TOKEN}" --no-browser
           for attempt in 1 2 3; do
             if bunx clawhub package publish "${CLAWHUB_PACKAGE_DIR}" \
