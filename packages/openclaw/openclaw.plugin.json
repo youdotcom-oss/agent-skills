@@ -2,7 +2,7 @@
   "id": "you",
   "name": "You.com",
   "description": "You.com skill pack with MCP setup metadata and a You.com-backed web search provider.",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "skills": ["./skills"],
   "mcpServers": {
     "you": {
