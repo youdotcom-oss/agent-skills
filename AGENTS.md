@@ -64,5 +64,5 @@ The GitHub Actions UI runs **Semantic Release** manually:
 
 - Non-trivial TypeScript/script change: at least `bun test <target>` and `bun run check:types`.
 - Formatting/linting: `bun run check:ts` for Biome, `bun run check:package` for package manifests.
-- Skill content: `bun test tests/validate-skills.spec.ts`; use `bunx @plaited/development-skills validate-skill <path>` when validating one skill.
+- Skill content: `bun test tests/validate-skills.spec.ts`.
 - Before final handoff after edits, run the smallest relevant checks plus any requested full checks. Report known pre-existing warnings separately.
