@@ -18,7 +18,7 @@ Copy this file, rename it for the target being planned, and fill it in during th
 | Key model (provider-held shared / BYOK / keyless: OAuth, free profile, x402) | | | |
 | Key storage and operation (who holds the key, rotation, quota owner) | | | |
 | Model permissions — Search fields the model may set (start: `query`, optional `freshness`) | | | |
-| Model permissions — Contents fields the model may set | | | |
+| Model permissions — Extract fields the model may set | | | |
 | Provider defaults (`knowledge: "core"`, highlights, result count, locale fallback) | | | |
 | Fixed policy (moderation, source rules, permitted customer overrides) | | | |
 | Fan-out (max queries per task, simultaneous searches, per-search `count`) | | | |
@@ -48,4 +48,4 @@ Copy this file, rename it for the target being planned, and fill it in during th
 - [ ] Normalization and request-shape checks pass for the chosen transport.
 - [ ] Response and evidence checks pass (results matched by URL, knowledge attribution preserved, no invented citations).
 - [ ] Operational checks pass (shared budget, deadlines, per-customer isolation for shared keys).
-- [ ] Live smoke test: Search, selected Contents, and a source-linked answer on each enabled path.
+- [ ] Live smoke test: Search, selected Extract reads, and a source-linked answer on each enabled path.

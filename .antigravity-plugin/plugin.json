@@ -1,0 +1,22 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "youdotcom",
+  "displayName": "You.com",
+  "version": "0.8.2",
+  "description": "Live web search, page and PDF extraction, cited research, and finance research from You.com, plus guided You.com API integration.",
+  "author": {
+    "name": "You.com",
+    "email": "support@you.com",
+    "url": "https://you.com"
+  },
+  "homepage": "https://you.com/docs/agents/mcp-server",
+  "repository": "https://github.com/youdotcom-oss/agent-skills",
+  "license": "MIT",
+  "keywords": ["you.com", "mcp", "web-search", "content-extraction", "research", "finance", "citations"],
+  "logo": "assets/you-icon.svg",
+  "suggestedPrompts": [
+    "Use You.com to broadly search the web and fetch relevant pages, and build a timeline of Anthropic's journey from founding to recent IPO.",
+    "Use You.com to extract the content at https://modelcontextprotocol.io/specification, and teach me about the authentication methodology.",
+    "Use You.com to do deep, qualitative and quantitative research of the competitive landscape of the fitness wearables industry."
+  ]
+}

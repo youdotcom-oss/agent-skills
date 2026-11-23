@@ -39,7 +39,7 @@ The You.com finance MCP endpoint must be reachable from the host:
 ## When not to use
 
 - General web search: use `you-web` and `you-search`.
-- Reading arbitrary URLs: use `you-web` and `you-contents`.
+- Reading arbitrary URLs: use `you-web` and `you-extract`.
 - Non-financial deep research: use `you-research`.
 - Quick non-research finance lookups where `you-web` or `you-search` is sufficient.
 

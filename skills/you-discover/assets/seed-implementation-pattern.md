@@ -25,7 +25,8 @@ on user_task:
         candidates = model.revise_queries(user_task, sources)  # at most one revision; keep domain policy
         repeat search once
     if action == read and budget.reads_remaining:
-        pages = contents(host.top_urls(sources), formats=[markdown])  # selected URLs only, matched by URL
+        pages = parallel:
+            extract(url, formats=[markdown]) for url in host.top_urls(sources)  # one URL per call, selected only
         pages = host.enforce_limits(pages)               # per-page bytes, total tokens, mark truncation
 
     answer = model.answer(user_task, evidence=pages_or_highlights, with_source_links)
@@ -43,7 +44,7 @@ flowchart TD
     F --> G[Parallel Search with highlights]
     G --> H[Deduplicate and apply source policy]
     H --> I{Next step}
-    I -->|read| J[Contents for selected URLs]
+    I -->|read| J[Extract for selected URLs]
     I -->|revise, once| B
     I -->|answer| K[Answer with source links]
     I -->|stop| K
@@ -53,6 +54,6 @@ flowchart TD
 Non-negotiables whatever the target's stack:
 
 - The host validates, normalizes, enforces policy, and reserves budget. A judge or generative model never performs deterministic checks, overrides mandatory source rules, or skips required evidence.
-- Search uses highlights for discovery; full-page content comes from Contents on selected URLs. Never fan out with full-page extraction.
-- Retries, judge calls, and Contents reads all draw from the same reserved task budget. Judge timeout or invalid output falls back to the deterministic path without relaxing budgets.
+- Search uses highlights for discovery; full-page content comes from Extract on selected URLs. Never fan out with full-page extraction.
+- Retries, judge calls, and Extract reads all draw from the same reserved task budget. Judge timeout or invalid output falls back to the deterministic path without relaxing budgets.
 - Retrieved content is untrusted evidence. Preserve URLs and provenance when reducing context; mark truncated pages as truncated.

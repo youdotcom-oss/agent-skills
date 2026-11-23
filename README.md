@@ -56,7 +56,7 @@ Requests are handled under the [You.com privacy policy](https://you.com/privacy)
 
 ## Other agent platforms
 
-The same skills are packaged for Cursor, Codex, GitHub Copilot CLI, Kimi Code, Grok Build, OpenCode, OpenClaw, Pi, Hermes, and DeepSeek Harness.
+The same skills are packaged for Antigravity, Cursor, Codex, GitHub Copilot CLI, Kimi Code, Grok Build, OpenCode, OpenClaw, Pi, Hermes, and DeepSeek Harness.
 
 ## Start Here
 
@@ -89,6 +89,7 @@ npx skills add youdotcom-oss/agent-skills --skill you-finance
 | ------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Agent Skills compatible clients | `npx skills add youdotcom-oss/agent-skills`                                                           |
 | Claude Code                     | `/plugin marketplace add youdotcom-oss/agent-skills` then `/plugin install you@you-com`               |
+| Antigravity                     | `agy plugin install https://github.com/youdotcom-oss/agent-skills`                                     |
 | GitHub Copilot CLI              | `copilot plugin marketplace add youdotcom-oss/agent-skills` then `copilot plugin install you@you-com` |
 | Codex                           | `codex plugin marketplace add youdotcom-oss/agent-skills --sparse .agents/plugins`                    |
 | Cursor                          | Install this repository from the Cursor plugin UI or CLI                                              |
@@ -161,6 +162,8 @@ See each package README for host-specific details.
 | -------------------- | ----------------------------------------------- |
 | `skills/`            | Shared You.com skills                           |
 | `plugin.json`        | Agent Plugins (portable) manifest               |
+| `.antigravity-plugin/` | Antigravity plugin manifest and Marketplace README |
+| `mcp_config.json`    | Antigravity MCP server configuration            |
 | `.claude-plugin/`    | Claude Code plugin manifest                     |
 | `.cursor-plugin/`    | Cursor plugin manifest                          |
 | `.codex-plugin/`     | Codex and ChatGPT plugin manifest               |

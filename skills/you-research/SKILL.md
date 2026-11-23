@@ -13,7 +13,7 @@ metadata:
 
 # You.com Research Routing
 
-Use this skill to choose the right You.com research path for the user's goal: agent-led search with `you-search` and `you-contents`, or one-shot cited synthesis with the `you-research` MCP tool.
+Use this skill to choose the right You.com research path for the user's goal: agent-led search with `you-search` and `you-extract`, or one-shot cited synthesis with the `you-research` MCP tool.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ If the `you-research` tool is unavailable or the client cannot tolerate its resp
 - User needs OAuth or MPP/x402 payment handling -> use the `you-research` MCP tool with a payment-aware MCP client or the Coinbase Payments MCP composition.
 - Required MCP tools are unavailable -> tell the user what is missing, provide the setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-search` once, answer directly.
-- URL provided -> use `you-contents` on those URLs.
+- URL provided -> use `you-extract` on each URL.
 - Everything else -> use the agent-led search pipeline in the `you-web` skill.
 
 Preserve the core research requirements regardless of path: read sources before relying on exact claims, cross-check key facts, cite real URLs, and finish with the best supported answer even when evidence is incomplete.
