@@ -26,7 +26,7 @@ on user_task:
         repeat search once
     if action == read and budget.reads_remaining:
         pages = parallel:
-            extract(url, formats=[markdown]) for url in host.top_urls(sources)  # one URL per call, selected only
+            extract(url) for url in host.top_urls(sources)  # one URL per call; Markdown by default
         pages = host.enforce_limits(pages)               # per-page bytes, total tokens, mark truncation
 
     answer = model.answer(user_task, evidence=pages_or_highlights, with_source_links)

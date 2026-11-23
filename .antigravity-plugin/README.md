@@ -29,6 +29,8 @@ If you prefer an API key, get one at [you.com/platform/api-keys](https://you.com
 
 `Free web search and fetch` is enabled by default and does not require sign-in. To use only the keyless web tools, disable `Web search and fetch full access` in Antigravity's MCP manager. The free endpoint supports up to 100 queries per day and does not include research or finance tools.
 
+If you connect with an MPP/x402-aware MCP client instead of signing in, `you-contents` is still available on `https://api.you.com/mcp` for paid URL reads. It takes a `urls` array. `you-extract` is the single-URL tool for free or authenticated reads, not a replacement for `you-contents` on the payment path.
+
 ## Try it
 
 - "Use You.com to broadly search the web and fetch relevant pages, and build a timeline of Anthropic's journey from founding to recent IPO."

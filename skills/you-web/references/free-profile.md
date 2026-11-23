@@ -23,12 +23,14 @@ The free profile exposes `you-search` and `you-extract`. Compared to the authent
 
 `you-extract` is available on the free profile, so the "always read at least one page before answering" rule still applies. On the free profile these rules change:
 
-- Read full pages with `you-extract` instead of search-time full-page extraction.
+- Read full pages with `you-extract` instead of search-time full-page extraction. Send only `url`; the server drops `formats`, `extraction_source`, `timeout`, and `parse_effort` on keyless calls.
 - Skip `knowledge: "core"`; answer factual questions from read pages.
 - If the connected server exposes `you-search` but not `you-extract`, snippets and highlights become the primary evidence. Say so in the answer and mark snippet-based claims as lower confidence.
 - If the task genuinely needs cited research synthesis or finance data, tell the user that the free profile cannot satisfy it and suggest enabling `YDC_API_KEY` or OAuth for the full server.
 
 ## Payment challenges
+
+For paid URL reads with an MPP/x402-aware client, `you-contents` is still available on `https://api.you.com/mcp`. It takes `urls` (an array) and is not part of the free profile.
 
 If an x402-aware MCP client receives an HTTP `402` with a `payment-required` header, treat it as a payment challenge, not a tool failure. Let the MCP client handle external payment and retry with `Authorization: Payment ...`, `x-payment`, or `payment-signature` headers when supported.
 

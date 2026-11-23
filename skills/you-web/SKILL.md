@@ -1,7 +1,7 @@
 ---
 name: you-web
 description: "Search the live web and read full pages with You.com. Use whenever a task needs information newer than training data or from outside the codebase: current library docs and API references, changelogs and release notes, breaking changes, error messages, package versions, pricing, news, or any claim to verify with cited sources. Works keyless through the free MCP profile when no You.com credentials are configured."
-compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-extract`; use `YDC_API_KEY`, OAuth, or an x402-aware client for paid/keyless retries. With no credentials, the free MCP profile (`profile=free`) provides keyless `you-search` and `you-extract` — see `references/free-profile.md`.
+compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-extract` (free, API key, or OAuth). Payment-only MPP/x402 clients use `you-contents` for paid URL reads instead.
 license: MIT
 metadata:
   mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp"}}'
@@ -28,7 +28,7 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 ### Phase 2: Investigate
 
 1. **Search broadly**: `you-search` to find relevant pages. Read page highlights (`contents.highlights`) to identify which pages have the information you need.
-2. **Read full page content**: Call `you-extract(url=...)` (one URL per call, default `formats: ["markdown"]`) on the most promising URLs. Highlights alone are unreliable — you must read the actual page to get the full picture. Always read at least one page before answering.
+2. **Read full page content**: Call `you-extract` with `url` on the most promising pages, one URL per call. Keyless Extract forwards only `url` and uses the API defaults (Markdown). For paid URL reads with an MPP/x402 client on `https://api.you.com/mcp`, use `you-contents` with a `urls` array instead. Highlights alone are unreliable — always read at least one page before answering.
 3. **If incomplete**: refine the query and search again. If the question names a source (e.g., "according to the CDC"), pin its domain inline: `you-search(query="... site:cdc.gov")`.
 4. **If still stuck**: rephrase the query with broader or more common terms.
 5. For a purely factual question with no named source, `knowledge: "core"` can return licensed factual answers alongside web results.
@@ -49,14 +49,14 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 
 ## Free profile (no auth)
 
-If the environment has no `YDC_API_KEY` and no OAuth sign-in, or the connected You.com MCP server exposes `you-search` but not `you-extract`, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the keyless free profile (`profile=free`) and how this pipeline changes there.
+If the environment has no `YDC_API_KEY`, OAuth sign-in, or payment-aware connection, or if the connected server only offers search, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the free endpoint and how this pipeline changes there.
 
 ## Evidence Rules
 
 - Snippets never count as reading. `extraction: "highlights"` returns query-relevant passages — use it only for a single focused fact or to triage; do not treat it as full reading for complex answers.
 - For table, figure, or appendix queries, read the source artifact itself before computing filters, counts, maxima, minima, ties, or intersections — never compute from a snippet.
-- Use `html` only when layout, tables, or page structure are necessary; otherwise prefer `markdown`.
-- Add `metadata` when provenance or page identity matters.
+- With authenticated `you-extract`, request `formats: ["html"]` only when layout, tables, or page structure are necessary; otherwise use the Markdown default.
+- Preserve any `metadata` returned by `you-extract` when provenance or page identity matters; it is not an Extract input or format.
 
 ## Historical and Multi-Year Questions
 
