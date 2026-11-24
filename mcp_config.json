@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "Web search and fetch full access": {
+      "serverUrl": "https://api.you.com/mcp"
+    },
+    "Research": {
+      "serverUrl": "https://api.you.com/mcp/research"
+    },
+    "Finance Research": {
+      "serverUrl": "https://api.you.com/mcp/finance"
+    },
+    "API Documentation search": {
+      "serverUrl": "https://you.com/docs/_mcp/server"
+    }
+  }
+}

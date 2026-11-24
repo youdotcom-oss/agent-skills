@@ -27,6 +27,7 @@ type ReleasePlan = {
 const defaultRepoRoot = resolve(import.meta.dir, '..')
 const pluginManifests = [
   'plugin.json',
+  '.antigravity-plugin/plugin.json',
   '.plugin/plugin.json',
   '.claude-plugin/plugin.json',
   '.codex-plugin/plugin.json',
@@ -42,7 +43,7 @@ const pluginMarketplaces = [
   '.github/plugin/marketplace.json',
   '.grok-plugin/marketplace.json',
 ]
-const pluginMcpConfigs = ['mcp.json', '.mcp.json', 'marketplace/openai/mcp.json']
+const pluginMcpConfigs = ['mcp.json', '.mcp.json', 'mcp_config.json', 'marketplace/openai/mcp.json']
 const pluginReleasePaths = [...pluginManifests, ...pluginMarketplaces, ...pluginMcpConfigs]
 const npmPackages = {
   '@youdotcom-oss/opencode': 'packages/opencode/package.json',

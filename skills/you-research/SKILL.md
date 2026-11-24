@@ -13,7 +13,7 @@ metadata:
 
 # You.com Research Routing
 
-Use this skill to choose the right You.com research path for the user's goal: agent-led search with `you-search` and `you-contents`, or one-shot cited synthesis with the `you-research` MCP tool.
+Use this skill to choose the right You.com research path for the user's goal: agent-led search with `you-search` and `you-extract`, or one-shot cited synthesis with the `you-research` MCP tool.
 
 ## Prerequisites
 
@@ -35,10 +35,10 @@ If the `you-research` tool is unavailable or the client cannot tolerate its resp
 
 - User is cost-conscious or wants to develop/fine-tune a research skill -> use the agent-led search pipeline in the `you-web` skill.
 - User needs a one-shot synthesized answer with citations -> call the `you-research` MCP tool.
-- User needs OAuth or MPP/x402 payment handling -> use the `you-research` MCP tool with a payment-aware MCP client or the Coinbase Payments MCP composition.
+- URL provided and the task is to read it -> follow the `you-web` URL-reading path: `you-extract` for free or authenticated reads; for paid reads with an MPP/x402 client, load `you-web`'s paid URL reads reference (`you-contents` with a `urls` array on the full endpoint — `you-extract` is not payment-capable yet).
+- Managed research requires OAuth or MPP/x402 -> use the `you-research` MCP tool with OAuth, a payment-aware MCP client, or the Coinbase Payments MCP composition.
 - Required MCP tools are unavailable -> tell the user what is missing, provide the setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-search` once, answer directly.
-- URL provided -> use `you-contents` on those URLs.
 - Everything else -> use the agent-led search pipeline in the `you-web` skill.
 
 Preserve the core research requirements regardless of path: read sources before relying on exact claims, cross-check key facts, cite real URLs, and finish with the best supported answer even when evidence is incomplete.

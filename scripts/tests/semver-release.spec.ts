@@ -10,6 +10,8 @@ describe('semver release', () => {
     expect(isPluginReleasePath('plugin.json')).toBe(true)
     expect(isPluginReleasePath('mcp.json')).toBe(true)
     expect(isPluginReleasePath('.mcp.json')).toBe(true)
+    expect(isPluginReleasePath('mcp_config.json')).toBe(true)
+    expect(isPluginReleasePath('.antigravity-plugin/plugin.json')).toBe(true)
     expect(isPluginReleasePath('.claude-plugin/plugin.json')).toBe(true)
     expect(isPluginReleasePath('.claude-plugin/marketplace.json')).toBe(true)
     expect(isPluginReleasePath('.codex-plugin/plugin.json')).toBe(true)
@@ -54,6 +56,7 @@ describe('semver release', () => {
 
       for (const path of [
         'plugin.json',
+        '.antigravity-plugin/plugin.json',
         '.claude-plugin/plugin.json',
         '.codex-plugin/plugin.json',
         '.cursor-plugin/plugin.json',
@@ -84,6 +87,7 @@ describe('semver release', () => {
       const updatedByPath = new Map(updates.map((update) => [update.path, JSON.parse(update.content)]))
 
       expect(updatedByPath.get('plugin.json')?.version).toBe('1.2.4')
+      expect(updatedByPath.get('.antigravity-plugin/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.claude-plugin/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.codex-plugin/plugin.json')?.version).toBe('1.2.4')
       expect(updatedByPath.get('.cursor-plugin/plugin.json')?.version).toBe('1.2.4')

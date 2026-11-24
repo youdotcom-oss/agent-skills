@@ -8,10 +8,10 @@ On-demand example of the planning flow end to end, modeled on the public `youdot
 
 ## Evidence sweep (before any questions)
 
-- `you-discover` (`finder: all`): the You.com catalog returns the Search and Contents MCP entries (`you://catalog`); GitHub returns comparable agent-server implementations. One candidate is selected for reading.
+- `you-discover` (`finder: all`): the You.com catalog returns the Search and Extract MCP entries (`you://catalog`); GitHub returns comparable agent-server implementations. One candidate is selected for reading.
 - `searchDocs`: confirms the hosted MCP URL pattern, provider-key header, and the search override contract — the accepted override schema is published in the tool definition's `_meta["com.you.com/search"]` (read via `tools/list`), while override values are sent per call in the request `params._meta`.
 - `you-search` ("MCP server news risk analysis reference implementation"): finds the public `youdotcom-oss/risk-analysis-server` pattern — proposal ranking, result scoring, selected-page retrieval, replaceable judge.
-- `you-contents` on that repository's README (authenticated server available): confirms the judge returns a task-specific severity choice and that page reads are selective, not exhaustive.
+- `you-extract` on that repository's README: confirms the judge returns a task-specific severity choice and that page reads are selective, not exhaustive.
 
 Nothing above was worth asking the user. What remains are decisions:
 
@@ -25,7 +25,7 @@ Nothing above was worth asking the user. What remains are decisions:
 
 | Decision | Choice | Why | Status |
 | --- | --- | --- | --- |
-| Transport | Hosted MCP for Search and Contents | Server already speaks MCP; least host code | decided |
+| Transport | Hosted MCP for Search and Extract | Server already speaks MCP; least host code | decided |
 | Key model | Provider-held shared key, server-side only | The MCP server is the provider to its calling agents | decided |
 | Model permissions — Search | `query`, `freshness` only | Severity tasks are time-sensitive; everything else is host policy | decided |
 | Provider defaults | `knowledge: "core"`, highlights, `count: 10` for fan-out (baseline 30 single-shot) | Fan-out multiplies result volume | defaulted |

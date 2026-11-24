@@ -29,7 +29,7 @@ export const YOUCOM_DEFAULT_BASE_URL = 'https://ydc-index.io'
  * `src/index.ts` to mount the same profile as an MCP server, so the URL lives here as the
  * single source of truth rather than being duplicated.
  */
-export const YOUCOM_FREE_MCP_URL = 'https://api.you.com/mcp?profile=free'
+export const YOUCOM_FREE_MCP_URL = 'https://api.you.com/mcp/free'
 
 /** The tool name this provider calls on the free MCP profile. */
 const FREE_SEARCH_TOOL_NAME = 'you-search'

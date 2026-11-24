@@ -45,7 +45,7 @@ const serverRegistrations = (): [string, McpServerRegistration][] => {
     [
       'you-free',
       {
-        url: `${MCP_URL}?profile=free`,
+        url: `${MCP_URL}/free`,
         exposure: 'direct',
         // The free profile also exposes you-discover; the dedicated keyless
         // you-discover server below is the canonical one.
@@ -78,7 +78,7 @@ const HOST_CONTEXT = [
   '- `you` (YDC_API_KEY or OAuth): https://api.you.com/mcp — you-search, you-contents, you-balance, you-discover',
   '- `you-finance` (YDC_API_KEY or OAuth): https://api.you.com/mcp/finance — you-finance',
   '- `you-research` (YDC_API_KEY or OAuth): https://api.you.com/mcp/research — you-research',
-  '- `you-free` (no auth): https://api.you.com/mcp?profile=free — you-search',
+  '- `you-free` (no auth): https://api.you.com/mcp/free — you-search',
   '- `you-discover` (no auth): https://api.you.com/mcp?profile=discover — you-discover',
   '- `you-docs` (no auth): https://you.com/docs/_mcp/server — searchDocs',
   '',

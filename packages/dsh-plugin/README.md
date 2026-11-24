@@ -52,7 +52,7 @@ The plugin takes an optional config. Every field defaults when omitted, so the s
 |---|---|---|---|
 | `apiKey` | string | `$YDC_API_KEY` | You.com API key. An explicit value wins over the launch environment's `YDC_API_KEY`, which wins over `$YDC_API_KEY`. Empty enables the keyless search fallback and disables fetch. |
 | `baseURL` | string | `https://ydc-index.io` | Base endpoint for `/v1/search` and `/v1/contents`. A path prefix (for a proxy) is preserved. |
-| `freeSearchURL` | string | `https://api.you.com/mcp?profile=free` | Keyless MCP endpoint used when `apiKey` is empty. No fetch equivalent exists. |
+| `freeSearchURL` | string | `https://api.you.com/mcp/free` | Keyless MCP endpoint used when `apiKey` is empty. No fetch equivalent exists. |
 | `numResults` | number | server default | Default result count when a request carries no `maxResults`. |
 | `includeNews` | boolean | `true` | Merge `results.news[]` into search sources alongside `results.web[]`. |
 | `knowledge` | `core` | off | Request licensed knowledge results alongside web and news, surfaced as the search result's answer `content` with data-provider credits appended. Only `core` is accepted. |

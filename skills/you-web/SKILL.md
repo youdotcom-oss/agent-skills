@@ -1,7 +1,7 @@
 ---
 name: you-web
 description: "Search the live web and read full pages with You.com. Use whenever a task needs information newer than training data or from outside the codebase: current library docs and API references, changelogs and release notes, breaking changes, error messages, package versions, pricing, news, or any claim to verify with cited sources. Works keyless through the free MCP profile when no You.com credentials are configured."
-compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-contents`; use `YDC_API_KEY`, OAuth, or an x402-aware client for paid/keyless retries. With no credentials, the free MCP profile (`profile=free`) provides keyless `you-search` only — see `references/free-profile.md`.
+compatibility: Requires network access and a You.com MCP server exposing `you-search` and `you-extract` (free, API key, or OAuth). Payment-only MPP/x402 clients use `you-contents` for paid URL reads instead.
 license: MIT
 metadata:
   mcp_servers: '{"you-web":{"url":"https://api.you.com/mcp"}}'
@@ -13,7 +13,7 @@ metadata:
 
 # Search Skill
 
-Use `you-search` to discover web sources and `you-contents` to read specific URLs. Search finds candidate sources; reading extracts reliable evidence.
+Use `you-search` to discover web sources and `you-extract` to read specific URLs (webpages or PDFs). Search finds candidate sources; reading extracts reliable evidence.
 
 Build answers from read evidence, not snippets alone. Answer with citations from sources that actually support the claim. Always finish with a non-empty answer; if evidence is incomplete, give the best-supported partial answer and mark what remains unknown.
 
@@ -22,13 +22,13 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 ### Phase 1: Plan
 
 1. Restate the core question and identify the type of answer required (single value, list, comparison, ranking, explanation).
-2. Break the question into 3-5 research items, and for each draft a 3-6 word keyword query (one facet per query — never paste the whole question).
+2. Break the question into 3-5 research items, and for each item, draft a 3-6 word keyword query (one facet per query — never paste the whole question).
 3. For each item, list the value/source/date to find and the 3-6 word query for it, plus domain/recency/locale filters only if they clearly help.
 
 ### Phase 2: Investigate
 
-1. **Search broadly**: `you-search` to find relevant pages. Read snippets to identify which pages have the data you need.
-2. **Read content**: Call `you-contents(urls=[url1,url2])` (1-3 URLs at a time, default `formats: ["markdown"]`) on the most promising URLs. Snippets alone are unreliable — you must read the actual page to get exact values. Always read at least one page before answering.
+1. **Search broadly**: `you-search` to find relevant pages. Read page highlights (`contents.highlights`) to identify which pages have the information you need.
+2. **Read full page content**: Call `you-extract` with `url` on the most promising pages, one URL per call. Keyless Extract forwards only `url` and uses the API defaults (Markdown). Highlights alone are unreliable — always read at least one page before answering. Exception: with a payment-only MPP/x402 client (no key, no OAuth), do not use `you-extract` — it is not payment-capable. Load the [paid URL reads reference](references/payment-contents.md) and read with `you-contents` (`urls` array) on the full endpoint instead.
 3. **If incomplete**: refine the query and search again. If the question names a source (e.g., "according to the CDC"), pin its domain inline: `you-search(query="... site:cdc.gov")`.
 4. **If still stuck**: rephrase the query with broader or more common terms.
 5. For a purely factual question with no named source, `knowledge: "core"` can return licensed factual answers alongside web results.
@@ -49,14 +49,18 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 
 ## Free profile (no auth)
 
-If the environment has no `YDC_API_KEY` and no OAuth sign-in, or the connected You.com MCP server exposes `you-search` but not `you-contents`, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the keyless free profile (`profile=free`) and how this pipeline changes when only `you-search` is available.
+If the environment has no `YDC_API_KEY`, OAuth sign-in, or payment-aware connection, or if the connected server only offers search, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the free endpoint and how this pipeline changes there.
+
+## Paid URL reads (MPP/x402, no key or OAuth)
+
+If the client pays per call with MPP/x402 instead of holding a key, load the [paid URL reads reference](references/payment-contents.md): paid reads stay on `you-contents` with a `urls` array on `https://api.you.com/mcp`, because `you-extract` is not payment-capable yet and a payment call to it is challenged rather than forwarded.
 
 ## Evidence Rules
 
 - Snippets never count as reading. `extraction: "highlights"` returns query-relevant passages — use it only for a single focused fact or to triage; do not treat it as full reading for complex answers.
 - For table, figure, or appendix queries, read the source artifact itself before computing filters, counts, maxima, minima, ties, or intersections — never compute from a snippet.
-- Use `html` only when layout, tables, or page structure are necessary; otherwise prefer `markdown`.
-- Add `metadata` when provenance or page identity matters.
+- With authenticated `you-extract`, request `formats: ["html"]` only when layout, tables, or page structure are necessary; otherwise use the Markdown default.
+- Preserve any `metadata` returned by `you-extract` when provenance or page identity matters; it is not an Extract input or format.
 
 ## Historical and Multi-Year Questions
 
