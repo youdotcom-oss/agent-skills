@@ -2,7 +2,7 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "youdotcom",
   "displayName": "You.com",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "Live web search, page and PDF extraction, cited research, and finance research from You.com, plus guided You.com API integration.",
   "author": {
     "name": "You.com",
