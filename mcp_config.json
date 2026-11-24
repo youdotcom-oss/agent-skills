@@ -1,8 +1,5 @@
 {
   "mcpServers": {
-    "Free web search and fetch": {
-      "serverUrl": "https://api.you.com/mcp/free"
-    },
     "Web search and fetch full access": {
       "serverUrl": "https://api.you.com/mcp"
     },

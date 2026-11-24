@@ -35,7 +35,7 @@ If the `you-research` tool is unavailable or the client cannot tolerate its resp
 
 - User is cost-conscious or wants to develop/fine-tune a research skill -> use the agent-led search pipeline in the `you-web` skill.
 - User needs a one-shot synthesized answer with citations -> call the `you-research` MCP tool.
-- URL provided and the task is to read it -> follow the `you-web` URL-reading path: `you-extract` for free or authenticated reads, `you-contents` for paid reads with an MPP/x402 client.
+- URL provided and the task is to read it -> follow the `you-web` URL-reading path: `you-extract` for free or authenticated reads; for paid reads with an MPP/x402 client, load `you-web`'s paid URL reads reference (`you-contents` with a `urls` array on the full endpoint — `you-extract` is not payment-capable yet).
 - Managed research requires OAuth or MPP/x402 -> use the `you-research` MCP tool with OAuth, a payment-aware MCP client, or the Coinbase Payments MCP composition.
 - Required MCP tools are unavailable -> tell the user what is missing, provide the setup options from the prerequisites above, and request approval before installing, connecting, or changing configuration.
 - Simple lookup -> use `you-search` once, answer directly.

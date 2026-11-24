@@ -28,7 +28,7 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 ### Phase 2: Investigate
 
 1. **Search broadly**: `you-search` to find relevant pages. Read page highlights (`contents.highlights`) to identify which pages have the information you need.
-2. **Read full page content**: Call `you-extract` with `url` on the most promising pages, one URL per call. Keyless Extract forwards only `url` and uses the API defaults (Markdown). For paid URL reads with an MPP/x402 client on `https://api.you.com/mcp`, use `you-contents` with a `urls` array instead. Highlights alone are unreliable — always read at least one page before answering.
+2. **Read full page content**: Call `you-extract` with `url` on the most promising pages, one URL per call. Keyless Extract forwards only `url` and uses the API defaults (Markdown). Highlights alone are unreliable — always read at least one page before answering. Exception: with a payment-only MPP/x402 client (no key, no OAuth), do not use `you-extract` — it is not payment-capable. Load the [paid URL reads reference](references/payment-contents.md) and read with `you-contents` (`urls` array) on the full endpoint instead.
 3. **If incomplete**: refine the query and search again. If the question names a source (e.g., "according to the CDC"), pin its domain inline: `you-search(query="... site:cdc.gov")`.
 4. **If still stuck**: rephrase the query with broader or more common terms.
 5. For a purely factual question with no named source, `knowledge: "core"` can return licensed factual answers alongside web results.
@@ -50,6 +50,10 @@ Build answers from read evidence, not snippets alone. Answer with citations from
 ## Free profile (no auth)
 
 If the environment has no `YDC_API_KEY`, OAuth sign-in, or payment-aware connection, or if the connected server only offers search, load the [free profile reference](references/free-profile.md) before searching. It covers switching the `you-web` MCP entry to the free endpoint and how this pipeline changes there.
+
+## Paid URL reads (MPP/x402, no key or OAuth)
+
+If the client pays per call with MPP/x402 instead of holding a key, load the [paid URL reads reference](references/payment-contents.md): paid reads stay on `you-contents` with a `urls` array on `https://api.you.com/mcp`, because `you-extract` is not payment-capable yet and a payment call to it is challenged rather than forwarded.
 
 ## Evidence Rules
 

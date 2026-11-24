@@ -15,7 +15,6 @@ Execute web search over public and licensed data sources, webpage and PDF extrac
 
 | Server name | Endpoint | Tools | Default |
 | --- | --- | --- | --- |
-| `Free web search and fetch` | `https://api.you.com/mcp/free` | `you-search`, `you-extract`, `you-discover` | Enabled; no key required; rate limited |
 | `Web search and fetch full access` | `https://api.you.com/mcp` | `you-search`, `you-extract`, `you-contents`, `you-balance`, `you-discover` | Enabled; OAuth |
 | `Research` | `https://api.you.com/mcp/research` | `you-research` | Enabled; OAuth |
 | `Finance Research` | `https://api.you.com/mcp/finance` | `you-finance` | Enabled; OAuth |
@@ -27,9 +26,9 @@ On first use of an authenticated server, follow the browser prompt to sign in to
 
 If you prefer an API key, get one at [you.com/platform/api-keys](https://you.com/platform/api-keys). Set up a custom remote server for the endpoint you need in your personal [Antigravity MCP configuration](https://antigravity.google/docs/mcp) with the header `Authorization: Bearer <your-api-key>`. Disable the corresponding bundled server to avoid duplicate tools. Keep your API key out of project files and source control.
 
-`Free web search and fetch` is enabled by default and does not require sign-in. To use only the keyless web tools, disable `Web search and fetch full access` in Antigravity's MCP manager. The free endpoint supports up to 100 queries per day and does not include research or finance tools.
+Every bundled server is enabled by default. If you only want keyless web tools, add `https://api.you.com/mcp/free` (`you-search`, `you-extract`, `you-discover`; no key required; rate limited) as a custom remote server in your personal [Antigravity MCP configuration](https://antigravity.google/docs/mcp) and disable the bundled authenticated servers in Antigravity's MCP manager.
 
-If you connect with an MPP/x402-aware MCP client instead of signing in, `you-contents` is still available on `https://api.you.com/mcp` for paid URL reads. It takes a `urls` array. `you-extract` is the single-URL tool for free or authenticated reads, not a replacement for `you-contents` on the payment path.
+If you connect with an MPP/x402-aware MCP client instead of signing in, paid URL reads use `you-contents` — not `you-extract`. `you-extract` is not payment-capable yet, so a payment call to it is challenged rather than forwarded. Stay on `https://api.you.com/mcp` (not the free endpoint, which has no `you-contents`), keep `you-contents` in the tool list if you filter tools (for example `?tools=you-search,you-contents`), and read with a `urls` array. On an HTTP `402` with a `payment-required` header, let the client settle payment and retry the same call with `Authorization: Payment ...`, `x-payment`, or `payment-signature` headers. The server labels `you-contents` deprecated in favour of `you-extract`; that steer applies to free and signed-in reads, and on this payment path the `you-contents` result stands. `you-extract` remains the single-URL tool for free or authenticated reads.
 
 ## Try it
 

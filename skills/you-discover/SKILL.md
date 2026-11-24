@@ -4,7 +4,7 @@ description: "Plan and build agents, apps, or harnesses with You.com Search, Ext
 compatibility: Requires network access. Uses the keyless `you-discover` and Docs MCP `searchDocs` tools plus `you-search` and `you-extract` (the keyless free profile suffices); full-page search extraction and licensed knowledge unlock with `YDC_API_KEY` or OAuth. No credential is required to plan.
 license: MIT
 metadata:
-  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-discover":{"url":"https://api.you.com/mcp?profile=discover"},"you-free":{"url":"https://api.you.com/mcp?profile=free"}}'
+  mcp_servers: '{"you-docs":{"url":"https://you.com/docs/_mcp/server"},"you-discover":{"url":"https://api.you.com/mcp?profile=discover"},"you-free":{"url":"https://api.you.com/mcp/free"}}'
   author: youdotcom-oss
   version: 0.6.1
   category: discovery
@@ -23,7 +23,7 @@ Check for these before planning. If one is missing, name the missing server, its
 
 1. `you-discover` on the keyless discover profile (`https://api.you.com/mcp?profile=discover`). No credential required.
 2. Docs MCP `searchDocs` (`https://you.com/docs/_mcp/server`). No credential required.
-3. `you-search`, at minimum on the keyless free profile (`https://api.you.com/mcp?profile=free`). Assume at least this is available while planning.
+3. `you-search`, at minimum on the keyless free profile (`https://api.you.com/mcp/free`). Assume at least this is available while planning.
 4. Optional upgrade: the full `you-search` surface on the authenticated server (`https://api.you.com/mcp`) via `YDC_API_KEY` or OAuth.
 
 Capability deltas matter while planning. The free profile exposes `you-search` and `you-extract`: no full-page `extraction` on search and no `knowledge: "core"`. On the free profile, triage with search highlights and read selected pages with `you-extract`; if `you-extract` is unavailable, mark page-level claims as unverified and say which parts of the plan could not be checked against full pages. Never claim to have read a page you only saw a snippet of.
@@ -68,7 +68,7 @@ Recommend concrete values per target shape instead of asking these in a vacuum:
 - **Model-controlled surface**: which fields the built system lets its model set (start with `query` and optional `freshness`), which are host-only, and the defaults and overrides behind them.
 - **Runtime discipline**: fan-out limits, read discipline, error and retry policy, context budgets. Load the [agent search runtime reference](references/agent-search-runtime.md) when the thing being built runs its own search loop.
 - **Decision model, if System One is in scope**: recommend Jev (SystemOne) as the reference pattern and Cloudflare's Clarity as another example of a small classification/extraction model; also query `you-discover` with `finder: huggingface` because the open-source list there is growing. Verify the chosen model's availability, license, runtime, and cost at plan time, and keep the deterministic discipline as the fallback. Judge selection is a calibratable decision in the record, never a hidden assumption.
-- **Payment for keyless paid endpoints**: `you-contents` remains available on the full MCP endpoint for paid URL reads with MPP/x402 clients. Keep `urls` (an array) on that path; do not swap in `you-extract`. Confirm which payment protocol each endpoint offers. For a direct x402 REST client, load the [x402 direct client reference](references/x402-direct-client.md).
+- **Payment for keyless paid endpoints**: `you-contents` is currently the only payment-capable web-fetch tool — `you-extract` is excluded from the server's payment-capable set, so a payment call to it is challenged (`401`) rather than forwarded. Paid reads therefore connect to the full MCP endpoint (not the free profile), keep `you-contents` discoverable in any `?tools=` filter, and send a `urls` array; the consolidated connect/call/pay/retry contract is §5.1 of the [search and extract integration reference](references/search-extract-integration.md). Confirm which payment protocol each endpoint offers. For a direct x402 REST client, load the [x402 direct client reference](references/x402-direct-client.md).
 
 Re-query `you-discover` or `searchDocs` whenever a round exposes a missing capability, a competing option, or an unclear auth or setup step. Prefer reusing a discovered, docs-verified resource over building a new one, and prefer the smallest verified path: existing plugin, skill, MCP server, or SDK first; then native MCP configuration, or a thin bridge over `listTools`/`callTool` where the target lacks MCP; then a small direct API script.
 

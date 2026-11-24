@@ -4,7 +4,7 @@ import { type Mcp, Plugin, type Skill } from '@opencode/plugin'
 
 const YOU_COM_MCP_SERVERS = {
   you: 'https://api.you.com/mcp',
-  'you-free': 'https://api.you.com/mcp?profile=free',
+  'you-free': 'https://api.you.com/mcp/free',
   'you-finance': 'https://api.you.com/mcp/finance',
   'you-research': 'https://api.you.com/mcp/research',
   'you-docs': 'https://you.com/docs/_mcp/server',

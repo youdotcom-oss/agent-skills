@@ -80,7 +80,7 @@ describe('MCP server registration', () => {
         exposure: 'direct',
       },
       'you-free': {
-        url: 'https://api.you.com/mcp?profile=free',
+        url: 'https://api.you.com/mcp/free',
         exposure: 'direct',
         toolExposure: { 'you-discover': 'hidden' },
       },
@@ -157,7 +157,7 @@ describe('bundled mcp.json generation', () => {
         },
         'you-discover': { type: 'http', url: 'https://api.you.com/mcp?profile=discover' },
         'you-docs': { type: 'http', url: 'https://you.com/docs/_mcp/server' },
-        'you-free': { type: 'http', url: 'https://api.you.com/mcp?profile=free' },
+        'you-free': { type: 'http', url: 'https://api.you.com/mcp/free' },
       },
     })
   })
@@ -217,7 +217,7 @@ describe('host context', () => {
       'https://api.you.com/mcp',
       'https://api.you.com/mcp/finance',
       'https://api.you.com/mcp/research',
-      'https://api.you.com/mcp?profile=free',
+      'https://api.you.com/mcp/free',
       'https://api.you.com/mcp?profile=discover',
       'https://you.com/docs/_mcp/server',
     ]) {

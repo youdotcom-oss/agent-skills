@@ -68,7 +68,7 @@ describe('plugin', () => {
 
     expect([...servers.keys()].sort()).toEqual(['you', 'you-docs', 'you-finance', 'you-free', 'you-research'])
     expect(servers.get('you')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp' })
-    expect(servers.get('you-free')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp?profile=free' })
+    expect(servers.get('you-free')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp/free' })
     expect(servers.get('you-finance')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp/finance' })
     expect(servers.get('you-research')).toEqual({ type: 'remote', url: 'https://api.you.com/mcp/research' })
     expect(servers.get('you-docs')).toEqual({ type: 'remote', url: 'https://you.com/docs/_mcp/server' })

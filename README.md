@@ -38,7 +38,7 @@ Basic web search works without an account through the free MCP profile. For full
 
 The plugin contains skills and remote MCP server configs only. It has no hooks and starts no local MCP servers or scripts. When a skill runs, Claude sends your search queries, the URLs you ask it to read, and research or finance questions to You.com's MCP servers:
 
-- `https://api.you.com/mcp` (search, contents, discovery; `?profile=free` for keyless search)
+- `https://api.you.com/mcp` (search, contents, discovery; `https://api.you.com/mcp/free` for keyless search and fetch)
 - `https://api.you.com/mcp/research` (research)
 - `https://api.you.com/mcp/finance` (finance)
 - `https://you.com/docs/_mcp/server` (You.com docs search, used by `you-discover`)
@@ -131,7 +131,7 @@ Useful tool profiles:
 | Endpoint                                    | Use it for                      |
 | ------------------------------------------- | ------------------------------- |
 | `https://api.you.com/mcp`                   | Authenticated You.com MCP tools |
-| `https://api.you.com/mcp?profile=free`      | Keyless basic `you-search`      |
+| `https://api.you.com/mcp/free`              | Keyless `you-search`/`you-extract` |
 | `https://api.you.com/mcp/finance`           | Finance-only MCP setup          |
 | `https://api.you.com/mcp/research`          | Research-only MCP setup         |
 

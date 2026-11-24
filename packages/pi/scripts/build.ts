@@ -92,7 +92,7 @@ export const ompMcpJson = (source: unknown) => {
   }
 
   if (!('you-free' in servers)) {
-    servers['you-free'] = { type: 'http', url: `${MCP_URL}?profile=free` }
+    servers['you-free'] = { type: 'http', url: `${MCP_URL}/free` }
   }
 
   return { mcpServers: servers }

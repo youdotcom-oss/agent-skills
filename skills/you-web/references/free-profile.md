@@ -4,10 +4,10 @@ On-demand reference for running You.com web search and fetch for free, when the 
 
 ## How to enable it
 
-Modify the existing `you-web` MCP server entry — do not add a second server:
+Modify the existing free MCP server entry — named `you-free` in the bundled configurations — rather than adding a second server. If the host uses a different name for that entry, update the existing entry in place:
 
 ```json
-{ "you-web": { "url": "https://api.you.com/mcp/free" } }
+{ "you-free": { "url": "https://api.you.com/mcp/free" } }
 ```
 
 Request the user's approval before installing, connecting, or changing MCP configuration.
@@ -30,7 +30,7 @@ The free profile exposes `you-search` and `you-extract`. Compared to the authent
 
 ## Payment challenges
 
-For paid URL reads with an MPP/x402-aware client, `you-contents` is still available on `https://api.you.com/mcp`. It takes `urls` (an array) and is not part of the free profile.
+Paid reads are not available on the free profile. With an MPP/x402-aware client, switch to the full endpoint (`https://api.you.com/mcp`) and read with `you-contents` (`urls` array); `you-extract` is not payment-capable yet, so a payment call to it is challenged rather than forwarded. The full connect, call, and retry path is in the [paid URL reads reference](payment-contents.md).
 
 If an x402-aware MCP client receives an HTTP `402` with a `payment-required` header, treat it as a payment challenge, not a tool failure. Let the MCP client handle external payment and retry with `Authorization: Payment ...`, `x-payment`, or `payment-signature` headers when supported.
 
