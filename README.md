@@ -4,6 +4,10 @@
 
 # You.com Web Search & Research
 
+<!-- yarkr:badges:start -->
+[![Indexed on Yarkr](https://api.yarkr.com/functions/v1/api/api/v1/badges/repos/youdotcom-oss/agent-skills/version.svg)](https://yarkr.com/arks/youdotcom-oss/agent-skills)
+<!-- yarkr:badges:end -->
+
 Give Claude live access to the web. This plugin adds You.com search, full-page content extraction, and cited multi-source research to Claude, so answers about fast-moving libraries, APIs, tools, and markets come from current sources instead of stale training data. Every answer cites the pages it read.
 
 ## What you can do
@@ -33,6 +37,40 @@ Research NVIDIA's latest earnings and cite the numbers.
 ```
 
 Basic web search works without an account through the free MCP profile. For full search, content extraction, research, and finance, sign in with OAuth when prompted or set an API key from [you.com/platform/api-keys](https://you.com/platform/api-keys).
+
+<!-- yarkr:install:start -->
+## Install with Yarkr
+
+This repo is indexed on [Yarkr](https://yarkr.com/arks/youdotcom-oss/agent-skills) as the ark [youdotcom-oss/agent-skills](https://yarkr.com/arks/youdotcom-oss/agent-skills), so its skills install into Claude Code, Codex, Cursor and other agent harnesses with one command.
+
+### CLI
+
+Install the whole ark, which Yarkr keeps equal to this repo:
+
+```bash
+npx yarkr-cli sync youdotcom-oss/agent-skills
+```
+
+Or add individual skills:
+
+```bash
+npx yarkr-cli add skill:youdotcom-oss/agent-skills/grill-me
+npx yarkr-cli add skill:youdotcom-oss/agent-skills/karpathy-guidelines
+npx yarkr-cli add skill:youdotcom-oss/agent-skills/tdd
+```
+
+No Node.js? `curl -fsSL https://yarkr.com/install.sh | sh` (macOS, Linux) or `irm https://yarkr.com/install.ps1 | iex` (Windows PowerShell) installs `yarkr` as a standalone binary; then type `yarkr` in place of `npx yarkr-cli`.
+
+### MCP
+
+Connect your agent to the ark over MCP:
+
+```bash
+npx yarkr-cli mcp add youdotcom-oss/agent-skills
+```
+
+Or point any MCP client at `https://api.yarkr.com/functions/v1/api/mcp/o/youdotcom-oss/agent-skills`.
+<!-- yarkr:install:end -->
 
 ## What this plugin connects to
 
